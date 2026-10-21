@@ -639,7 +639,7 @@ components:
           maximum: 2
         purpose:
           type: string
-          enum: [understand, plan, editor, repair, react, review]
+          enum: [understand, polish, plan, editor, repair, react, review, coarse]
           description: 调用用途，用于预算核算与审计
         max_tokens:
           type: [integer, "null"]

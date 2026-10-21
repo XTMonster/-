@@ -8,6 +8,7 @@ from block_director.contracts.messages import Message, ToolCall, FunctionCall
 from block_director.contracts.plan import Plan, ShotPlan
 from block_director.layer5_orchestrator.context_budget import (
     budget_report,
+    compress_messages,
     count_tokens,
     trim_messages,
 )
@@ -146,6 +147,52 @@ def test_trim_drops_the_oldest_observations_first():
     assert count_tokens(kept) <= 1500
     # 被裁掉的都是最旧的
     assert dropped[0].content.startswith("观察 0")
+
+
+def test_compress_keeps_critical_information_instead_of_discarding():
+    """被裁掉的旧观察必须提炼成关键信息摘要，而不是直接丢弃（用户裁决：
+    生成关键信息文档当缓存，压缩上下文）。"""
+    messages = conversation(8, size=300)
+    kept, dropped = trim_messages(messages, 1500)
+    assert dropped, "应当裁掉一些旧观察"
+    compressed = compress_messages(dropped)
+    assert compressed, "压缩不能是空文档"
+    # 压缩产物是一条独立的精简摘要消息，不是原文复制
+    assert len(compressed) == 1
+    assert compressed[0].role is MessageRole.SYSTEM
+    assert "观察 0" in compressed[0].content          # 关键信息保留
+    assert "观" * 300 not in compressed[0].content    # 不是原文粘贴
+    assert count_tokens(compressed) < count_tokens(dropped)
+
+
+def test_compress_empty_dropped_is_empty():
+    assert compress_messages([]) == []
+
+
+def test_compress_does_not_repeat_the_same_tool_call_id():
+    """压缩多条同工具观察时合并成要点，不逐条复制调用 ID（信息密度优先）。"""
+    messages = [Message(role=MessageRole.TOOL, content="check_composition: 分数 41.5"),
+                Message(role=MessageRole.TOOL, content="check_axis: 越轴"),
+                Message(role=MessageRole.TOOL, content="check_composition: 分数 43.3")]
+    compressed = compress_messages(messages)
+    assert len(compressed) == 1
+    assert compressed[0].content.count("check_composition") >= 2
+    # 工具观察不是 assistant 的 tool_calls，压缩后不携带 tool_call_id
+    assert compressed[0].tool_call_id is None
+
+
+def test_compress_respects_token_budget():
+    """压缩摘要必须受 max_tokens 约束：超预算时删尾部关键行，不挤爆窗口。"""
+    messages = conversation(6, size=400)
+    compressed = compress_messages(messages, max_tokens=200)
+    assert len(compressed) == 1
+    assert count_tokens(compressed) <= 200
+
+
+def test_default_window_is_128k():
+    """用户裁决：上下文窗口默认调到 128k（与 DeepSeek max_tokens 一致）。"""
+    from block_director.contracts.config import OrchestrationConfig
+    assert OrchestrationConfig().context_window_tokens == 128000
 
 
 def test_trim_never_drops_the_question_itself():

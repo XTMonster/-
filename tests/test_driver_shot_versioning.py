@@ -55,7 +55,8 @@ class PerShotBuilder:
         return {"characters": 2, "cameras": 0, "props": 0,
                 "crowd": 0, "prepared_at": "2026-10-12T00:00:00+00:00"}
 
-    def rebuild_shot(self, shot_id, *, plan=None, brief=None):
+    def rebuild_shot(self, shot_id, *, plan=None, brief=None,
+                     preserve_camera_edits=False):
         self.rebuilt.append({"shot_id": shot_id, "plan": plan})
         return {"shot_id": shot_id, "warnings": [], "protected": [],
                 "camera": f"BD_Cam_{shot_id}", "keyframes": 1,

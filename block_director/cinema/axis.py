@@ -19,6 +19,10 @@ SIDE_POSITIVE = 1
 SIDE_NEGATIVE = -1
 SIDE_UNKNOWN = 0
 
+#: 越轴 finding 的 check_id（单一真源：blockout_sequence 与 blockout_report
+#: 都从这里取，不各抄一份）。
+E_BLOCKOUT_AXIS_FLIP = "E_BLOCKOUT_AXIS_FLIP"
+
 #: 机位相对已确立轴线的三种状态（§10.3 / R001）
 AXIS_CORRECT = "correct"
 AXIS_NEUTRAL = "neutral"
@@ -151,6 +155,60 @@ def camera_side_of(a: Sequence[float], b: Sequence[float],
     if cross_z < -EPS:
         return SIDE_NEGATIVE
     return SIDE_UNKNOWN
+
+
+def camera_direction_findings(
+    rows: Sequence[Mapping[str, Any]],
+    cameras: Sequence[Mapping[str, Any]],
+    character_positions: Mapping[str, Sequence[float]],
+) -> List[Dict[str, Any]]:
+    """相机方向：同一对轴角色的相邻同框镜之间 180° 侧别不得静默翻转。
+
+    多人/单人镜（正反打桥接）是合法镜头语言：单人镜不比较、配对不同不
+    比较（避免正反打或换轴被误判为越轴）。只有**同一对轴角色**连续两次
+    同框且侧别翻转时才报 ``E_BLOCKOUT_AXIS_FLIP``（可归因到分镜与帧）。
+
+    本函数是 180° 轴判据的**唯一实现**：``blockout_sequence`` 的五维序列
+    审查与 ``blockout_report`` 的 ``axis_continuity`` check 都消费它。
+    """
+    findings: List[Dict[str, Any]] = []
+    by_shot = {str(c.get("shot_id") or ""): c for c in cameras}
+    ordered = sorted(rows, key=lambda row: int(row.get("order") or 0))
+    previous_pair: Optional[Tuple[str, str]] = None
+    previous_side: Optional[int] = None
+    for row in ordered:
+        shot_id = str(row.get("shot_id") or "")
+        camera = by_shot.get(shot_id)
+        if camera is None:
+            continue
+        characters = [str(name) for name in (row.get("character_ids") or [])]
+        #: 轴线用本镜前两个有体块的角色（与 axis_for_speakers 同口径）
+        pairs = [(name, character_positions[name]) for name in characters
+                 if name in character_positions][:2]
+        if len(pairs) < 2:
+            continue
+        (a_label, a_pos), (b_label, b_pos) = pairs
+        pair_names = (a_label, b_label)
+        position = camera.get("position")
+        if position is None:
+            continue
+        side = camera_side_of(a_pos, b_pos, position)
+        if side == SIDE_UNKNOWN:
+            continue
+        if (previous_side is not None and previous_pair == pair_names
+                and side != previous_side):
+            findings.append({
+                "check_id": E_BLOCKOUT_AXIS_FLIP,
+                "shot_id": shot_id,
+                "frame": int(row.get("start_frame") or 0),
+                "severity": "error",
+                "message": (
+                    f"相机跨轴线：{a_label}↔{b_label} 侧别由 "
+                    f"{previous_side} 变 {side}，无中性镜桥接"),
+            })
+        previous_pair = pair_names
+        previous_side = side
+    return findings
 
 
 def crossing_events(axis: Axis, plan, initial: Dict[str, Sequence[float]],

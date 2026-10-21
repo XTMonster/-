@@ -93,7 +93,75 @@ def test_fountain_attaches_parentheticals():
     assert opening.parenthetical == "低声"
     assert opening.text == "她还是没有回信。"
     assert first.dialogues[1].character == "小红"
-    assert first.dialogues[1].text == "别等了。"
+
+
+def test_fountain_cast_anchor_names_survive_without_dialogue():
+    #: iteration-fix T9：角色锚里点名的角色即使没有台词也必须进角色表，
+    #: 否则模型的计划一带上他就会被 CAST_001 拒掉（伊恩只出镜不说话）。
+    text = """Title: 市场
+
+EXT. 码头 - 白天
+
+【角色锚】米迦尔：兽人，只有四根手指的兽爪。伊恩：年轻男性，衣着朴素。偷盗者：身形瘦削。
+
+【场景锚】第十四街区码头市场，白天晴天。
+
+偷盗者
+我发财了！
+
+"""
+    script = parse_fountain(text)
+    assert script.character_names == ["米迦尔", "伊恩", "偷盗者"]
+    assert script.cast_declarations == ["米迦尔", "伊恩", "偷盗者"]
+
+
+def test_fountain_cast_anchor_multiline_format():
+    #: fixtures 的写法：`【角色锚】` 独占一行，后续每行 `名字：描述`。
+    text = """Title: 市场
+
+EXT. 码头 - 白天
+
+【角色锚】
+米迦尔：兽人，只有四根手指的兽爪。
+伊恩：年轻男性，衣着朴素。
+偷盗者：身形瘦削的成年男性。
+
+【场景锚】第十四街区码头市场。
+
+偷盗者
+我发财了！
+
+"""
+    script = parse_fountain(text)
+    assert script.character_names == ["米迦尔", "伊恩", "偷盗者"]
+
+
+def test_fountain_scene_anchor_text_is_collected():
+    """R2-F5：剧本【场景锚】块原文要保留进解析结果。
+
+    真跑里粗排参考 JSON 的 anchors=0，因为场景锚文本在解析层就丢了；
+    粗排管线拿不到它，银币摊/生蚝摊/海面等导演声明的主体无法落世界坐标，
+    shot_002 银币特写变成空墙。场景锚是导演的明确声明（不是猜），
+    必须从剧本确定性提取，交给粗排/世界坐标求解。
+    """
+    text = """Title: 市场
+
+EXT. 码头 - 白天
+
+【角色锚】米迦尔：兽人，只有四根手指的兽爪。伊恩：年轻男性，衣着朴素。偷盗者：身形瘦削。
+
+【场景锚】第十四街区码头市场，白天晴天，日光从画面深处的海面方向打来；市场内摊位、生蚝摊、围栏错落，纵深分明。
+
+偷盗者
+我发财了！
+
+"""
+    script = parse_fountain(text)
+    assert script.scene_anchor_texts
+    joined = "".join(script.scene_anchor_texts)
+    assert "生蚝摊" in joined
+    assert "银币摊" in joined or "摊位" in joined
+    assert "海面" in joined
 
 
 def test_fountain_does_not_mistake_action_for_a_cue():

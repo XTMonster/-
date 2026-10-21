@@ -73,6 +73,32 @@ def test_fallback_preserves_accepted_chunks_and_fills_only_the_missing():
     assert driver.plan.shots[29].intent.startswith("镜号30")
 
 
+def test_complete_plan_is_not_reported_as_a_zero_shot_fill():
+    """A complete plan is not an adjustment and must not re-enter the gate.
+
+    Real r2 exposed the failure shape: every failed plan attempt left
+    ``_plan_failures`` exhausted.  The deterministic fill then reported
+    ``filled=0`` for the already complete plan, so the driver repeatedly fed
+    the same plan back into the coarse gate instead of asking the model again
+    or failing honestly.
+    """
+    declarations = [
+        Declaration(1, characters=["米迦尔"], shot_type="MS"),
+        Declaration(2, characters=["伊恩"], shot_type="MCU"),
+    ]
+    accepted = [
+        {"shot_id": "shot_001", "order": 1, "intent": "模型镜头一",
+         "shot_type": "MS", "duration_frames": 48,
+         "characters": ["米迦尔"]},
+        {"shot_id": "shot_002", "order": 2, "intent": "模型镜头二",
+         "shot_type": "MCU", "duration_frames": 48,
+         "characters": ["伊恩"]},
+    ]
+    driver = _driver(declarations, accepted)
+
+    assert driver._complete_plan_with_deterministic_fill() is None
+
+
 def test_plan_adjusted_event_fields_are_registered():
     data = {"filled_shots": 6, "attempts": 3, "problem": "x"}
     assert missing_event_fields("plan_adjusted", data) == []

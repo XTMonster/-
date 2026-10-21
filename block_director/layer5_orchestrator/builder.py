@@ -38,9 +38,11 @@ class PreparableSceneBuilder(SceneBuilder, Protocol):
     - ``prepare_scene(plan, brief=None, spec=None) -> Dict``：只建场景与元素
       （清对象/集合、环境/锚点/灯光、角色/标签、道具、群众），落
       ``SceneContext`` 并记基线；**不摆相机、不烘焙动作**。
-    - ``rebuild_shot(shot_id, *, plan=None, brief=None) -> Dict``：只重建/
-      预演当前镜（换该镜相机、清该镜帧窗关键帧、重烘该镜动作），不推倒
-      环境/角色/其他镜。
+    - ``rebuild_shot(shot_id, *, plan=None, brief=None,
+      preserve_camera_edits=False) -> Dict``：只重建/预演当前镜（换该镜
+      相机、清该镜帧窗关键帧、重烘该镜动作），不推倒环境/角色/其他镜。
+      ``preserve_camera_edits=True`` 时保留 agent 工具/空间尺改过的相机
+      （``bd_agent_edited``），逐镜迭代不把修复成果冲回计划原值。
     """
 
     def prepare_scene(self, plan: Plan,
@@ -49,5 +51,19 @@ class PreparableSceneBuilder(SceneBuilder, Protocol):
         ...
 
     def rebuild_shot(self, shot_id: str, *, plan: Optional[Plan] = None,
-                     brief: Optional[SceneBrief] = None) -> Dict[str, Any]:
+                     brief: Optional[SceneBrief] = None,
+                     preserve_camera_edits: bool = False) -> Dict[str, Any]:
+        ...
+
+
+class CoarseBaselineBuilder(Protocol):
+    """Optional capability: consume the coarse gate's frozen camera baseline.
+
+    The coarse gate owns the approved shot cameras.  A builder that implements
+    this capability must use those cameras for detailed per-shot reconstruction,
+    rather than solving a second camera set from the plan.  The driver probes
+    the method with ``hasattr`` so this remains a pure-layer contract.
+    """
+
+    def attach_coarse_baseline(self, baseline: Dict[str, Any]) -> int:
         ...

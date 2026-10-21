@@ -19,10 +19,11 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Union
 
 from ..contracts.plan import Plan
 from ..contracts.tools import REPLAY_SKIPPED_TOOLS
+from ..contracts.evidence import EvidenceStore, inspect_evidence_store
 
 AUDIT_FILENAME = "audit_log.jsonl"
 PLAN_EVENT = "plan_received"
@@ -62,6 +63,9 @@ class ReplayReport:
     failures: List[Dict[str, Any]] = field(default_factory=list)
     built: bool = False
     summary: Dict[str, Any] = field(default_factory=dict)
+    evidence_store: Optional[EvidenceStore] = None
+    evidence_status: Dict[str, Any] = field(default_factory=dict)
+    evidence_best: Dict[str, int] = field(default_factory=dict)
     #: v1.4 X5：重放时读到的 SceneBrief（站位由它决定）。
     brief: Optional[Any] = None
     brief_source: str = ""
@@ -78,6 +82,8 @@ class ReplayReport:
                 "skipped": list(self.skipped),
                 "failures": list(self.failures),
                 "brief_source": self.brief_source,
+                "evidence_status": dict(self.evidence_status),
+                "evidence_best": dict(self.evidence_best),
                 "summary": dict(self.summary)}
 
 
@@ -313,6 +319,64 @@ def extract_blockout_artifacts(records: Sequence[Dict[str, Any]]
     return artifacts
 
 
+def extract_evidence_store(
+    records: Sequence[Dict[str, Any]],
+    directory: Union[str, Path],
+) -> tuple[Optional[EvidenceStore], Dict[str, Any], Dict[str, int]]:
+    """Load the exact evidence store and verify its published best pointers."""
+    path = ""
+    expected: Dict[str, str] = {}
+    for record in records:
+        data = record.get("data") or {}
+        payload = data.get("payload")
+        if not isinstance(payload, Mapping):
+            continue
+        artifacts = payload.get("artifacts")
+        if isinstance(artifacts, Mapping) and artifacts.get("evidence_store"):
+            path = str(artifacts.get("evidence_store"))
+        for key in (
+            "best_report_fingerprint",
+            "best_manifest_fingerprint",
+            "best_world_state_fingerprint",
+        ):
+            if payload.get(key):
+                expected[key] = str(payload[key])
+    if not path:
+        candidates = (
+            Path(directory) / "coarse" / "evidence_store.json",
+            Path(directory) / "coarse" / "coarse" / "evidence_store.json",
+        )
+        path = str(next((item for item in candidates if item.is_file()), ""))
+    if not path:
+        return None, {
+            "status": "missing",
+            "reason": "audit log/project has no evidence_store artifact",
+            "consistent": False,
+        }, {}
+    store, status = inspect_evidence_store(path)
+    if store is None:
+        return None, {**status, "path": path, "consistent": False}, {}
+    best = {str(key): int(value)
+            for key, value in (store.summary().get("best") or {}).items()}
+    mismatches: list[str] = []
+    for shot_id, version in sorted(best.items()):
+        basis = store.get(shot_id, version).basis_fingerprints
+        for key, actual in (
+            ("report", basis.get("report_fingerprint")),
+            ("manifest", basis.get("manifest_fingerprint")),
+            ("world_state", basis.get("world_state_fingerprint")),
+        ):
+            wanted = expected.get(f"best_{key}_fingerprint")
+            if wanted and str(actual or "") != wanted:
+                mismatches.append(f"{shot_id}@{version}:{key}")
+    return store, {
+        **status,
+        "path": path,
+        "consistent": not mismatches,
+        "mismatches": mismatches,
+    }, best
+
+
 def replay(directory: Union[str, Path], registry, *, builder=None,
            spec=None, build: bool = True) -> ReplayReport:
     """按审计日志重放：先按计划建场景，再顺序重放工具调用（不调用 LLM）。"""
@@ -416,6 +480,14 @@ def replay(directory: Union[str, Path], registry, *, builder=None,
                        ("blockout_approval", "approval")):
         if value is not None:
             report.summary[key] = blockout_artifacts[value]
+    evidence_store, evidence_status, evidence_best = extract_evidence_store(
+        records, directory)
+    report.evidence_store = evidence_store
+    report.evidence_status = evidence_status
+    report.evidence_best = evidence_best
+    if evidence_store is not None:
+        report.summary["evidence_store"] = evidence_store.to_dict()
+    report.summary["evidence_status"] = evidence_status
 
     known = set(registry.names())
     for step in report.steps:

@@ -33,6 +33,15 @@ def test_cfg170_triggers_once():
     assert issues[0].severity is Severity.WARNING
 
 
+def test_cfg170_allows_max_thinking_level():
+    # 用户裁决：DeepSeek 思考强度拉到 max（直连 reasoning_effort=max）。
+    config = AppConfig()
+    config.llm.thinking_level = "max"
+    issues = [issue for issue in config.validate()
+              if issue.code == "CFG_170"]
+    assert issues == []
+
+
 def test_cfg171_triggers_once():
     config = AppConfig()
     config.audit.rules_disabled = ["R09"]

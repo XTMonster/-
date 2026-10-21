@@ -48,6 +48,11 @@ LABEL_OVERLAP_REPORT = "label_overlap_report"
 #: ``ErrorCode.ENV_001``，这里只做审计契约层的登记与形状。
 ENV_FINDING_CODE = str(ErrorCode.ENV_001)
 
+#: R2 S2（精修身份冻结）：精修草案改写镜头身份（shot_type /
+#: characters / framing_target）被拒绝的 finding 码。取值单一真源是
+#: ``ErrorCode.IDENTITY_001``，这里只做审计契约层的登记与形状。
+IDENTITY_FINDING_CODE = str(ErrorCode.IDENTITY_001)
+
 
 def env_finding(label: str, reason: str) -> str:
     """渲染一条环境件 finding：``E_ENV_001: <label>: <reason>``。
@@ -56,6 +61,17 @@ def env_finding(label: str, reason: str) -> str:
     """
     return (f"{ENV_FINDING_CODE}: {str(label or '').strip()}: "
             f"{str(reason or '').strip()}")
+
+
+def identity_finding(shot_id: str, conflicts) -> str:
+    """渲染一条镜头身份冻结 finding：``E_IDENTITY_001: <shot_id>: <…>``。
+
+    精修路径用它把"草案试图改景别/主体集合/拍对象"的冲突清单带回计划
+    保持原值的决策（spec_r2 §S2）。生产侧与消费侧共用这一个形状。
+    """
+    detail = "；".join(str(item) for item in (conflicts or ()))
+    return (f"{IDENTITY_FINDING_CODE}: {str(shot_id or '').strip()}: "
+            f"{detail}")
 
 
 def scene_built_reason(*, rebuild_in_place: bool, just_rolled_back: bool) -> str:

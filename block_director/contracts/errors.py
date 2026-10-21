@@ -77,6 +77,9 @@ USER_MESSAGES: Dict[ErrorCode, str] = {
                         "distance 改为 near/mid/far、size 改为 s/m/l 后重试。"),
     ErrorCode.GUARD_001: ("视锥采样失败（depsgraph/投影/射线异常）。"
                           "请检查该镜的相机、主体网格与动画求值；采样异常不会静默吞掉。"),
+    ErrorCode.IDENTITY_001: ("精修不得改写镜头身份：景别（shot_type）、"
+                             "主体集合（characters）与拍对象（framing_target）"
+                             "以计划为准。冲突草案已拒绝，计划原值保留。"),
 }
 
 

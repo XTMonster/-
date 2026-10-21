@@ -235,6 +235,44 @@ def build_chat_body(payload: ChatPayload, model: str) -> Dict[str, Any]:
     return body
 
 
+def apply_direct_provider_body(body: Dict[str, Any], *,
+                               provider: str = "",
+                               thinking_level: str = "off"
+                               ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """直连端点的厂商适配（不改调用方组包逻辑，只改 wire 请求体）。
+
+    实测（2026-10-20，DeepSeek 官方 ``deepseek-flash``）：思考模式**拒收**
+    ``tool_choice``——`required` 与函数对象形式都返回 400
+    ``Thinking mode does not support this tool_choice``；只有 ``auto`` 或
+    省略可用，且省略时模型按提示词照常发起工具调用（finish_reason=tool_calls，
+    usage 含 reasoning_tokens）。这与 sidecar 的百炼（Bailian）思考档先例
+    同源：required/对象 → auto，并在 trace 留痕，审计可见、可对拍。
+
+    思考强度：``reasoning_effort`` 由实测确认被官方接受（低/中/高/max 均可，
+    max 档 reasoning_tokens 最高）。非 ``deepseek`` provider 一律零改动透传。
+
+    返回 ``(body, trace)``；trace 记录本次适配动过什么（空 dict = 未动）。
+    """
+    trace: Dict[str, Any] = {}
+    normalized_provider = (provider or "").strip().lower()
+    normalized_level = str(thinking_level or "off").lower()
+
+    if normalized_provider != "deepseek":
+        return body, trace
+
+    # 思考模式不接受 required/函数对象 tool_choice：降 auto（与 sidecar
+    # 百炼路径同语义），提示词已强制"只调用工具"。
+    choice = body.get("tool_choice")
+    if choice == "required" or isinstance(choice, dict):
+        body["tool_choice"] = "auto"
+        trace["tool_choice_downgraded"] = True
+
+    if normalized_level not in ("off",):
+        body["reasoning_effort"] = normalized_level
+        trace["reasoning_effort_injected"] = normalized_level
+    return body, trace
+
+
 def parse_chat_response(data: Dict[str, Any]) -> ChatReply:
     """解析 OpenAI 兼容的 /chat/completions 响应。"""
     choices = data.get("choices") or []
@@ -256,7 +294,10 @@ def parse_chat_response(data: Dict[str, Any]) -> ChatReply:
                                   arguments=str(function.get("arguments", "{}"))),
         ))
     usage = data.get("usage")
-    reasoning = message.get("reasoning")
+    # DeepSeek 思考模型的思维字段是 message.reasoning_content（实测）；OpenAI
+    # 兼容的 reasoning 字段也保留，两个都读。该字段只用于"思维链占用预算"的
+    # 截断诊断，不影响解析主路径。
+    reasoning = message.get("reasoning") or message.get("reasoning_content")
     tool_calls_done = bool(tool_calls)
     reply = ChatReply(
         content=message.get("content"),
@@ -321,6 +362,10 @@ class OpenAICompatibleTransport:
     base_url: str = "https://api.openai.com/v1"
     api_key: str = ""
     model: str = "gpt-4o"
+    #: 直连厂商适配：provider（如 "deepseek"）决定是否应用思考模式 tool_choice
+    #: 降级与 reasoning_effort 注入；thinking_level 来自 ``llm.thinking_level``。
+    provider: str = ""
+    thinking_level: str = "off"
     timeout: float = 120.0
     opener: Opener = _urllib_opener
 
@@ -353,8 +398,14 @@ class OpenAICompatibleTransport:
 
     # -- 契约 --------------------------------------------------------------- #
     def chat(self, payload: ChatPayload, timeout: Optional[float] = None) -> ChatReply:
-        data = self._post("/chat/completions",
-                          build_chat_body(payload, self.model), timeout)
+        body = build_chat_body(payload, self.model)
+        body, trace = apply_direct_provider_body(
+            body, provider=self.provider, thinking_level=self.thinking_level)
+        if trace:
+            from ..utils.logger import get_logger
+            get_logger("transport").info("direct provider 适配 %s: %s",
+                                         self.provider, trace)
+        data = self._post("/chat/completions", body, timeout)
         return parse_chat_response(data)
 
     def embed(self, texts: List[str], timeout: float = 30.0) -> List[List[float]]:

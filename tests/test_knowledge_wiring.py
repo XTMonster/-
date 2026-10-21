@@ -80,6 +80,17 @@ def test_the_plan_prefetch_goes_through_the_sidecar_too():
     assert retriever.retrieval_calls == 1
 
 
+def test_a_client_is_not_dropped_when_config_has_no_rag_section():
+    transport = _Sidecar()
+    retriever = _make_knowledge(None, transport)
+
+    assert retriever.backend is RagBackend.HYPERGRAPH
+    block = retriever.block_for_shot("CU", "荒诞")
+
+    assert "禁={" in block
+    assert transport.calls == 1
+
+
 def test_retrieval_calls_are_audited_separately_from_llm_calls():
     audit = _Audit()
     retriever = _make_knowledge(_config(), _Sidecar(), audit)
@@ -90,6 +101,21 @@ def test_retrieval_calls_are_audited_separately_from_llm_calls():
     assert audit.events[0]["retrieval_calls"] == 1
     assert "retrieval_calls" in retriever.trace_payload()
     assert retriever.trace_payload()["retrieval_calls"] == 1
+
+
+def test_process_local_retrieval_is_wired_to_the_run_audit():
+    audit = _Audit()
+    config = AppConfig()
+    config.rag.backend = RagBackend.BM25
+
+    retriever = _make_knowledge(config, None, audit)
+    block = retriever.block_for_shot("CU", "轴线", shot_id="shot_021")
+
+    assert block
+    assert len(audit.events) == 1
+    assert audit.events[0]["kind"] == "retrieval_call"
+    assert audit.events[0]["retrieval_event_id"].startswith("retrieval-")
+    assert audit.events[0]["shot_id"] == "shot_021"
 
 
 def test_sidecar_failure_mid_run_degrades_loudly_instead_of_crashing():

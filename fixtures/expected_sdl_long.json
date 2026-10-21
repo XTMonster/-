@@ -1,6 +1,6 @@
 {
   "name": "# 节点1：市场静场（总时长：24秒）",
-  "version": "1.7",
+  "version": "1.8",
   "fps": 24,
   "characters": [
     {
@@ -95,7 +95,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_002",
@@ -141,7 +142,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_003",
@@ -185,7 +187,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_004",
@@ -229,7 +232,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_005",
@@ -273,7 +277,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_006",
@@ -319,7 +324,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_007",
@@ -363,7 +369,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_008",
@@ -407,7 +414,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_009",
@@ -453,7 +461,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_010",
@@ -497,7 +506,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_011",
@@ -541,7 +551,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_012",
@@ -585,7 +596,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_013",
@@ -631,7 +643,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_014",
@@ -675,7 +688,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_015",
@@ -719,7 +733,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_016",
@@ -763,7 +778,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_017",
@@ -807,7 +823,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_018",
@@ -853,7 +870,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_019",
@@ -897,7 +915,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_020",
@@ -941,7 +960,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_021",
@@ -987,7 +1007,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_022",
@@ -1031,7 +1052,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_023",
@@ -1075,7 +1097,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_024",
@@ -1121,7 +1144,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_025",
@@ -1165,7 +1189,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_026",
@@ -1211,7 +1236,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_027",
@@ -1255,7 +1281,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_028",
@@ -1299,7 +1326,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_029",
@@ -1345,7 +1373,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_030",
@@ -1389,7 +1418,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_031",
@@ -1433,7 +1463,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_032",
@@ -1479,7 +1510,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_033",
@@ -1523,7 +1555,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_034",
@@ -1569,7 +1602,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_035",
@@ -1613,7 +1647,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_036",
@@ -1657,7 +1692,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_037",
@@ -1703,7 +1739,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_038",
@@ -1747,7 +1784,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_039",
@@ -1791,7 +1829,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_040",
@@ -1837,7 +1876,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_041",
@@ -1881,7 +1921,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_042",
@@ -1927,7 +1968,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_043",
@@ -1971,7 +2013,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_044",
@@ -2015,7 +2058,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_045",
@@ -2061,7 +2105,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_046",
@@ -2105,7 +2150,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_047",
@@ -2149,7 +2195,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_048",
@@ -2195,7 +2242,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_049",
@@ -2239,7 +2287,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_050",
@@ -2285,7 +2334,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_051",
@@ -2329,7 +2379,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_052",
@@ -2373,7 +2424,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_053",
@@ -2419,7 +2471,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_054",
@@ -2463,7 +2516,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_055",
@@ -2507,7 +2561,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_056",
@@ -2551,7 +2606,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_057",
@@ -2595,7 +2651,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_058",
@@ -2641,7 +2698,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_059",
@@ -2685,7 +2743,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_060",
@@ -2729,7 +2788,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_061",
@@ -2775,7 +2835,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_062",
@@ -2819,7 +2880,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_063",
@@ -2863,7 +2925,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         },
         {
           "id": "shot_064",
@@ -2909,7 +2972,8 @@
           "composition": {},
           "rule_justifications": [],
           "prompt": "",
-          "responsibility": null
+          "responsibility": null,
+          "framing_target": null
         }
       ]
     }

@@ -151,6 +151,26 @@ def test_two_person_mcu_anchors_on_the_pair_center():
     assert frame.facing == pytest.approx((1.0, 0.0, 0.0))
 
 
+def test_space_cycle_keeps_characters_separated():
+    """三条闭环 facing 关系不能把先前角色覆盖回同一点。"""
+    from block_director.contracts.cast import station_from_space
+
+    chars = ["米迦尔", "伊恩", "偷盗者"]
+    space = [
+        {"character": "米迦尔", "relative_to": "伊恩",
+         "relation": "facing", "distance_class": "social"},
+        {"character": "偷盗者", "relative_to": "米迦尔",
+         "relation": "facing", "distance_class": "social"},
+        {"character": "伊恩", "relative_to": "偷盗者",
+         "relation": "facing", "distance_class": "social"},
+    ]
+    stations = station_from_space(chars, space)
+    positions = [s[0] for s in stations]
+    for index, left in enumerate(positions):
+        for right in positions[index + 1:]:
+            gap = ((left[0] - right[0]) ** 2
+                   + (left[1] - right[1]) ** 2) ** 0.5
+            assert gap >= 0.8, positions
 def test_two_shot_normal_points_to_the_focus_subject_front():
     """两人并排同向时，法线要选"朝焦点主体正面"的那一侧。
 

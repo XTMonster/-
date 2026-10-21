@@ -8,6 +8,7 @@ from block_director.cinema.composition import (
     PASS_SCORE,
     WEIGHTS,
     SubjectBox,
+    composition_passed,
     evaluate_composition,
     thirds_deviation,
 )
@@ -45,6 +46,9 @@ def test_exactly_pass_score_does_not_pass():
     assert not below.passed
     above = CompositionReport(score=PASS_SCORE + 0.01)
     assert above.passed
+    #: 所有消费层共用同一个严格判定，避免报告层把 80.0 写成 pass。
+    assert not composition_passed(PASS_SCORE)
+    assert composition_passed(PASS_SCORE + 0.01)
 
 
 def test_no_subject_scores_zero():
@@ -136,6 +140,28 @@ def test_single_subject_on_thirds_is_not_penalised_for_balance():
     report = evaluate_composition([good_box()])
     assert report.items["balance"].score == 1.0
     assert not report.items["balance"].suggestion
+
+
+def test_component_warnings_start_strictly_above_eight_tenths():
+    """0.8 属于需修复边界，与总分严格高于 80 的口径一致。"""
+    lead_boundary = evaluate_composition([
+        good_box(left=0.23, right=0.41, facing=1.0),
+    ]).items["lead_room"]
+    thirds_boundary = evaluate_composition([
+        good_box(
+            left=1.0 / 3.0 - 0.09,
+            right=1.0 / 3.0 + 0.09,
+            top=0.5133333333333333,
+            bottom=0.0133333333333333,
+        ),
+    ]).items["rule_of_thirds"]
+    balance_boundary = evaluate_composition([
+        good_box(left=0.67, right=0.85, facing=1.0),
+    ]).items["balance"]
+
+    for item in (lead_boundary, thirds_boundary, balance_boundary):
+        assert item.score == pytest.approx(0.8)
+        assert item.suggestion, item
 
 
 def test_partial_occlusion_is_less_severe_than_full():

@@ -90,6 +90,19 @@ def _first_element(shot: Mapping[str, Any], subject_id: str,
     return None
 
 
+def _foot_center(element: Mapping[str, Any]) -> Sequence[float]:
+    """Observed character root: AABB footprint centre at its minimum Z."""
+    low = _vec3(element.get("aabb_min"))
+    high = _vec3(element.get("aabb_max"))
+    if len(low) < 3 or len(high) < 3:
+        return ()
+    return (
+        (low[0] + high[0]) * 0.5,
+        (low[1] + high[1]) * 0.5,
+        low[2],
+    )
+
+
 def _observed_subjects(shot: Mapping[str, Any]) -> List[str]:
     subjects: List[str] = []
     for sample in (shot.get("samples") or []):
@@ -98,6 +111,58 @@ def _observed_subjects(shot: Mapping[str, Any]) -> List[str]:
             if el_id and el_id not in subjects:
                 subjects.append(el_id)
     return subjects
+
+
+def _design_shot(design: Mapping[str, Any], shot_id: str
+                 ) -> Optional[Mapping[str, Any]]:
+    for raw in design.get("shots") or []:
+        if isinstance(raw, Mapping) \
+                and str(raw.get("shot_id") or "") == shot_id:
+            return raw
+    return None
+
+
+def _character_names_for_shot(
+    design: Mapping[str, Any],
+    shot_id: str,
+    intent: Optional[Mapping[str, Any]],
+    design_names: Sequence[str],
+    observed_names: Sequence[str],
+) -> List[str]:
+    """Use shot-scoped cast declarations, never the whole global roster."""
+    shot = _design_shot(design, shot_id)
+    declared = None
+    if shot is not None and "characters" in shot:
+        declared = shot.get("characters") or []
+    elif intent is not None and "characters" in intent:
+        declared = intent.get("characters") or []
+    if declared is None:
+        # 旧快照没有逐镜清单：只能做信息最完整的保守对拍。
+        return sorted(set(design_names) | set(observed_names))
+    return sorted({str(name) for name in declared if str(name)}
+                  | set(observed_names))
+
+
+def _shot_entry(items: Any, shot_id: str) -> Optional[Mapping[str, Any]]:
+    for raw in items or []:
+        if isinstance(raw, Mapping) \
+                and str(raw.get("shot_id") or "") == shot_id:
+            return raw
+    return None
+
+
+def _expected_facing(character: Mapping[str, Any], shot_id: str) -> Any:
+    shot_face = _shot_entry(character.get("facing_by_shot"), shot_id)
+    if shot_face is not None:
+        return shot_face.get("direction") or shot_face.get("facing")
+    return character.get("facing")
+
+
+def _expected_gaze(character: Mapping[str, Any], shot_id: str) -> Any:
+    shot_gaze = _shot_entry(character.get("gaze_by_shot"), shot_id)
+    if shot_gaze is not None:
+        return shot_gaze
+    return character.get("gaze")
 
 
 def build_diff_report(design: Mapping[str, Any],
@@ -142,31 +207,34 @@ def build_diff_report(design: Mapping[str, Any],
                            list(cam_expected) or None, cam_actual,
                            REGISTRY["camera_position_m"], "m"))
 
-        design_names = set(design_chars)
         observed_names = set() if obs_shot is None else set(
             _observed_subjects(obs_shot))
-        for name in sorted(design_names | observed_names):
+        design_names = _character_names_for_shot(
+            design, shot_id, intent, list(design_chars), sorted(observed_names))
+        for name in design_names:
             char = design_chars.get(name) or {}
             pos_design = _vec3(char.get("position"))
             element = None if obs_shot is None else _first_element(
                 obs_shot, name)
-            #: 位置比较用同一锚点：设计 position 是根部站位（z≈0），观测侧
-            #: 取 aabb_min（脚底），而不是包围盒中心——否则 z 轴锚点差异
-            #: （中心高于脚底 ~0.85m）会污染偏差（实测见 smoke：0.85 vs 0.0）。
+            #: 位置比较用同一锚点：设计 position 是脚底中心，观测侧也从
+            #: AABB 推导脚底中心（XY 取包围盒中心、Z 取最低点）。只取
+            #: aabb_min 会把这个角点误当人物位置，产生约半身宽的错误偏差；
+            #: 直接取 center 又会把约 0.85m 的躯干高度算进 Z。
             pos_actual = (None if element is None else _euclidean(
-                pos_design, _vec3(element.get("aabb_min"))))
+                pos_design, _foot_center(element)))
             items.append(_item("character_position", name,
                                list(pos_design) or None, pos_actual,
                                REGISTRY["character_position_m"], "m"))
 
-            heading_design = _vec3(char.get("facing"))
+            heading_design = _vec3(_expected_facing(char, shot_id))
             heading_actual = (None if element is None else _angle_deg(
                 heading_design, _vec3(element.get("facing"))))
             items.append(_item("heading_angle", name,
                                list(heading_design) or None, heading_actual,
                                REGISTRY["heading_angle_deg"], "deg"))
 
-            gaze_design = _vec3((char.get("gaze") or {}).get("direction"))
+            gaze_expected = _expected_gaze(char, shot_id) or {}
+            gaze_design = _vec3(gaze_expected.get("direction"))
             gaze_actual = None
             if element is not None:
                 gaze_actual = _angle_deg(

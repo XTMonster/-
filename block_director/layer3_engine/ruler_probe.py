@@ -87,13 +87,18 @@ def _shot_probe_facts(shot_id: str, context: Any) -> Optional[Dict[str, Any]]:
 
     composition_score = None
     composition_items = None
-    if characters:
+    framing_target = getattr(shot, "framing_target", None)
+    has_prop_target = (framing_target is not None
+                       and str(getattr(framing_target, "kind", "") or "")
+                       == "prop")
+    if characters or has_prop_target:
         try:
             if original_frame != scene.frame_current:
                 pass                     # evaluate 用当前帧；静止场景无影响
             report = evaluate_camera_composition(
                 camera, characters,
-                shot_type=str(context.shot_types.get(shot_id, "MS")))
+                shot_type=str(context.shot_types.get(shot_id, "MS")),
+                framing_target=framing_target)
             composition_score = float(report.score)
             composition_items = {
                 name: {"score": item.score, "weight": item.weight,

@@ -113,7 +113,8 @@ class KnowledgeClient:
     def retrieve(self, query: str, *, domain: Optional[str] = None,
                  top_k: int = 5, cases_top_k: int = 3,
                  scope: str = "", shot_id: str = "",
-                 analogy_query: str = "") -> RetrieveResponse:
+                 analogy_query: str = "",
+                 record_event: bool = True) -> RetrieveResponse:
         """发起一次检索；三条通道 ＋ trace 一次拿回。
 
         ``scope`` / ``shot_id`` 是 §3.3 给 ``retrieval_call`` 事件写死的两个字段
@@ -126,45 +127,49 @@ class KnowledgeClient:
             analogy_query=analogy_query)
         self.retrieval_calls += 1
         self.last_response = response
+        self.degraded = False
+        self.degraded_reason = ""
         trace = dict(response.trace or {})
-        self._emit({
-            "event": "retrieval_call",
-            "query": query,
-            #: §2.3b 的两通道路由：这一栏记**案例层实际用的那条查询**。
-            #: E1 要人给返回的案例打分，判的正是"它对不对得上这条查询"。
-            "analogy_query": str(analogy_query),
-            "scope": str(scope),
-            "shot_id": (str(shot_id) or None),
-            "domain": domain,
-            "top_k": int(top_k),
-            "cards": len(response.cards),
-            "edges": len(response.edges),
-            "cases": len(response.cases),
-            #: **具体是哪几条**（不只是条数）。E1（经验引用相关性）要人给返回的案例打分，
-            #: 而"返回了什么"在事后必须能从审计里读到——只记 `cases: 3` 的话，
-            #: 一次跑完之后谁都拿不出可评分的那三条，E1 在原理上就不可测。
-            #: 与 `shot_id`/`scope` 同一路：只进审计，不改请求。
-            "case_ids": [str(case.case_id) for case in (response.cases or [])],
-            "edge_ids": [str(edge.edge_id) for edge in (response.edges or [])],
-            "forbid_members": sum(len(edge.forbid) for edge in response.edges),
-            #: v1.5 §5.6（FX-3/FR-9）：守门能力的两个紧邻读数。
-            #: `forbid_members` 是**响应里**禁忌成员的总数；这两个来自检索侧
-            #: trace —— `forbid_members_seen` 是"本轮真的**注入**了多少个禁忌成员"
-            #: （B7 的读数，长期为 0 的那一个），`forbid_backfilled` 是"其中有多少
-            #: 条边是靠禁忌补挂才进来的"。新增键是 optional，旧 trace 读取方不受影响。
-            "forbid_members_seen": int(trace.get("forbid_members_seen", 0) or 0),
-            "forbid_backfilled": list(trace.get("forbid_backfilled") or []),
-            "lanes": int(trace.get("lanes", 1) or 1),
-            "backend": str(trace.get("backend", "")),
-            "cases_degraded": bool(trace.get("cases_degraded", False)),
-            "retrieval_calls": self.retrieval_calls,
-        })
+        if record_event:
+            self._emit({
+                "event": "retrieval_call",
+                "query": query,
+                #: §2.3b 的两通道路由：这一栏记**案例层实际用的那条查询**。
+                #: E1 要人给返回的案例打分，判的正是"它对不对得上这条查询"。
+                "analogy_query": str(analogy_query),
+                "scope": str(scope),
+                "shot_id": (str(shot_id) or None),
+                "domain": domain,
+                "top_k": int(top_k),
+                "cards": len(response.cards),
+                "edges": len(response.edges),
+                "cases": len(response.cases),
+                #: **具体是哪几条**（不只是条数）。E1（经验引用相关性）要人给返回的案例打分，
+                #: 而"返回了什么"在事后必须能从审计里读到——只记 `cases: 3` 的话，
+                #: 一次跑完之后谁都拿不出可评分的那三条，E1 在原理上就不可测。
+                #: 与 `shot_id`/`scope` 同一路：只进审计，不改请求。
+                "case_ids": [str(case.case_id) for case in (response.cases or [])],
+                "edge_ids": [str(edge.edge_id) for edge in (response.edges or [])],
+                "forbid_members": sum(len(edge.forbid) for edge in response.edges),
+                #: v1.5 §5.6（FX-3/FR-9）：守门能力的两个紧邻读数。
+                #: `forbid_members` 是**响应里**禁忌成员的总数；这两个来自检索侧
+                #: trace —— `forbid_members_seen` 是"本轮真的**注入**了多少个禁忌成员"
+                #: （B7 的读数，长期为 0 的那一个），`forbid_backfilled` 是"其中有多少
+                #: 条边是靠禁忌补挂才进来的"。新增键是 optional，旧 trace 读取方不受影响。
+                "forbid_members_seen": int(trace.get("forbid_members_seen", 0) or 0),
+                "forbid_backfilled": list(trace.get("forbid_backfilled") or []),
+                "lanes": int(trace.get("lanes", 1) or 1),
+                "backend": str(trace.get("backend", "")),
+                "cases_degraded": bool(trace.get("cases_degraded", False)),
+                "retrieval_calls": self.retrieval_calls,
+            })
         return response
 
     def retrieve_or_none(self, query: str, *, domain: Optional[str] = None,
                          top_k: int = 5, cases_top_k: int = 3,
                          scope: str = "", shot_id: str = "",
-                         analogy_query: str = ""
+                         analogy_query: str = "",
+                         record_event: bool = True
                          ) -> Optional[RetrieveResponse]:
         """sidecar 不可达时返回 ``None`` 并**留痕**（调用方退回 BM25）。
 
@@ -175,21 +180,23 @@ class KnowledgeClient:
             return self.retrieve(query, domain=domain, top_k=top_k,
                                  cases_top_k=cases_top_k,
                                  scope=scope, shot_id=shot_id,
-                                 analogy_query=analogy_query)
+                                 analogy_query=analogy_query,
+                                 record_event=record_event)
         except TransportError as exc:
             self.degraded = True
             self.degraded_reason = f"sidecar_unavailable:{exc.code}"
-            self._emit({
-                "event": "retrieval_failed",
-                "query": query,
-                "scope": str(scope),
-                "shot_id": (str(shot_id) or None),
-                "analogy_query": str(analogy_query),
-                "domain": domain,
-                "reason": self.degraded_reason,
-                "detail": str(exc)[:300],
-                "retrieval_calls": self.retrieval_calls,
-            })
+            if record_event:
+                self._emit({
+                    "event": "retrieval_failed",
+                    "query": query,
+                    "scope": str(scope),
+                    "shot_id": (str(shot_id) or None),
+                    "analogy_query": str(analogy_query),
+                    "domain": domain,
+                    "reason": self.degraded_reason,
+                    "detail": str(exc)[:300],
+                    "retrieval_calls": self.retrieval_calls,
+                })
             return None
 
     def trace_payload(self) -> Dict[str, Any]:

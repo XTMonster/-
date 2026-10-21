@@ -186,12 +186,41 @@ $checks = @(
     @{ Script = 'tools\blender_tests\test_assistant_sprite.py';  Marker = 'BD_TEST_RESULT'; Label = 'assistant-sprite' },
     @{ Script = 'tools\blender_tests\test_ruler_probe.py';       Marker = 'BD_TEST_RESULT'; Label = 'ruler-probe' },
     @{ Script = 'tools\blender_tests\test_per_shot_previz.py';   Marker = 'BD_TEST_RESULT'; Label = 'per-shot-previz' },
+    @{ Script = 'tools\blender_tests\test_agent_edit_probe.py';  Marker = 'BD_TEST_RESULT'; Label = 'agent-edit-probe' },
+    @{ Script = 'tools\blender_tests\test_camera_resolve_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'camera-resolve-probe' },
+    @{ Script = 'tools\blender_tests\test_world_state_probe.py';   Marker = 'BD_TEST_RESULT'; Label = 'world-state-probe' },
+    @{ Script = 'tools\blender_tests\test_local_subject_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'local-subject-probe' },
+    @{ Script = 'tools\blender_tests\test_coarse_local_subject_visibility_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'coarse-local-subject-visibility' },
+    @{ Script = 'tools\blender_tests\test_prop_subject_preview_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'prop-subject-preview' },
+    @{ Script = 'tools\blender_tests\test_framing_target_unresolved_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'framing-target-unresolved' },
+    @{ Script = 'tools\blender_tests\test_revert_shot_probe.py';   Marker = 'BD_TEST_RESULT'; Label = 'revert-shot-probe' },
+    @{ Script = 'tools\blender_tests\test_shot_regen_camera_motion_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'shot-regen-camera-motion' },
+    @{ Script = 'tools\blender_tests\test_coarse_gate_adversarial_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'coarse-gate-adversarial' },
     @{ Script = 'tools\blender_tests\test_spatial_understanding_smoke.py'; Marker = 'BD_TEST_RESULT'; Label = 'spatial-understanding-smoke' },
+    @{ Script = 'tools\blender_tests\test_blockout_startup_cleanup_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'blockout-startup-cleanup' },
     @{ Script = 'tools\blender_tests\test_blockout_scene_smoke.py';       Marker = 'BD_TEST_RESULT'; Label = 'blockout-scene-smoke' },
     @{ Script = 'tools\blender_tests\test_blockout_preview_smoke.py';     Marker = 'BD_TEST_RESULT'; Label = 'blockout-preview-smoke' },
     @{ Script = 'tools\blender_tests\test_blockout_checkpoint_smoke.py';  Marker = 'BD_TEST_RESULT'; Label = 'blockout-checkpoint-smoke' },
     @{ Script = 'tools\blender_tests\test_blockout_sequence_smoke.py';    Marker = 'BD_TEST_RESULT'; Label = 'blockout-sequence-smoke' },
-    @{ Script = 'tools\blender_tests\test_blockout_e2e_smoke.py';         Marker = 'BD_TEST_RESULT'; Label = 'blockout-e2e-smoke' }
+    @{ Script = 'tools\blender_tests\test_blockout_e2e_smoke.py';         Marker = 'BD_TEST_RESULT'; Label = 'blockout-e2e-smoke' },
+    @{ Script = 'tools\blender_tests\test_detail_pipeline_smoke.py';      Marker = 'BD_TEST_RESULT'; Label = 'detail-pipeline-smoke' },
+    @{ Script = 'tools\blender_tests\test_detail_world_preservation_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-world-preservation' },
+    @{ Script = 'tools\blender_tests\test_detail_observation_session_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-observation-session' },
+    @{ Script = 'tools\blender_tests\test_detail_session_target_scope_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-target-scope' },
+    @{ Script = 'tools\blender_tests\test_detail_session_prop_scope_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-prop-scope' },
+    @{ Script = 'tools\blender_tests\test_detail_session_camera_motion_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-camera-motion' },
+    @{ Script = 'tools\blender_tests\test_detail_session_protection_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-protection' },
+    @{ Script = 'tools\blender_tests\test_market_coin_coarse_gate_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'market-coin-coarse-final12' },
+    @{ Script = 'tools\blender_tests\test_market_coin_coarse_gate_pass_final16.py'; Marker = 'BD_TEST_RESULT'; Label = 'market-coin-coarse-final16' },
+    @{ Script = 'tools\blender_tests\test_final16b_detail_render.py';      Marker = 'BD_TEST_RESULT'; Label = 'final16b-detail-render' },
+    @{ Script = 'tools\blender_tests\test_fly_bomb_scene_smoke.py';       Marker = 'BD_TEST_RESULT'; Label = 'fly-bomb-scene-smoke' },
+    @{ Script = 'tools\blender_tests\test_five_shot_fly_bomb_e2e.py';     Marker = 'BD_TEST_RESULT'; Label = 'five-shot-fly-bomb-e2e' },
+    @{ Script = 'tools\blender_tests\test_full_pipeline_smoke.py';        Marker = 'BD_TEST_RESULT'; Label = 'full-pipeline-smoke' },
+    @{ Script = 'tools\blender_tests\test_shot_isolation_probe.py';   Marker = 'BD_TEST_RESULT'; Label = 'shot-isolation-probe' },
+    @{ Script = 'tools\blender_tests\test_evidence_restore_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'evidence-restore' },
+    @{ Script = 'tools\blender_tests\test_coarse_best_rollback_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'coarse-best-rollback' },
+    @{ Script = 'tools\blender_tests\test_coarse_camera_bridge_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'coarse-camera-bridge' },
+    @{ Script = 'tools\blender_tests\test_detail_session_best_rollback_probe.py'; Marker = 'BD_TEST_RESULT'; Label = 'detail-session-best-rollback' }
 )
 
 # +4 = spec/golden drift, pytest, the contract smoke test, the headless run.
@@ -384,8 +413,19 @@ foreach ($check in $checks) {
         }
     }
     if ($payloadOk) {
-        if (@($parsed.failed).Count -ne 0) {
-            Fail ('  FAILED: ' + ($parsed.failed -join ', '))
+        # Some probes (detail / fly-bomb line) report `passed`/`failed` as plain
+        # ints (0/1) instead of name lists. @(0).Count is 1, so a raw array-wrap
+        # test would misjudge a clean integer 0 as a failure. Normalise first:
+        # integer 0 = clean; integer 1 = one unnamed failure.
+        $rawFailed = $parsed.failed
+        $failedNames = @($rawFailed)
+        if ($rawFailed -isnot [System.Array]) {
+            # Scalar (PowerShell 5.1 deserialises JSON ints as Int64):
+            # 0 = clean, anything else = one unnamed failure.
+            if ([long]$rawFailed -eq 0L) { $failedNames = @() }
+        }
+        if ($failedNames.Count -ne 0) {
+            Fail ('  FAILED: ' + ($failedNames -join ', '))
         }
     } elseif ($probeLine -notmatch '"failed": \[\]') {
         Fail ('  FAILED: ' + $probeLine)
@@ -394,7 +434,9 @@ foreach ($check in $checks) {
     # Collect the probe's self-reported "passed" names so the RK aggregator can
     # derive which RKs were actually measured.
     if ($payloadOk) {
-        foreach ($name in $parsed.passed) { $probePassed += $name }
+        if ($parsed.passed -is [System.Array]) {
+            foreach ($name in $parsed.passed) { $probePassed += $name }
+        }
     } else {
         Write-Host '  WARN: could not parse the probe result for the RK aggregate' -ForegroundColor Yellow
         # Leave evidence on disk: a WARN alone hides the fact that the RK derived

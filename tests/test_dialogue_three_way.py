@@ -57,6 +57,14 @@ def test_first_side_the_script_declares_three_seconds(tmp_path):
     assert declared[0]["declared_s"] == 3.0
     assert declared[0]["speaker_raw"] == "米迦尔"
     assert declared[0]["speaker_status"] in ("resolved", "unresolved")
+    pinned_shot = next(
+        shot for shot in driver.plan.shots
+        if any(pin.get("declared_s") == 3.0
+               for pin in shot.dialogue_pins))
+    shot_index = driver.plan.shots.index(pinned_shot)
+    declaration = driver.parsed_script.declared_shots[shot_index]
+    assert pinned_shot.declared_duration_frames == round(
+        declaration.declared_seconds * 24)
 
 
 def test_second_side_the_pre_pin_snapshot_is_recorded(tmp_path):

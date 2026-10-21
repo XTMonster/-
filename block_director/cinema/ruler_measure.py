@@ -44,7 +44,8 @@ def _frame_metrics_for(sample: Any) -> Dict[str, float]:
     box = getattr(sample, "box", None)
     if box is None:
         return {}
-    visible = float(getattr(sample, "visible_ratio", 1.0) or 1.0)
+    raw_visible = getattr(sample, "visible_ratio", None)
+    visible = 1.0 if raw_visible is None else float(raw_visible)
     inside = float(box.inside_ratio()) if hasattr(box, "inside_ratio") else 1.0
     return {
         "left": float(getattr(box, "left", 0.0)),

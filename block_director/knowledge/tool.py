@@ -46,8 +46,19 @@ def register_knowledge_tools(registry,
     engine = retriever or default_retriever()
 
     def handler(query: str, domain: Optional[str] = None,
-                top_k: Optional[int] = None) -> str:
-        text = engine.block(query, domain, top_k, token_limit=token_limit)
+                top_k: Optional[int] = None,
+                _context: Optional[Dict[str, Any]] = None) -> str:
+        context = dict(_context or {})
+        shot_id = str(context.get("shot_id") or "")
+        text = engine.block(
+            query,
+            domain,
+            top_k,
+            token_limit=token_limit,
+            stage=str(context.get("stage") or "direct"),
+            scope=str(context.get("scope") or ("shot" if shot_id else "tool")),
+            shot_id=shot_id,
+        )
         if not text:
             known = "、".join(DOMAINS)
             if domain:

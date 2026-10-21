@@ -38,11 +38,13 @@ class _StubRegistry(ToolRegistry):
         self.outcome = outcome
         self.calls: list = []
 
-    def execute(self, name: str, args, *, wrap: bool = True) -> ToolResult:
+    def execute(self, name: str, args, *, wrap: bool = True,
+                context: dict | None = None) -> ToolResult:
         if name == "reframe":
             self.calls.append(dict(args))
             return self.outcome
-        return super().execute(name, args, wrap=wrap)
+        return super().execute(
+            name, args, wrap=wrap, context=context)
 
 
 class _Err:
@@ -97,6 +99,34 @@ def test_reframe_success_records_applied_event(tmp_path) -> None:
     kinds = [event.kind for event in audit.recent()
              if event.kind.startswith("spatial_ruler_reframe")]
     assert kinds == ["spatial_ruler_reframe_applied"], kinds
+
+
+def test_auto_reframe_uses_live_lens_and_preserves_pose(tmp_path) -> None:
+    """The deterministic repair starts from the camera that was audited.
+
+    The plan may request 50mm while the approved/current scene camera is 85mm.
+    Recomputing ``85 * 0.72`` is required; using the plan value produced
+    ``50 * 0.72`` and changed a camera that the detail audit never measured.
+    """
+    registry = _StubRegistry(ToolResult(True, "镜头 shot_001 取景已调整"))
+    audit = AuditLogger(directory=tmp_path)
+    driver = _driver(registry)
+    driver.audit = audit
+    driver.build_summary = {"results": [{
+        "shot_id": "shot_001", "lens": 85.0,
+        "camera_position": [4.25, -1.75, 1.35],
+    }]}
+
+    assert driver._auto_reframe_from_ruler(
+        "shot_001", _result("shot_001", ["edge_clip"])) is True
+
+    assert len(registry.calls) == 1
+    assert abs(registry.calls[0]["lens"] - 61.2) < 1e-9
+    assert registry.calls[0]["preserve_pose"] is True
+    applied = [event for event in audit.recent()
+               if event.kind == "spatial_ruler_reframe_applied"][-1]
+    assert applied.data["old_lens"] == 85.0
+    assert applied.data["new_lens"] == 61.2
 
 
 def test_reframe_domain_failure_returns_false(tmp_path) -> None:
@@ -156,6 +186,48 @@ def test_disabled_ruler_skips_plan_level_gate(tmp_path) -> None:
     from block_director.contracts.config import AppConfig as AC
 
     assert AC().ruler.enabled is True          # 默认仍启用（转正）
+
+
+def test_react_readonly_round_triggers_auto_reframe(tmp_path) -> None:
+    """R2-F2 兜底：ReAct 全只读轮 → 空间尺确定性 reframe（用户裁决：
+    拦截错误后回溯，全只读不许空转；程序为尺子随机应变，不是固定处方）。"""
+    registry = _StubRegistry(ToolResult(True, "镜头 shot_001 取景已调整"))
+    audit = AuditLogger(directory=tmp_path)
+    driver = _driver(registry)
+    driver.audit = audit
+    driver._react_shot = "shot_001"
+    driver._react_readonly_rounds["shot_001"] = 1
+    driver.audit_results.append(_result("shot_001", ["edge_clip"]))
+
+    assert driver._react_readonly_auto_reframe("shot_001") is True
+    assert len(registry.calls) == 1
+    kinds = [event.kind for event in audit.recent()
+             if event.kind.startswith(("react_readonly_reframe",
+                                       "spatial_ruler_reframe"))]
+    assert "spatial_ruler_reframe_applied" in kinds, kinds
+    assert "react_readonly_reframe" in kinds, kinds
+
+
+def test_react_readonly_no_audit_skips_auto_reframe(tmp_path) -> None:
+    """全只读轮但没有任何审计结果 → 不做处方（不脑补，退回到下一轮）。"""
+    registry = _StubRegistry(ToolResult(True, "镜头 shot_001 取景已调整"))
+    driver = _driver(registry)
+    driver._react_shot = "shot_001"
+    driver._react_readonly_rounds["shot_001"] = 1
+    assert driver._react_readonly_auto_reframe("shot_001") is False
+    assert len(registry.calls) == 0
+
+
+def test_react_readonly_reframes_only_once(tmp_path) -> None:
+    """全只读轮自动 reframe 同一镜只一次（振荡保护沿用 _auto_reframe）。"""
+    registry = _StubRegistry(ToolResult(True, "镜头 shot_001 取景已调整"))
+    driver = _driver(registry)
+    driver._react_shot = "shot_001"
+    driver._react_readonly_rounds["shot_001"] = 1
+    driver.audit_results.append(_result("shot_001", ["edge_clip"]))
+    assert driver._react_readonly_auto_reframe("shot_001") is True
+    assert driver._react_readonly_auto_reframe("shot_001") is False
+    assert len(registry.calls) == 1
 
 
 def test_reframe_applied_prescription_reaches_observation(tmp_path) -> None:

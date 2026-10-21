@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+import base64
+import hashlib
 import json
 import sys
 import tempfile
@@ -137,20 +139,45 @@ def t_enabled_review_renders_three_frames():
         after = (getattr(scene.camera, "name", None), int(scene.frame_current),
                  str(scene.render.filepath))
         files = sorted(path.name for path in (Path(tmp) / "vlm_review").glob("*.png"))
+        reviewed_paths = [
+            Path(item["path"]) for item in record_frame_order(result)
+        ]
+        reviewed_hashes = [
+            hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in reviewed_paths
+        ]
 
     record = result.vlm_review
     parts = [part for part in judge.calls[0].messages[1].content
              if part["type"] == "image_url"]
+    sent_hashes = [
+        hashlib.sha256(base64.b64decode(part["image_url"]["url"].split(",", 1)[1]))
+        .hexdigest()
+        for part in parts
+    ]
+    frame_order = record_frame_order(result)
     grid_files = {f"shot_001_{label}_grid.png"
                   for label in ("first", "middle", "last")}
     return {"ok": (record["status"] == "ok" and record["score"] == 4
                    and record["frames"] == ["first", "middle", "last"]
                    and len(parts) == 3 and before == after
+                   and [item["label"] for item in frame_order]
+                   == ["first", "middle", "last"]
+                   and [item["path"] for item in frame_order]
+                   == [str(path) for path in reviewed_paths]
+                   and [item["file_sha256"] for item in frame_order]
+                   == reviewed_hashes == sent_hashes
+                   and bool(record["measurements"])
                    and len(files) == 6
                    and grid_files <= set(files)),
             "record": record, "image_parts": len(parts),
             "files": files, "scene_restored": before == after,
             "purpose": str(judge.calls[0].purpose)}
+
+
+def record_frame_order(result):
+    record = result.vlm_review or {}
+    return list(record.get("frame_order") or [])
 
 
 # --------------------------------------------------------------------------- #

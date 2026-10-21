@@ -8,6 +8,8 @@
 from __future__ import annotations
 
 import json
+import re
+from copy import deepcopy
 from typing import List, Optional
 
 from ..contracts.enums import Capability, Purpose
@@ -71,17 +73,16 @@ def shots_from_declarations(declarations, *, fps: int = 24) -> list:
     每镜的 ``duration_frames = frames_from_seconds(声明秒, fps)``：只对齐镜数
     不对齐时长会让 RK-11 的帧数等式（``total_frames == Σ frames_from_seconds``）
     在离线通路上必破。声明缺失才退回引擎估算（这里用一个保守的 96 帧）。
-    角色名映射成 ``char_NNN``（按首次出现顺序）以保持剧组 id 规范。
+    角色**直写剧本名**（角色锚/「角色」字段声明），与真实模型运行
+    （``_cast_roster`` 文档：真实模型应按角色名写计划）保持一致——离线
+    替身不得把角色名映射成 ``char_NNN`` 再丢弃映射，否则粗排门的
+    ``E_PLAN_CAST_DROP`` 会把离线链路误杀（2026-10-21 实测）。
     """
     from ..layer1_input.timing import frames_from_seconds
 
-    mapping = {}
     shots = []
     for index, declared in enumerate(declarations or [], start=1):
         names = [str(name) for name in (getattr(declared, "characters", []) or [])]
-        for name in names:
-            if name not in mapping:
-                mapping[name] = f"char_{len(mapping) + 1:03d}"
         seconds = getattr(declared, "declared_seconds", None)
         frames = (frames_from_seconds(seconds, fps) if seconds
                   else 96)
@@ -96,7 +97,7 @@ def shots_from_declarations(declarations, *, fps: int = 24) -> list:
             "intent_type": ("铺垫", "推进", "揭示", "收束")[index % 4],
             "shot_type": str(getattr(declared, "shot_type", "") or "MS"),
             "duration_frames": int(frames),
-            "characters": [mapping[name] for name in names],
+            "characters": list(dict.fromkeys(names)),
             "dialogue_ids": [],
             "prompt": "",
             "axis_note": "",
@@ -136,7 +137,12 @@ def demo_draft_dict(index: int) -> dict:
         # 计划比内置夹具长时给空草案：宁可"这一镜没有动作"，也不要重复上一个
         # 镜头的动作——那会在场景里造出与计划不符的表演。
         return {"shot_id": f"shot_{index + 1:03d}"}
-    draft = dict(DEMO_DRAFTS[index])
+    #: 2026-10-21 顺序污染缺陷：浅拷贝 ``dict(...)`` 让 ``draft["actions"]``
+    #: 与模块级 ``DEMO_DRAFTS`` 共享同一个 action 字典——任何调用方就地改
+    #: ``action["character_id"]`` 都会污染后续所有调用（实测：离线草案翻译
+    #: 真实角色名后，``test_driver_per_shot`` 拿到的 char_001 动作被改成
+    #: 米迦尔，修复判断因"计划没变"而跳过整场重建）。必须深拷贝。
+    draft = deepcopy(DEMO_DRAFTS[index])
     draft.setdefault("characters", [])
     draft.setdefault("dialogues", [])
     draft.setdefault("camera", {})
@@ -295,10 +301,24 @@ class OfflineTransport:
             return draft
         draft = demo_draft_dict(index)
         shots = (self._plan or {}).get("shots", [])
+        if not shots and self._declarations:
+            shots = shots_from_declarations(self._declarations, fps=self._fps)
         if shots:
             shot = shots[min(index, len(shots) - 1)]
             draft["shot_id"] = shot.get("shot_id", draft["shot_id"])
-            draft.setdefault("shot_type", str(shot.get("shot_type", "MS")))
+            draft["shot_type"] = str(shot.get("shot_type", "MS"))
+            #: 2026-10-21：计划改直写角色锚名后，内置夹具里的 char_NNN
+            #: 动作必须翻译成该镜的真实角色名，否则 ``shot_builder``
+            #: 会以"动作引用了不在场的角色"跳过整条表演。
+            characters = [str(c) for c in (shot.get("characters") or [])]
+            if characters and any(
+                    c.startswith("char_") for c in characters) is False:
+                for action in draft.get("actions") or []:
+                    cid = str((action or {}).get("character_id") or "")
+                    if re.match(r"^char_\d+$", cid):
+                        pos = int(cid[5:]) - 1
+                        if 0 <= pos < len(characters):
+                            action["character_id"] = characters[pos]
         return draft
 
     def health(self, timeout: float = 2.0) -> HealthStatus:

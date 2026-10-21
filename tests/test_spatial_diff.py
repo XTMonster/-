@@ -61,6 +61,10 @@ def _design():
                 "resolved": True,
             },
         ],
+        "shots": [{
+            "shot_id": "shot_001",
+            "characters": ["米迦尔"],
+        }],
         "notes": [],
     }
 
@@ -126,9 +130,9 @@ def test_camera_and_character_position_diff_numeric():
     assert cam["verdict"] in ("pass", "fail")
     assert cam["unit"] == "m"
     char = items["character_position"]
-    # 设计脚底 (0,0,0) vs 实测脚底 aabb_min=(0.25-0.5, -0.5, 0)
-    # -> sqrt(0.25^2 + 0.5^2) = 0.559（AB 盒半宽 0.5）
-    assert abs(char["actual"] - 0.559016994) < 1e-6
+    # 设计脚底中心 (0,0,0) vs 实测 AABB 的脚底中心
+    # ((xmin+xmax)/2, (ymin+ymax)/2, zmin) = (0.25,0,0)
+    assert abs(char["actual"] - 0.25) < 1e-6
     assert char["subject"] == "米迦尔"
 
 
@@ -146,6 +150,34 @@ def test_heading_and_gaze_angle_diff():
     assert abs(gaze["actual"] - 0.0) < 1e-6
 
 
+def test_heading_and_gaze_use_the_shots_expected_direction():
+    design = _design()
+    character = design["characters"][0]
+    character["facing"] = [0.0, 1.0, 0.0]
+    character["facing_by_shot"] = [{
+        "shot_id": "shot_001",
+        "direction": [1.0, 0.0, 0.0],
+    }]
+    character["gaze"] = {
+        "target_id": "伊恩",
+        "direction": [0.0, 1.0, 0.0],
+    }
+    character["gaze_by_shot"] = [{
+        "shot_id": "shot_001",
+        "target_id": "伊恩",
+        "direction": [1.0, 0.0, 0.0],
+    }]
+
+    observed = _observed()
+    observed["shots"][0]["samples"][0]["elements"][0]["facing"] = \
+        [1.0, 0.0, 0.0]
+    report = build_diff_report(design, observed)
+    items = {item["metric"]: item for item in report["items"]}
+
+    assert items["heading_angle"]["actual"] == 0.0
+    assert items["gaze_angle"]["actual"] == 0.0
+
+
 def test_design_missing_character_marks_unresolved():
     design = _design()
     design["characters"] = []   # 设计层没这个角色（不该脑补）
@@ -153,6 +185,24 @@ def test_design_missing_character_marks_unresolved():
     items = {item["metric"]: item for item in report["items"]}
     assert "character_position" in items
     assert items["character_position"]["verdict"] == "unresolved"
+
+
+def test_only_characters_declared_for_the_shot_are_compared():
+    design = _design()
+    design["characters"].append({
+        "name": "伊恩",
+        "position": {"x": 2.0, "y": 0.0, "z": 0.0},
+        "facing": [0.0, 1.0, 0.0],
+        "gaze": None,
+    })
+
+    report = build_diff_report(design, _observed())
+    character_subjects = {
+        item["subject"] for item in report["items"]
+        if item["metric"] == "character_position"
+    }
+
+    assert character_subjects == {"米迦尔"}
 
 
 def test_report_deterministic_and_json_serializable():
@@ -163,15 +213,16 @@ def test_report_deterministic_and_json_serializable():
     assert first == second
 
 
-def test_character_position_uses_foot_anchor_not_center():
-    """位置比较用脚底（aabb_min）而非包围盒中心：z 锚点差异不污染偏差。"""
+def test_character_position_uses_foot_center_anchor():
+    """位置比较用脚底中心，而不是 AABB 角点或包围盒中心。"""
     observed = _observed()
     observed["shots"][0]["samples"][0]["elements"][0]["aabb_min"] = \
-        [0.25, 0.0, 0.0]   # 脚底 XY 偏离 0.25
+        [0.25, -0.5, 0.0]
     observed["shots"][0]["samples"][0]["elements"][0]["aabb_max"] = \
-        [0.75, 0.5, 1.7]   # 中心在 (0.5, 0.25, 0.85)，与脚底不同
+        [0.75, 0.5, 1.7]   # 脚底中心 (0.5, 0, 0)，盒中心在 z=0.85
     report = build_diff_report(_design(), observed)
     items = {item["metric"]: item for item in report["items"]}
     char = items["character_position"]
-    # 设计脚底 (0,0,0) vs 实测脚底 (0.25,0,0) -> 0.25（中心会被污染到 0.5）
-    assert abs(char["actual"] - 0.25) < 1e-9
+    # 设计脚底中心 (0,0,0) vs 实测脚底中心 (0.5,0,0) -> 0.5
+    # 用 aabb_min 角点会错得 0.559，用盒中心会错得 0.984
+    assert abs(char["actual"] - 0.5) < 1e-9

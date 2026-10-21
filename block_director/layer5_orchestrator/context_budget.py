@@ -56,6 +56,76 @@ def trim_messages(messages: Sequence[Message], max_tokens: int
     return keep + droppable + [newest], dropped
 
 
+def compress_messages(messages: Sequence[Message], *,
+                      max_tokens: Optional[int] = None) -> List[Message]:
+    """把一组将被裁掉的旧消息压缩成**一条关键信息摘要**（用户裁决：
+    生成关键信息文档当缓存，压缩上下文，而不是直接把旧观察丢掉）。
+
+    只保留"模型继续修这一镜还需要的要点"：
+
+    * 工具观察里的**工具名 + 关键结论**（``check_composition: 41.5``、
+      ``check_axis: 越轴`` 这类），按出现顺序合并；
+    * assistant 的 tool_calls 只留工具名与关键参数片段，**不保留**原始
+      ``arguments`` JSON 全文；
+    * 其余非工具消息（含提示词、占位）只保留"发生了什么"的一行标签。
+
+    ``max_tokens``（可选）给摘要设预算：生成后从尾部删关键行，直到
+    ``estimate_tokens(摘要) <= max_tokens``，保证注入后整段对话仍不超
+    ``context_window_tokens``（窗口纪律：压缩不能把窗口挤爆）。0/None =
+    不设上限。
+
+    返回单条 SYSTEM 消息（零消息时不产生空文档）。压缩产物**不再携带**任何
+    ``tool_call_id``——它只是一段摘要文本，不能冒充真实工具回灌，否则会破坏
+    assistant/tool 的配对不变量。
+    """
+    if not messages:
+        return []
+    lines: List[str] = []
+    seen_call_ids = set()
+    for message in messages:
+        content = getattr(message, "content", None)
+        text = str(content) if isinstance(content, str) else ""
+        role = getattr(message, "role", None)
+        call_id = getattr(message, "tool_call_id", None)
+        # 工具观察：提炼 "工具名: 结论" 一行
+        if role is MessageRole.TOOL and text:
+            if call_id and call_id in seen_call_ids:
+                continue
+            if call_id:
+                seen_call_ids.add(call_id)
+            lines.append(text if len(text) <= 200 else text[:200] + "…")
+            continue
+        # assistant 带 tool_calls：只留工具名 + 关键参数片段
+        calls = getattr(message, "tool_calls", None) or []
+        if role is MessageRole.ASSISTANT and calls:
+            for call in calls:
+                fn = getattr(call, "function", None)
+                name = getattr(fn, "name", "") if fn is not None else ""
+                args = ""
+                if fn is not None:
+                    raw = getattr(fn, "arguments", "") or ""
+                    args = raw if len(raw) <= 120 else raw[:120] + "…"
+                line = name or "（工具调用）"
+                if args:
+                    line += f" {args}"
+                lines.append(line)
+            continue
+        # 其它消息：压缩成一行"发生了什么"，不再逐字保留
+        if text:
+            first = text.strip().splitlines()[0] if text.strip() else ""
+            if first:
+                lines.append(f"〔{first[:80]}〕")
+    header = "——上下文压缩：以下为被裁旧对话的关键信息摘要，保留供继续精修参考——"
+    body = "\n".join(lines)
+    text = header + "\n" + body
+    if max_tokens is not None and max_tokens > 0:
+        rows = body.splitlines()
+        while rows and estimate_tokens(header + "\n" + "\n".join(rows)) > max_tokens:
+            rows.pop()
+        text = header + "\n" + "\n".join(rows)
+    return [Message(role=MessageRole.SYSTEM, content=text)]
+
+
 def budget_report(messages: Sequence[Message], max_tokens: int) -> Dict[str, int]:
     """给调试面板/日志用的一行账。"""
     used = count_tokens(messages)

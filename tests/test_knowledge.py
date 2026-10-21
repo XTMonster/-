@@ -349,6 +349,24 @@ def test_default_retriever_does_not_cache_a_custom_configuration():
     assert default_retriever() is first   # 默认仍走缓存
 
 
+def test_default_retriever_with_audit_is_run_local_and_emits_canonical_events():
+    reset_default_retriever()
+    try:
+        shared = default_retriever()
+        audit_events = []
+        audited = default_retriever(audit=audit_events.append)
+
+        assert audited is not shared
+        audited.block_for_plan("轴线", stage="plan")
+
+        assert len(audit_events) == 1
+        assert audit_events[0]["event"] == "retrieval_call"
+        assert audit_events[0]["retrieval_event_id"].startswith("retrieval-")
+        assert default_retriever() is shared
+    finally:
+        reset_default_retriever()
+
+
 # --------------------------------------------------------------------------- #
 # 工具与注入
 # --------------------------------------------------------------------------- #
@@ -377,12 +395,42 @@ def test_search_knowledge_miss_is_an_observation_not_an_error():
     assert result.ok and "没有匹配" in result.content
 
 
+def test_search_knowledge_records_the_driver_context_without_leaking_it_to_schema():
+    audit_events = []
+
+    engine = retriever(audit=audit_events.append)
+    registry = ToolRegistry()
+    register_knowledge_tools(registry, engine)
+
+    result = registry.execute(
+        "search_knowledge",
+        {"query": "轴线"},
+        context={
+            "stage": "repair",
+            "scope": "shot",
+            "shot_id": "shot_022",
+        },
+    )
+
+    assert result.ok
+    event = engine.trace_payload()["retrieval_events"][-1]
+    assert event["stage"] == "repair"
+    assert event["scope"] == "shot"
+    assert event["shot_id"] == "shot_022"
+    schema = registry.get("search_knowledge").parameters
+    assert "context" not in schema["properties"]
+
+
 def test_plan_prompt_carries_retrieved_knowledge():
-    payload = build_plan_payload(None, retriever=retriever(),
+    engine = retriever()
+    payload = build_plan_payload(None, retriever=engine,
                                  parsed=_parsed_stub())
     system = payload.messages[0].content
     assert "参考资料" in system and "[comp_thirds]" in system
     assert NO_KNOWLEDGE not in system
+    event = engine.trace_payload()["retrieval_events"][-1]
+    assert event["stage"] == "plan"
+    assert event["scope"] == "plan"
 
 
 def test_plan_prompt_says_when_knowledge_is_off():

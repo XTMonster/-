@@ -17,10 +17,11 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Sequence
 
 from ..contracts.audit import AuditResult
-from ..cinema.composition import PASS_SCORE
 from ..contracts.enums import Purpose, ToolChoice
 from ..contracts.messages import ChatPayload, Message, MessageRole, new_request_id
 from ..contracts.plan import Plan, ShotPlan
+from ..contracts.quality import COMPOSITION_PASS_SCORE as PASS_SCORE
+from ..contracts.quality import composition_decision
 from .control_tools import FINISH_SHOT
 
 REACT_SYSTEM_PROMPT = """\
@@ -49,6 +50,13 @@ REACT_SYSTEM_PROMPT = """\
 - 不要重做整场戏，只调这个镜头。
 - **机位调整红线**：主体保持在相机前方；不要穿过主体、不要越过 180° 轴线；
   遮挡优先挪主体/遮挡者，其次 reframe，最后才 move_camera。
+
+{score_trail}
+
+**分数纪律（U10：高分保留、低分回溯、过分数采用）**：本镜每版都有评分，
+只有高于历史最高分的版本才值得保留；**分数没升就先用 revert_shot 回到最高分
+版本，再在最高分版本之上做局部调整**，不要在同一低分版本上反复打转；连续
+3 轮无新高会被判 fail 并继续下一镜（不因此停掉整片）。
 """
 
 
@@ -71,7 +79,9 @@ def should_react(shot: Optional[ShotPlan], result: Optional[AuditResult], *,
     #: 用户 2026-10-18 裁决：构图分必须严格高于阈值，
     #: score == composition_threshold 也触发修复（等于不算过）。
     if getattr(result, "score", None) is not None \
-            and float(result.score) <= float(composition_threshold):
+            and composition_decision(
+                result.score, threshold=composition_threshold
+            )["status"] != "pass":
         return True
     # 构图门失败但没给分数（例如只报了 E_CAM_001）时也值得一试
     return any(str(getattr(error, "rule", "")) == "COMPOSITION"
@@ -83,7 +93,7 @@ def build_react_payload(shot: ShotPlan, audit: AuditResult, *,
                         max_steps: int = 6, temperature: float = 0.3,
                         max_tokens: Optional[int] = None,
                         request_id: Optional[str] = None,
-                        roster=None) -> ChatPayload:
+                        roster=None, score_trail=None) -> ChatPayload:
     """构造一次 ReAct 请求：工具调用为必选，收尾必须用 finish_shot。"""
     #: 闭集表与动作参数表必须和编辑器用的是**同一份**（延迟导入避开
     #: editor → react 的模块级环）：ReAct 工具集里也有 `emit_shot_draft`，
@@ -97,7 +107,8 @@ def build_react_payload(shot: ShotPlan, audit: AuditResult, *,
         roster="、".join(str(item) for item in roster)
         if roster else "（未提供）",
         closed_sets=render_closed_sets(),
-        action_params=render_action_params())
+        action_params=render_action_params(),
+        score_trail=render_score_trail(score_trail))
     # 精修阶段同样不给 emit_plan：它只该改这一镜，不该重写整份计划
     tools = (registry.schemas_except("emit_plan")
              if registry is not None else [])
@@ -122,6 +133,26 @@ def build_react_payload(shot: ShotPlan, audit: AuditResult, *,
         purpose=Purpose.REACT,
         request_id=request_id or new_request_id(),
     )
+
+
+def render_score_trail(trail) -> str:
+    """把本镜分数轨迹渲染成提示文本；无轨迹时为空块（零行为差）。"""
+    rows = list(trail or [])
+    if not rows:
+        return ""
+    lines = ["本镜分数轨迹（版本→分数→关键操作，最新在最后）："]
+    best = None
+    for row in rows:
+        version = int(row.get("version") or 0)
+        score = float(row.get("score") or 0.0)
+        summary = str(row.get("summary") or "")
+        lines.append(f"- 版本 {version}: {score:.1f}"
+                     + (f" → {summary}" if summary else ""))
+        if best is None or score > best[1]:
+            best = (version, score)
+    if best is not None:
+        lines.append(f"最高分版本：版本 {best[0]}（{best[1]:.1f}）")
+    return "\n".join(lines)
 
 
 def shot_memory(plan: Optional[Plan], *, done: Sequence[str] = (),

@@ -46,6 +46,9 @@ NEW_ENVIRONMENT_KEYS = ("anchors", "light")
 #: v1.6（C1/D1）新增的 brief 可选键——迁移会给旧 brief 补缺省值，
 #: 逐字节比对时同样要摘掉。
 NEW_BRIEF_KEYS = ("environment", "rhythm_arc")
+#: v1.8（T3）新增的镜头可选键——迁移会给旧 shot 补整身口径默认值，
+#: 逐字节比对时同样要摘掉。
+NEW_FRAMING_TARGET_KEYS = ("framing_target",)
 
 
 def _as_v14_file(payload: dict) -> dict:
@@ -59,6 +62,8 @@ def _as_v14_file(payload: dict) -> dict:
         for shot in scene.get("shots") or []:
             for key in NEW_SHOT_KEYS:
                 shot.pop(key, None)
+            for key in NEW_FRAMING_TARGET_KEYS:
+                shot.pop(key, None)
     return data
 
 
@@ -71,6 +76,8 @@ def _strip_new(payload: dict) -> dict:
         for shot in scene.get("shots") or []:
             for key in NEW_SHOT_KEYS:
                 shot.pop(key, None)
+            for key in NEW_FRAMING_TARGET_KEYS:
+                shot.pop(key, None)
     brief = data.get("brief")
     if isinstance(brief, dict):
         for key in NEW_BRIEF_KEYS:
@@ -81,8 +88,8 @@ def _strip_new(payload: dict) -> dict:
 # --------------------------------------------------------------------------- #
 # 版本与兼容声明
 # --------------------------------------------------------------------------- #
-def test_sdl_version_is_1_7():
-    assert SDL_VERSION == "1.7"
+def test_sdl_version_is_1_8():
+    assert SDL_VERSION == "1.8"
 
 
 def test_known_versions_keep_every_shipped_version():

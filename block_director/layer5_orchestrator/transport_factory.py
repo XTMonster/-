@@ -9,6 +9,7 @@ from typing import Optional
 from ..contracts.enums import TransportMode
 from ..contracts.transport import OpenAICompatibleTransport, SidecarTransport
 from ..utils.logger import get_logger
+from ..utils.secret_store import effective_key
 from .offline import OfflineTransport
 
 log = get_logger("transport")
@@ -59,7 +60,10 @@ def build_direct(config) -> Optional[OpenAICompatibleTransport]:
     DeepSeek、Ollama、vLLM 等——只需 base_url 与 model 不同。
     """
     base_url = (config.llm.base_url or "").strip()
-    api_key = (config.llm.api_key or "").strip()
+    #: key 解析链与环境变量优先（secret_store 口径）：用户可直接用
+    #: ``BLOCKDIRECTOR_API_KEY`` 或 ``DEEPSEEK_API_KEY`` 注入，不必把
+    #: 密钥写进仓库配置。base_url 非空即可建直连，key 为空时调用期报错。
+    api_key = effective_key(str(config.llm.provider or ""), config).strip()
     if not base_url and not api_key:
         return None
     if base_url and not base_url.rstrip("/").endswith("/v1") \
@@ -70,5 +74,7 @@ def build_direct(config) -> Optional[OpenAICompatibleTransport]:
         base_url=base_url or "https://api.openai.com/v1",
         api_key=api_key,
         model=config.llm.model,
+        provider=str(config.llm.provider or ""),
+        thinking_level=str(config.llm.thinking_level or "off"),
         timeout=float(config.llm.sidecar_timeout_s),
     )

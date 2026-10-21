@@ -69,6 +69,16 @@ def validate_blockout_manifest(manifest: Any) -> List[str]:
     for key in ("scene_id",):
         if key in manifest and not isinstance(manifest[key], str):
             findings.append(f"{key} 必须是字符串")
+    if "shot_staging" in manifest \
+            and not isinstance(manifest.get("shot_staging"), Mapping):
+        findings.append("shot_staging 必须是对象")
+    for index, primitive in enumerate(manifest.get("primitives") or []):
+        if not isinstance(primitive, Mapping):
+            continue
+        rows = primitive.get("shot_positions")
+        if rows is not None and not isinstance(rows, list):
+            findings.append(
+                f"primitives[{index}].shot_positions 必须是数组")
     return findings
 
 

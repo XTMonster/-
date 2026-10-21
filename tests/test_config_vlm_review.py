@@ -6,6 +6,7 @@
   int，**3–8**，越界报 CFG_0xx；显式旧值 5 仍须保持；
 * ``vlm_review.enabled``  缺省 ``false``；bool；
 * ``vlm_review.max_shots`` 缺省 ``0``（不限）；int **≥ 0**。
+* ``vlm_review.required`` 缺省 ``false``；bool（Ticket 06 质量门契约）。
 
 ``orchestration.draft_candidates`` **不在本卡**（P6-T2 落地）。
 红线 R-4：``specs/config.default.yaml`` 是生成物，改代码后必跑
@@ -68,6 +69,7 @@ def test_vlm_review_defaults_are_off_and_unlimited():
     assert isinstance(cfg.vlm_review, VlmReviewConfig)
     assert cfg.vlm_review.enabled is False
     assert cfg.vlm_review.max_shots == 0
+    assert cfg.vlm_review.required is False
     assert cfg.errors() == []
 
 
@@ -94,9 +96,14 @@ def test_new_keys_round_trip_through_serde():
     cfg.rag.rule_top_k = 7
     cfg.vlm_review.enabled = True
     cfg.vlm_review.max_shots = 12
+    cfg.vlm_review.required = True
     data = cfg.to_dict()
     assert data["rag"]["rule_top_k"] == 7
-    assert data["vlm_review"] == {"enabled": True, "max_shots": 12}
+    assert data["vlm_review"] == {
+        "enabled": True,
+        "max_shots": 12,
+        "required": True,
+    }
     assert AppConfig.from_dict(data).to_dict() == data
 
 
@@ -109,6 +116,7 @@ def test_a_config_without_the_new_keys_falls_back_to_defaults():
     assert restored.rag.rule_top_k == 8
     assert restored.vlm_review.enabled is False
     assert restored.vlm_review.max_shots == 0
+    assert restored.vlm_review.required is False
 
 
 def test_explicit_legacy_rule_top_k_five_is_preserved_in_round_trip():
@@ -126,7 +134,11 @@ def test_generated_spec_carries_the_new_keys():
 
     spec = yaml.safe_load(SPEC.read_text(encoding="utf-8"))
     assert spec["rag"]["rule_top_k"] == AppConfig().rag.rule_top_k
-    assert spec["vlm_review"] == {"enabled": False, "max_shots": 0}
+    assert spec["vlm_review"] == {
+        "enabled": False,
+        "max_shots": 0,
+        "required": False,
+    }
 
 
 def test_gen_specs_is_idempotent_and_in_sync():

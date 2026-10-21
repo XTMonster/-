@@ -17,6 +17,8 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from block_director.cinema.composition import (
+    CompositionItem,
+    CompositionReport,
     SubjectBox,
     evaluate_composition,
 )
@@ -122,6 +124,30 @@ def test_validate_prescription_rejects_unregistered_tools():
 # --------------------------------------------------------------------------- #
 def test_guard_verdict_rejects_when_current_already_in_target():
     assert guard_verdict(_prescription(current=0.80)) == "reject"
+
+
+def test_component_boundary_target_is_open_and_requires_repair():
+    report = CompositionReport(
+        score=79.0,
+        items={
+            "headroom": CompositionItem(
+                "headroom",
+                0.80,
+                0.15,
+            ),
+        },
+    )
+
+    prescription = build_prescriptions(report)[0]
+
+    assert prescription.target.min_value == 0.80
+    assert not prescription.target.contains(0.80)
+    assert prescription.target.contains(0.8001)
+    assert prescription.target.to_dict() == {
+        "min": 0.80,
+        "min_inclusive": False,
+    }
+    assert guard_verdict(prescription) == "accept"
 
 
 def test_guard_verdict_accepts_when_current_outside_target():

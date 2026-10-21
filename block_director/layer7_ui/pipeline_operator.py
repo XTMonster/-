@@ -62,10 +62,15 @@ class BLOCKDIRECTOR_OT_run_full_pipeline(Operator):
                 str(member.name): list(member.initial_location)
                 for member in spec.cast
             }
+            cast_facings = {
+                str(member.name): list(member.initial_facing)
+                for member in spec.cast
+            }
             inputs = {
                 "plan": plan,
                 "brief": brief,
                 "cast_positions": cast_positions,
+                "cast_facings": cast_facings,
                 "scene_id": str(getattr(plan, "scene_heading", "")
                                 or "blockdirector_scene"),
             }
@@ -73,6 +78,12 @@ class BLOCKDIRECTOR_OT_run_full_pipeline(Operator):
         audit = getattr(driver, "audit", None)
         audit_log = (audit.log if audit is not None
                      else lambda *a, **k: None)
+        llm_config = getattr(getattr(driver, "config", None), "llm", None)
+        proposal_max_tokens = int(
+            getattr(llm_config, "max_tokens", 12000) or 12000)
+        run_id = str(
+            getattr(audit, "run_id", "")
+            or f"detail-{out_dir.name}")
         audit_log("full_pipeline_start",
                   "完整白模流程开始（粗排 JSON→冻结→逐镜细排→序列→final）")
         try:
@@ -82,7 +93,12 @@ class BLOCKDIRECTOR_OT_run_full_pipeline(Operator):
                 scene_id=inputs["scene_id"],
                 brief=inputs["brief"],
                 cast_positions=inputs["cast_positions"],
-                max_revisions=3,
+                cast_facings=inputs["cast_facings"],
+                transport=getattr(driver, "transport", None),
+                knowledge=getattr(driver, "knowledge", None),
+                audit=getattr(driver, "audit", None),
+                budget=getattr(driver, "budget", None),
+                proposal_max_tokens=proposal_max_tokens,
             )
             audit_log("full_pipeline_coarse",
                       f"粗排结果：{coarse.get('coarse_status')} "
@@ -98,10 +114,25 @@ class BLOCKDIRECTOR_OT_run_full_pipeline(Operator):
             import json
             baseline = json.loads(
                 baseline_path.read_text(encoding="utf-8"))
+            #: 2026-10-21：细排重测必须用**当前 Blender 实测世界坐标**，而不是
+            #: 计划默认站位（真跑 shot_002 里 agent 已把伊恩移到 -1.6、米迦尔
+            #: -0.3，细排却仍拿旧 reference 重测导致坐标脱节）。无场景上下文时
+            #: 如实传 None，由细排回退到冻结 reference。
+            from ..layer3_engine.world_state import collect_world_state
+            scene_ctx = get_context()
+            runtime_world_state = (collect_world_state(scene_ctx)
+                                   if scene_ctx is not None else None)
             detail = run_detail_pipeline(
                 baseline=baseline, plan=inputs["plan"],
                 out_dir=out_dir / "detail",
-                render_video=True)
+                render_video=True,
+                runtime_world_state=runtime_world_state,
+                transport=getattr(driver, "transport", None),
+                knowledge=getattr(driver, "knowledge", None),
+                proposal_max_tokens=proposal_max_tokens,
+                run_id=run_id,
+                scene_id=inputs["scene_id"],
+            )
             audit_log("full_pipeline_detail",
                       f"细排结果：final={detail.get('final')} "
                       f"(gates={detail.get('gates')})",

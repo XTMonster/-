@@ -12,6 +12,9 @@
 
 from __future__ import annotations
 
+import ast
+from pathlib import Path
+
 from block_director.contracts.plan import Plan, ShotPlan
 from block_director.layer5_orchestrator.pipeline_ui_inputs import (
     assemble_pipeline_inputs,
@@ -83,6 +86,18 @@ def test_cast_positions_same_source_as_scene_spec():
     assert inputs["cast_positions"] == expected
 
 
+def test_cast_facings_same_source_as_scene_spec():
+    from block_director.contracts.cast import SceneSpec
+
+    plan = _plan()
+    inputs = assemble_pipeline_inputs(_Driver(plan=plan), None)
+    spec = SceneSpec.from_plan(plan)
+    expected = {str(m.name): list(m.initial_facing)
+                for m in spec.cast}
+    assert inputs is not None
+    assert inputs["cast_facings"] == expected
+
+
 def test_no_plan_returns_none():
     assert assemble_pipeline_inputs(_Driver(plan=None), None) is None
     assert assemble_pipeline_inputs(None, _SceneContext(plan=None)) is None
@@ -140,3 +155,44 @@ def test_pipeline_summary_without_reports_does_not_fabricate():
         "detail": "", "sequence": "", "final": "",
     }
     assert summary["final_video"] is None
+
+
+def test_full_pipeline_operator_forwards_cast_facings_to_coarse():
+    """UI adapter must pass the same SceneSpec-facing truth as headless."""
+    root = Path(__file__).resolve().parents[1]
+    source = (root / "block_director" / "layer7_ui"
+              / "pipeline_operator.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    calls = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "run_coarse_pipeline"
+    ]
+    assert len(calls) == 1
+    keywords = {item.arg for item in calls[0].keywords}
+    assert "cast_facings" in keywords
+    assert "transport" in keywords
+    assert "knowledge" in keywords
+
+
+def test_full_pipeline_operator_forwards_the_live_agent_to_detail():
+    root = Path(__file__).resolve().parents[1]
+    source = (root / "block_director" / "layer7_ui"
+              / "pipeline_operator.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    calls = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "run_detail_pipeline"
+    ]
+    assert len(calls) == 1
+    keywords = {item.arg for item in calls[0].keywords}
+    assert {
+        "transport",
+        "knowledge",
+        "run_id",
+        "scene_id",
+        "proposal_max_tokens",
+    }.issubset(keywords)

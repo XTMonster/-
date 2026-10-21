@@ -22,6 +22,10 @@ import bpy  # noqa: E402
 from _fixtures import two_shot_plan  # noqa: E402
 from block_director.contracts.audit import AuditError, AuditResult  # noqa: E402
 from block_director.contracts.cast import SceneSpec  # noqa: E402
+from block_director.contracts.evidence import (  # noqa: E402
+    EvidenceStore,
+    ShotEvidence,
+)
 from block_director.contracts.enums import Severity  # noqa: E402
 from block_director.contracts.sdl import SDL_VERSION  # noqa: E402
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
@@ -95,6 +99,71 @@ def build_with_driver(tmp_dir: str):
     return driver
 
 
+def authoritative_evidence_store() -> EvidenceStore:
+    """One valid, non-empty store used to prove the UI does not drop it."""
+    fingerprint = "a" * 64
+    store = EvidenceStore(run_id="ui-run", scene_id="ui-scene")
+    store.append(ShotEvidence.create(
+        run_id="ui-run",
+        scene_id="ui-scene",
+        shot_id="shot_001",
+        version=0,
+        parent_version=None,
+        reason="ui-export-fixture",
+        created_at="2026-10-21T00:00:00Z",
+        plan={"shot": {"shot_id": "shot_001"}},
+        shot_contract={
+            "shot_id": "shot_001",
+            "shot_type": "MS",
+            "intent": "prove UI export keeps evidence",
+        },
+        reference={"scene_id": "ui-scene"},
+        manifest={
+            "schema_version": "blockout-manifest/v1",
+            "scene_id": "ui-scene",
+            "shot_table": [{"shot_id": "shot_001"}],
+        },
+        world_state={"characters": {}, "cameras": {}},
+        shot_slice={"shot_id": "shot_001"},
+        build={"status": "ui-export-fixture"},
+        audit={"verdict": "pass"},
+        measurements={"composition": 82.0},
+        score_breakdown={
+            "composition": 82.0,
+            "hard_error_count": 0,
+        },
+        gates={"shot_passed": True},
+        hard_gates={"status": "pass", "failed": []},
+        absence_reasons={
+            "frames": "this UI export fixture does not render frame images",
+            "sequence_gate": "sequence review is outside the UI export fixture",
+            "semantic_review":
+                "semantic review is outside the UI export fixture",
+            "rag": "RAG is outside the UI export fixture",
+            "correction_candidates":
+                "correction candidates are outside the UI export fixture",
+            "applied_operations":
+                "applied operations are outside the UI export fixture",
+            "remeasurement":
+                "remeasurement is outside the UI export fixture",
+            "disposition":
+                "disposition is outside the UI export fixture",
+        },
+        basis_fingerprints={
+            "observation_id": "obs-" + fingerprint,
+            "bundle_fingerprint": fingerprint,
+            "reference_fingerprint": fingerprint,
+            "manifest_fingerprint": fingerprint,
+            "report_fingerprint": fingerprint,
+            "world_state_fingerprint": fingerprint,
+            "scene_content_fingerprint": fingerprint,
+        },
+    ))
+    store.mark_best("shot_001", 0)
+    store.mark_adopted("shot_001", 0)
+    return store
+
+
 # --------------------------------------------------------------------------- #
 # 1. 分镜列表：状态列与意图列
 # --------------------------------------------------------------------------- #
@@ -162,7 +231,9 @@ def t_debug_panel_has_its_numbers():
 def t_export_actions_write_real_files():
     tmp_dir = tempfile.mkdtemp(prefix="bd_ui_")
     try:
-        build_with_driver(tmp_dir)
+        driver = build_with_driver(tmp_dir)
+        store = authoritative_evidence_store()
+        driver.evidence_store = store
         sdl_result = bpy.ops.blockdirector.export_sdl()
         state_result = bpy.ops.blockdirector.export_scene_state()
         project = Path(tmp_dir) / "project.bdproj"
@@ -175,6 +246,7 @@ def t_export_actions_write_real_files():
                        and project.exists() and state_file.exists()
                        and payload.get("version") == SDL_VERSION
                        and len(payload.get("scenes", [{}])[0].get("shots", [])) == 2
+                       and payload.get("evidence_store") == store.to_dict()
                        and bool(state.get("characters"))),
                 "sdl": list(sdl_result), "scene_state": list(state_result),
                 "shots": len(payload.get("scenes", [{}])[0].get("shots", [])),

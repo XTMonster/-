@@ -81,7 +81,7 @@ def test_detail_review_blocks_on_coarse_error_finding():
     assert verdict["per_shot"]["shot_001"]["errors"] >= 1
 
 
-def test_composition_soft_fail_is_recorded_but_not_blocking():
+def test_composition_below_80_blocks_final_detail_gate():
     report = _report(checks=[{
         "check_id": "composition", "shot_id": "shot_001",
         "actual": 61.7, "threshold": 80.0, "verdict": "fail",
@@ -89,5 +89,19 @@ def test_composition_soft_fail_is_recorded_but_not_blocking():
     verdict = detail_review_verdict(detail_shots=_detail_shots(),
                                     blockout_report=report,
                                     baseline=_baseline())
-    assert verdict["all_ok"] is True  #: 软指标不阻塞（项目裁决 T07）
+    assert verdict["all_ok"] is False  #: 用户要求最终分数严格高于80
+    assert verdict["per_shot"]["shot_001"]["composition_warning"] is True
+
+
+def test_composition_exactly_80_blocks_and_is_reported_as_warning():
+    """边界 80.0 仍失败，报告也不得把它伪装成无 warning。"""
+    report = _report(checks=[{
+        "check_id": "composition", "shot_id": "shot_001",
+        "actual": 80.0, "threshold": 80.0, "verdict": "fail",
+    }])
+    verdict = detail_review_verdict(detail_shots=_detail_shots(),
+                                    blockout_report=report,
+                                    baseline=_baseline())
+    assert verdict["all_ok"] is False
+    assert verdict["per_shot"]["shot_001"]["ok"] is False
     assert verdict["per_shot"]["shot_001"]["composition_warning"] is True

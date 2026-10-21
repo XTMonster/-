@@ -24,6 +24,7 @@ def assemble_pipeline_inputs(
     * ``brief``：SceneBrief 或 None（无 driver 时由粗排确定性理解兜底）；
     * ``cast_positions``：角色名 -> 初始站位（与 ``driver._spatial_design_payload``
       同源，避免新流程与既有空间设计快照各摆一份）；
+    * ``cast_facings``：角色名 -> 初始朝向（同一份 SceneSpec 声明）；
     * ``scene_id``：剧本标题或默认值。
     """
     plan = getattr(driver, "plan", None) if driver is not None else None
@@ -34,6 +35,7 @@ def assemble_pipeline_inputs(
         return None
 
     cast_positions: Dict[str, Sequence[float]] = {}
+    cast_facings: Dict[str, Sequence[float]] = {}
     try:
         from ..contracts.cast import SceneSpec
         spec = SceneSpec.from_plan(plan, brief=brief)
@@ -41,14 +43,20 @@ def assemble_pipeline_inputs(
             str(member.name): list(member.initial_location)
             for member in spec.cast
         }
+        cast_facings = {
+            str(member.name): list(member.initial_facing)
+            for member in spec.cast
+        }
     except Exception:  # noqa: BLE001 - 站位只是证据，失败不阻断主链
         cast_positions = {}
+        cast_facings = {}
 
     scene_id = str(getattr(plan, "scene_heading", "") or "blockdirector_scene")
     return {
         "plan": plan,
         "brief": brief,
         "cast_positions": cast_positions,
+        "cast_facings": cast_facings,
         "scene_id": scene_id,
     }
 

@@ -2,7 +2,7 @@
 
 输入一个跑完（或跑到一半）的运行目录，读 ``audit_log.jsonl`` 与
 ``llm_trace.jsonl``，用**零 LLM 调用**的方式重建最终分镜计划并 headless 重放
-场景，对每一个构图门失败（``E_CAM_001`` / ``composition_score < threshold``）
+场景，对每一个构图门失败（``E_CAM_001`` / ``composition_score <= threshold``）
 的镜头打印：
 
 * 主体包围盒（世界 AABB + 归一化视口盒）；
@@ -19,7 +19,7 @@
              [--blender PATH] [--no-blender]
 
 红线：本工具**只读**被诊断的运行目录，不修改任何被诊断的代码；绝不建议放宽
-``PASS_SCORE``（70 分）或任何验收阈值。
+``PASS_SCORE``（构图总分必须严格高于 80）或任何验收阈值。
 
 纯层（日志解析、计划重建、归因判定、报告渲染）不依赖 ``bpy``，可被 pytest
 直接导入（见 ``tests/test_diagnose_composition.py``）；Blender 采样在
@@ -42,6 +42,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from block_director.cinema.composition import PASS_SCORE  # noqa: E402
+from block_director.contracts.quality import composition_decision  # noqa: E402
 from block_director.contracts.messages import (  # noqa: E402
     ChatReply,
     FunctionCall,
@@ -105,6 +106,12 @@ DEFAULT_BLENDER = r"D:\Blender 5.2\blender.exe"
 #: 重放分与记录分相差超过该值即标记"重放与原始运行不一致"（1 位小数四舍五入
 #: 的浮点余量）。
 SCORE_MISMATCH_TOL = 0.55
+
+
+def _composition_passes(score: float, threshold: float = PASS_SCORE) -> bool:
+    """Use the one quality contract for diagnostic pass/fail copy."""
+    return composition_decision(
+        score, threshold=float(threshold))["status"] == "pass"
 
 
 def fix_card_for(klass: str) -> str:
@@ -357,7 +364,7 @@ def draft_received_counts(records: Sequence[Dict[str, Any]]
 def failing_shots(records: Sequence[Dict[str, Any]],
                   plan: Optional[Plan] = None,
                   ) -> List[Dict[str, Any]]:
-    """构图门失败的镜头（按计划顺序，每镜一行）：E_CAM_001 / 分低于阈值。"""
+    """构图门失败的镜头（按计划顺序，每镜一行）：E_CAM_001 / 分未严格高于阈值。"""
     by_shot: Dict[str, Dict[str, Any]] = {}
     for record in records:
         if record.get("kind") != "shot_audit":
@@ -598,11 +605,12 @@ def root_note(evidence: Dict[str, Any], threshold: float) -> str:
     frames = evidence.get("per_frame_scores") or []
     if frames:
         first = float(frames[0].get("score") or 0.0)
-        if first >= threshold:
+        if _composition_passes(first, threshold):
             parts.append(f"首帧 {first:.1f} 已达门，末段被带出"
                          f"（构图门取首/中/尾最小值）")
         else:
-            parts.append(f"首帧即 {first:.1f}，低于门 {threshold:.0f}")
+            parts.append(
+                f"首帧即 {first:.1f}，未严格高于门 {threshold:.0f}")
     movements = evidence.get("declared_movements") or []
     if movements:
         parts.append("声明运镜：" + "、".join(
@@ -1209,8 +1217,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 "note": "重建现场与原始运行的评分对不上（可能是代码漂移或计划"
                         "重建差异）；该镜不参与三类归因分布。",
             })
-        elif evidence.replayed_score is not None \
-                and evidence.replayed_score >= evidence.threshold:
+        elif (evidence.replayed_score is not None
+              and _composition_passes(
+                  evidence.replayed_score, evidence.threshold)):
             replay_mismatch.append({
                 "shot_id": shot_id,
                 "recorded_score": evidence.recorded_score,

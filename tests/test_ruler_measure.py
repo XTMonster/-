@@ -148,3 +148,16 @@ def test_measurements_validate_inside_bundle() -> None:
         "measurements": list(measurements),
     }
     assert validate_bundle(bundle) == []
+
+
+def test_zero_visible_ratio_is_not_replaced_by_default() -> None:
+    """A fully occluded subject must remain 0.0 in the ruler bundle."""
+    measurements = measurements_for_shot(
+        shot_id="shot_001",
+        frame_samples=[_frame_sample(1, "米迦尔", visible=0.0)],
+    )
+    visible = next(
+        measurement for measurement in measurements
+        if measurement["metric"] == "subject_box_visible_ratio"
+    )
+    assert visible["value"] == 0.0

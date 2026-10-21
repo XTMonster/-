@@ -12,7 +12,8 @@ JSON，再重建场景。结构以 ``cinema/spatial_design.build_design_snapshot
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Mapping
+import copy
+from typing import Any, Dict, List, Mapping, MutableMapping
 
 from .audit import canonical_fingerprint
 
@@ -71,7 +72,134 @@ def validate_coarse_reference(doc: Any) -> List[str]:
                 for key in ("position", "target"):
                     if not _has_coord(cam.get(key)):
                         findings.append(f"camera_intents[{i}] 缺 {key}")
+    staging = doc.get("shot_staging")
+    if staging is not None:
+        if not isinstance(staging, Mapping):
+            findings.append("shot_staging 必须是对象")
+        else:
+            shot_ids = {
+                str(shot.get("shot_id") or "")
+                for shot in (doc.get("shots") or [])
+                if isinstance(shot, Mapping)
+            }
+            character_names = {
+                str(char.get("name") or "")
+                for char in (doc.get("characters") or [])
+                if isinstance(char, Mapping)
+            }
+            for shot_id, entities in staging.items():
+                if str(shot_id) not in shot_ids:
+                    findings.append(
+                        f"shot_staging 引用未知 shot_id：{shot_id}")
+                if not isinstance(entities, Mapping):
+                    findings.append(
+                        f"shot_staging.{shot_id} 必须是对象")
+                    continue
+                for name, entry in entities.items():
+                    if str(name) not in character_names:
+                        findings.append(
+                            f"shot_staging.{shot_id} 引用未知角色：{name}")
+                    if not isinstance(entry, Mapping):
+                        findings.append(
+                            f"shot_staging.{shot_id}.{name} 必须是对象")
+                    elif not _has_coord(entry.get("position")):
+                        findings.append(
+                            f"shot_staging.{shot_id}.{name} 缺 position")
     return findings
+
+
+def effective_shot_reference(
+    doc: Mapping[str, Any], shot_id: str,
+) -> Dict[str, Any]:
+    """Resolve one shot's local staging without mutating the continuity base.
+
+    ``characters[].position`` remains the world-continuity baseline used by
+    shots without an overlay.  ``shot_staging[shot_id]`` overrides character
+    position only for that shot.  Every preview, camera re-solve and
+    measurement must consume this resolved document rather than mutating the
+    global baseline.
+    """
+    result = copy.deepcopy(dict(doc))
+    overlay = ((result.get("shot_staging") or {}).get(str(shot_id)) or {})
+    if not isinstance(overlay, Mapping):
+        raise ValueError(f"shot_staging.{shot_id} must be an object")
+    by_name = {
+        str(char.get("name") or ""): char
+        for char in (result.get("characters") or [])
+        if isinstance(char, dict)
+    }
+    for name, raw_entry in overlay.items():
+        entry = dict(raw_entry or {})
+        char = by_name.get(str(name))
+        if char is None:
+            raise ValueError(
+                f"shot_staging.{shot_id} references unknown character {name}")
+        position = entry.get("position")
+        if not _has_coord(position):
+            raise ValueError(
+                f"shot_staging.{shot_id}.{name} has no position")
+        char["position"] = copy.deepcopy(position)
+        char["position_provenance"] = str(
+            entry.get("provenance") or "agent_local_revision")
+        char["position_reason"] = str(entry.get("reason") or "")
+        char["effective_shot_id"] = str(shot_id)
+    return result
+
+
+def set_shot_character_position(
+    doc: MutableMapping[str, Any],
+    *,
+    shot_id: str,
+    name: str,
+    position: Mapping[str, Any],
+    provenance: str = "agent_local_revision",
+    reason: str = "",
+) -> Dict[str, float]:
+    """Write one validated local staging overlay without touching continuity."""
+    shot_id = str(shot_id or "")
+    name = str(name or "")
+    shot = next(
+        (item for item in doc.get("shots") or []
+         if isinstance(item, Mapping)
+         and str(item.get("shot_id") or "") == shot_id),
+        None,
+    )
+    if shot is None:
+        raise ValueError(f"未知 shot_id：{shot_id}")
+    declared = {str(item) for item in (shot.get("characters") or [])}
+    framing = shot.get("framing_target")
+    if isinstance(framing, Mapping) \
+            and str(framing.get("kind") or "") == "character":
+        declared.add(str(framing.get("ref") or ""))
+    if name not in declared:
+        raise ValueError(
+            f"角色 {name} 不在 shot {shot_id} 的出场/拍对象声明中，"
+            "禁止创建跨镜局部站位")
+    if not any(
+        str(item.get("name") or "") == name
+        for item in doc.get("characters") or []
+        if isinstance(item, Mapping)
+    ):
+        raise ValueError(f"未知角色实体：{name}")
+    if not _has_coord(position):
+        raise ValueError("character_position 处方缺 target_value 坐标")
+    target = {
+        "x": float(position.get("x", 0.0)),
+        "y": float(position.get("y", 0.0)),
+        "z": float(position.get("z", 0.0)),
+    }
+    staging = doc.setdefault("shot_staging", {})
+    if not isinstance(staging, MutableMapping):
+        raise ValueError("shot_staging 必须是对象")
+    shot_overlay = staging.setdefault(shot_id, {})
+    if not isinstance(shot_overlay, MutableMapping):
+        raise ValueError(f"shot_staging.{shot_id} 必须是对象")
+    shot_overlay[name] = {
+        "position": target,
+        "provenance": str(provenance or "agent_local_revision"),
+        "reason": str(reason or ""),
+    }
+    return copy.deepcopy(target)
 
 
 def coarse_reference_fingerprint(doc: Mapping[str, Any]) -> str:
@@ -99,4 +227,6 @@ __all__ = [
     "validate_coarse_reference",
     "coarse_reference_fingerprint",
     "coarse_reference_content_fingerprint",
+    "effective_shot_reference",
+    "set_shot_character_position",
 ]

@@ -33,12 +33,16 @@ rag:
 orchestration:
   mode: plan_structured
   max_repair_attempts: 2
+  coarse_replan_attempts: 3
   react_max_steps: 6
+  react_max_rounds: 4
   repair_max_turns: 10
-  context_window_tokens: 32000
+  context_window_tokens: 128000
   max_shots: 0
   self_review: true
   draft_candidates: 1
+  wall_share_enabled: true
+  wall_share_min_seconds: 60.0
 audit:
   level: standard
   human_gate_on_plan: true
@@ -133,6 +137,7 @@ framing:
 vlm_review:
   enabled: false
   max_shots: 0
+  required: false
 guard:
   enabled: true
   preset: standard

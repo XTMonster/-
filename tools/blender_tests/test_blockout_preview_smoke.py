@@ -11,6 +11,7 @@ blender --background --factory-startup --python tools/blender_tests/test_blockou
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 import traceback
@@ -73,7 +74,8 @@ def _plan():
         ShotPlan(
             shot_id="shot_001", intent="双人对话", shot_type="MS",
             duration_frames=24, order=1, characters=["米迦尔", "伊恩"],
-            camera={"side": "front", "lens": 35},
+            camera={"side": "front", "lens": 35,
+                    "movements": [{"type": "dolly_in"}]},
         ),
         ShotPlan(
             shot_id="shot_002", intent="空镜：市场通道", shot_type="MS",
@@ -99,6 +101,23 @@ def _png_not_blank(path: Path) -> bool:
     pixels = list(image.pixels)
     #: 任一像素 RGB 通道有非零值即视为非全黑
     return any(p > 0.01 for p in pixels[0::4])
+
+
+def _png_sample_digest(path: Path) -> str:
+    """Hash a deterministic pixel sample, independent of PNG metadata."""
+    image = bpy.data.images.load(str(path), check_existing=False)
+    try:
+        pixels = image.pixels
+        #: 257 is coprime with the 4-channel stride and the common row sizes,
+        #: so this samples all channels across the frame without loading a
+        #: second full Python copy of the 1280x720 image.
+        sample = b"".join(
+            int(max(0.0, min(1.0, float(pixels[index]))) * 65535.0).to_bytes(
+                2, "little")
+            for index in range(0, len(pixels), 257))
+        return hashlib.sha256(sample).hexdigest()
+    finally:
+        bpy.data.images.remove(image)
 
 
 def run_smoke(out_dir: Path) -> dict:
@@ -146,6 +165,11 @@ def run_smoke(out_dir: Path) -> dict:
     blank = [p for p in previews if not _png_not_blank(Path(p["png"]))]
     if blank:
         mismatches.append(f"全黑/空 PNG {len(blank)} 张")
+    shot001 = [p for p in previews if p["shot_id"] == "shot_001"]
+    shot001_digests = [_png_sample_digest(Path(p["png"])) for p in shot001]
+    checks["shot001_pixel_digests"] = shot001_digests
+    if len(set(shot001_digests)) != len(shot001_digests):
+        mismatches.append("shot_001 首/中/末帧像素相同，运镜未进入视觉证据")
 
     #: 3. 报告结构：schema 版本、verdict、checks/findings/visual_states
     from block_director.contracts.blockout import (

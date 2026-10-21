@@ -371,3 +371,16 @@ def test_root_note_reports_weak_items_and_first_frame_gap():
     assert "framing=0.19" in note
     assert "首帧 71.7 已达门" in note
     assert "dolly_in 0.6" in note
+
+
+def test_root_note_does_not_treat_exact_threshold_as_passing():
+    note = diag.root_note(
+        {
+            "component_items": {},
+            "per_frame_scores": [{"frame": 1, "score": 80.0}],
+        },
+        80.0,
+    )
+
+    assert "已达门" not in note
+    assert "未严格高于门 80" in note

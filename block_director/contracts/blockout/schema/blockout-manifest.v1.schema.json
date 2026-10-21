@@ -11,6 +11,30 @@
   "properties": {
     "schema_version": { "const": "blockout-manifest/v1" },
     "scene_id": { "type": "string" },
+    "shot_staging": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "required": ["position"],
+          "properties": {
+            "position": {
+              "type": "object",
+              "required": ["x", "y", "z"],
+              "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" },
+                "z": { "type": "number" }
+              }
+            },
+            "provenance": { "type": "string" },
+            "reason": { "type": "string" }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
     "primitives": {
       "type": "array",
       "items": {
@@ -43,6 +67,33 @@
           "z_anchor": { "enum": ["foot", "center"] },
           "asset_ref": { "type": ["string", "null"] },
           "provenance": { "type": "string" },
+          "shot_positions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "shot_id", "position", "start_frame", "end_frame",
+                "provenance", "reason"
+              ],
+              "properties": {
+                "shot_id": { "type": "string" },
+                "position": {
+                  "type": "object",
+                  "required": ["x", "y", "z"],
+                  "properties": {
+                    "x": { "type": "number" },
+                    "y": { "type": "number" },
+                    "z": { "type": "number" }
+                  }
+                },
+                "start_frame": { "type": "integer" },
+                "end_frame": { "type": "integer" },
+                "provenance": { "type": "string" },
+                "reason": { "type": "string" }
+              },
+              "additionalProperties": true
+            }
+          },
           "source": { "type": "object" }
         },
         "additionalProperties": true
@@ -107,6 +158,33 @@
             }
           },
           "downstream_map": { "type": "object" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["character", "shot_id", "start", "end", "speed_m_s",
+                     "provenance"],
+        "properties": {
+          "character": { "type": "string" },
+          "shot_id": { "type": "string" },
+          "start": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "end": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "speed_m_s": { "type": "number" },
+          "provenance": { "type": "string" }
         },
         "additionalProperties": true
       }

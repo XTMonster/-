@@ -88,6 +88,7 @@ def station_from_space(characters: List[str], space,
         return []
     locations = {name: list(base[index][0]) for index, name in enumerate(characters)}
     facings = {name: list(base[index][1]) for index, name in enumerate(characters)}
+    placed = set()
 
     for raw in space or []:
         if not isinstance(raw, dict):
@@ -104,9 +105,27 @@ def station_from_space(characters: List[str], space,
         origin = locations[other]
 
         def place(offset) -> None:
-            locations[name] = [round(origin[0] + offset[0], 3),
-                               round(origin[1] + offset[1], 3),
-                               origin[2]]
+            candidate = [origin[0] + offset[0], origin[1] + offset[1],
+                         origin[2]]
+            #: 已有关系约束优先：闭环 space（A↔B、C↔A、B↔C）不能把
+            #: 先求出的角色再挪回默认点；只给尚未落实的角色写位置。
+            if name in placed:
+                return
+            #: 候选点若与已有角色重叠，沿参照角色右轴向自由侧避让，
+            #: 这是空间尺可计算的几何修正，不是随机猜位。
+            for other_name, other_pos in locations.items():
+                if other_name == name or other_name not in placed:
+                    continue
+                dx = candidate[0] - other_pos[0]
+                dy = candidate[1] - other_pos[1]
+                if (dx * dx + dy * dy) ** 0.5 >= 0.8:
+                    continue
+                side = right
+                candidate[0] += side[0] * max(gap, 0.8)
+                candidate[1] += side[1] * max(gap, 0.8)
+            locations[name] = [round(candidate[0], 3),
+                               round(candidate[1], 3), candidate[2]]
+            placed.add(name)
 
         if relation == "side_by_side":
             place((right[0] * gap, right[1] * gap))

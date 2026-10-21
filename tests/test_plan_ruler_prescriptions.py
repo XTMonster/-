@@ -75,6 +75,34 @@ def test_retime_blocked_when_dialogue_does_not_fit() -> None:
     assert retimes[0]["waive_reason"]
 
 
+def test_retime_blocked_when_dialogue_timing_is_not_scheduled_yet() -> None:
+    """有台词但尚未排到时间轴时，0-0 不能被当成“没有对白”。"""
+    plan = _plan(shot_001_frames=168)
+    plan.shots[0].dialogues = [
+        {
+            "speaker": "米迦尔",
+            "text": "这是一句尚未排帧的长台词，" * 8,
+            "start_frame": 0,
+            "end_frame": 0,
+        },
+    ]
+
+    _, _, prescriptions, _ = apply_plan_prescriptions(
+        plan, brief=Brief(), declared_total_seconds=16.0,
+        declared_seconds_by_shot={"shot_001": 3.5},
+        fps=24)
+
+    retimes = [
+        item for item in prescriptions if item["operation"] == "retime_shot"
+    ]
+    assert len(retimes) == 1
+    assert retimes[0]["applied"] is False
+    assert plan.shots[0].duration_frames == 168
+    policy = retimes[0]["parameters"]["dialogue_policy"]
+    assert policy["timing_source"] == "estimated_from_text"
+    assert policy["estimated_required_frames"] > 84
+
+
 def test_restore_cast_records_prescription() -> None:
     plan = _plan()
     plan, findings, prescriptions, measurements = apply_plan_prescriptions(

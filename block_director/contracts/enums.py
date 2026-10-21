@@ -36,6 +36,7 @@ class Purpose(StrEnum):
     REPAIR = "repair"    # 阶段 B4：定向修复
     REACT = "react"      # 阶段 B5：受限 ReAct
     REVIEW = "review"    # Level 2 self_review（§7.10 异步）
+    COARSE = "coarse"    # 白模粗排：observe -> propose -> apply -> remeasure
 
 
 class ToolChoice(StrEnum):
@@ -256,6 +257,9 @@ class ErrorCode(StrEnum):
     GUARD_001 = "E_GUARD_001"
     #: v1.7 E2（Stage P）：剧本优化失败，回落原剧本（不重试）
     POLISH_001 = "E_POLISH_001"
+    #: R2 S2（精修身份冻结）：精修草案试图改写镜头身份
+    #: （shot_type / characters / framing_target），已拒绝并保留计划原值。
+    IDENTITY_001 = "E_IDENTITY_001"
 
 
 # --------------------------------------------------------------------------- #

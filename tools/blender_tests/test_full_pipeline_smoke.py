@@ -52,6 +52,9 @@ def main():
     from block_director.layer5_orchestrator.coarse_pipeline import (
         run_coarse_pipeline,
     )
+    from block_director.layer5_orchestrator.coarse_agent import (
+        OfflineFixtureCoarseProposalProvider,
+    )
     from block_director.layer5_orchestrator.understand import (
         deterministic_brief,
     )
@@ -75,6 +78,7 @@ def main():
         scene_id="coarse_pipeline_smoke",
         out_dir=out,
         max_revisions=4,
+        proposal_provider=OfflineFixtureCoarseProposalProvider(),
     )
     (out / "coarse_pipeline_report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -96,6 +100,8 @@ def main():
     )
     print("BD_TEST_RESULT " + json.dumps({
         "ok": ok, "out": str(out),
+        "passed": 1 if ok else 0, "failed": 0 if ok else 1,
+        "checks": {"coarse": report["gates"]["coarse"]},
         "coarse_status": report["coarse_status"],
         "gates": report["gates"],
         "revision_count": len(reference.get("revisions") or []),

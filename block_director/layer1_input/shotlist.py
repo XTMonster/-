@@ -32,6 +32,12 @@ from .model import (
     ParsedScript,
     ParsedShotDeclaration,
 )
+from .fountain import (
+    CAST_ANCHOR,
+    SCENE_ANCHOR,
+    collect_cast_declarations,
+    collect_scene_anchor_texts,
+)
 from .timing import DURATION_SUFFIX_RE, extract_declared_seconds, frames_from_seconds
 
 #: 时长的单位：``秒`` 与 ``s/sec/secs/seconds`` 是同一样东西的两种写法。
@@ -73,7 +79,7 @@ _DIALOGUE_BODY = (
     # 行内写法会把整句话当成名字（v1.4 D-1 实测踩到过）。
     r"(?P<speaker>[^（(：:\s。！？；，、,.!?;\"'“”]{1,12})"
     r"(?:[（(](?P<emotion>[^）)]*)[）)])?\s*[：:]\s*"
-    r"[\"“](?P<text>.+?)[\"”]\s*")
+    r"[\"“{](?P<text>.+?)[\"”}]\s*")
 
 #: 台词后面的时长注记：``（约3秒）`` / ``(3s)``。行内匹配用它而不是
 #: ``(?P<tail>.*)$``——贪婪到行尾会把同一行里的第二句台词整段吃掉。
@@ -174,7 +180,7 @@ def normalize_inline_shot_script(text: str) -> str:
     saw_node = False
     for raw in (text or "").splitlines():
         line = raw.strip()
-        node = re.match(r"^节点\s*(\d+)\s*(?:[（(]\s*约?\s*"
+        node = re.match(r"^\s*(?:#+\s*)*节点\s*(\d+)\s*(?:[（(]\s*约?\s*"
                         r"(\d+(?:\.\d+)?)\s*(?:秒|s|sec|seconds?)\s*[）)])?\s*$",
                         line, re.IGNORECASE)
         if node:
@@ -339,6 +345,12 @@ def parse_shot_list(text: str, *, title: str = "",
     """
     lines = [line.rstrip("\r") for line in (text or "").split("\n")]
     script = ParsedScript(title=title, source_format="shotlist")
+    #: R2 空计划漏洞（final5）：分镜表路径此前不收集 ``【角色锚】``/``【场景锚】``
+    #: 声明，剧本声明的米迦尔/伊恩/偷盗者整批丢失 -> LLM 计划 characters=[] ->
+    #: 粗排门按"空镜"豁免放行 -> 细排构图 0.0。与 fountain 路径同一口径：
+    #: 角色锚是角色表声明，场景锚是环境声明，解析层只收原文、不猜。
+    script.cast_declarations = collect_cast_declarations(lines)
+    script.scene_anchor_texts = collect_scene_anchor_texts(lines)
     problems: List[str] = []
 
     known_speakers = _collect_speakers(lines)
@@ -674,4 +686,31 @@ def _derive_declarations(script: ParsedScript,
                     f"节点 {node.node_number} 声明总时长 "
                     f"{node.declared_seconds:g} 秒，"
                     f"但各镜声明之和是 {declared:g} 秒（差 {gap:.2f} 秒）")
+
+    #: 2026-10-21 真实剧本（第四集.md 节点写法）缺陷：角色只写在
+    #: 「主体动作/构图/音频」等散文字段里，镜号行没有「角色」字段，
+    #: 逐镜声明于是全空 -> 离线替身产出"全片无主体"计划 -> 粗排门
+    #: E_PLAN_NO_SUBJECT 阻塞（真实 agent 会自己读散文，替身不能）。
+    #: 这里从每镜字段值里识别**角色锚声明过的人**（只认角色锚名，
+    #: 不猜、不加戏），补进 ``shot.characters``。显式「角色」字段
+    #: 声明的名字保持在前，散文命中只在末尾追加、不去重已有项。
+    declared_names = [str(name) for name
+                      in (script.cast_declarations or []) if name]
+    if declared_names:
+        for node in nodes:
+            for shot in node.shots:
+                for name in _prose_roles(shot, declared_names):
+                    if name not in shot.characters:
+                        shot.characters.append(name)
     script.declared_nodes = nodes
+
+
+def _prose_roles(shot: "ParsedShotDeclaration",
+                 declared_names: List[str]) -> List[str]:
+    """镜头散文字段里出现的角色锚名（按角色锚声明顺序，可复算）。
+
+    只认 ``【角色锚】`` 里列过的正式名；字段值是导演写下的原文，
+    出现名字即视作该角色在本镜被点名，不在此层猜测人物关系。
+    """
+    text = " ".join(str(value or "") for value in shot.fields.values())
+    return [name for name in declared_names if name in text]

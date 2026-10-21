@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import replace
 from typing import Any, Dict, List, Optional
 
@@ -24,14 +25,22 @@ from ..cinema.camera_motion import (
     describe,
     movement_samples,
 )
-from ..cinema.framing import CAMERA_SIDES, solve_framing
+from ..cinema.framing import (
+    CAMERA_SIDES,
+    shot_frame_for,
+    solve_framing,
+    vertical_fov,
+)
 from ..cinema.station import camera_direction, subject_frame
 from ..contracts.enums import SHOT_TYPES, ShotType
+from ..contracts.backtrack import revert_ops
+from ..contracts.camera_ref import resolve_camera_ref
 from ..knowledge.tool import SEARCH_KNOWLEDGE, register_knowledge_tools
 from ..observation.state import format_scene_state
 from ..layer5_orchestrator.tool_registry import ToolResult
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
+from ..utils.blender_compat import action_fcurves
 from .character_system import MotionBlender, get_facing
 from .cinema_engine import (
     CameraBundle,
@@ -41,7 +50,13 @@ from .cinema_engine import (
     place_camera_for_shot,
 )
 from .scene_context import get_context
+from .scene_sync import (
+    get_synchronizer,
+    mark_agent_edited,
+    suppress_sync,
+)
 from .scene_state import collect_scene_state
+from .world_state import ensure_consistent, note_divergence, refresh_world_state
 from .shot_builder import (
     apply_declared_movements,
     axis_for_shot,
@@ -101,16 +116,20 @@ def _require_character_in_shot(character_id: str):
 
 
 def _resolve_camera(args: Dict[str, Any]):
-    """按 camera_id / 当前镜头找相机；找不到返回 ``(None, 错误文本)``。"""
+    """按 camera_id / 当前镜头找相机；找不到返回 ``(None, 错误文本)``。
+
+    缺陷 E：camera_id 按纯层引用解析（对象名 → 镜头键 → BD_Cam_ 前缀），
+    单镜重建后旧 ID 仍能定位到当前相机对象。
+    """
     context = get_context()
     if context is None:
         return None, _fail("场景上下文为空：请先构建场景")
     camera_id = str(args.get("camera_id") or "")
     if camera_id:
-        camera = context.camera_by_name(camera_id) or context.cameras.get(camera_id)
+        camera, _shot_id, problem = resolve_camera_ref(context.cameras,
+                                                       camera_id)
         if camera is None:
-            known = ", ".join(sorted(context.cameras)) or "（无）"
-            return None, _fail(f"找不到相机 {camera_id}。可用镜头: {known}")
+            return None, _fail(problem)
         return camera, ""
     camera = context.camera_for()
     if camera is None:
@@ -120,6 +139,10 @@ def _resolve_camera(args: Dict[str, Any]):
 
 @main_thread_only("tool_get_scene_state")
 def _tool_get_scene_state() -> str:
+    context = get_context()
+    findings = ensure_consistent(context)
+    if findings:
+        note_divergence(context, findings)
     return format_scene_state(collect_scene_state(detailed=False))
 
 
@@ -128,6 +151,9 @@ def _tool_check_visibility(character_id: str = "", camera_id: str = ""):
     context = get_context()
     if context is None:
         return _fail("场景上下文为空：请先构建场景")
+    findings = ensure_consistent(context)
+    if findings:
+        note_divergence(context, findings)
     camera, problem = _resolve_camera({"camera_id": camera_id})
     if camera is None:
         return problem
@@ -155,13 +181,19 @@ def _tool_check_composition(camera_id: str = ""):
     context = get_context()
     if context is None:
         return _fail("场景上下文为空：请先构建场景")
+    findings = ensure_consistent(context)
+    if findings:
+        note_divergence(context, findings)
     camera, problem = _resolve_camera({"camera_id": camera_id})
     if camera is None:
         return problem
     shot_id = context.current_shot_id
     shot_type = context.shot_types.get(shot_id, "MS")
+    shot = context.shot(shot_id)
+    framing_target = getattr(shot, "framing_target", None)
     report = evaluate_camera_composition(camera, context.subjects_for(shot_id),
-                                         shot_type=shot_type)
+                                         shot_type=shot_type,
+                                         framing_target=framing_target)
     lines = [f"构图评分 {report.score:.1f}（{'通过' if report.passed else '需调整'}）"]
     for name, item in report.items.items():
         if item.suggestion:
@@ -238,14 +270,21 @@ def _tool_place_character(character_id: str,
     character, problem = _require_character(character_id)
     if character is None:
         return problem
-    if position is not None:
-        character.root.location = tuple(float(v) for v in position)
-    if facing is not None:
-        from ..utils.geometry import facing_to_rotation_z
-        character.root.rotation_euler = (
-            0.0, 0.0, facing_to_rotation_z(tuple(float(v) for v in facing)))
-    bpy.context.view_layer.update()
+    #: 缺陷 C：agent 工具写入必须包在 suppress 窗口并打 agent 标记，否则
+    #: 单镜 rebuild 前 sync_from_blender 会把模型挪过的位置回读成
+    #: "用户改动"固化进 initial_location（2026-10-19 kimi 真跑实证）。
+    with suppress_sync(get_synchronizer()):
+        if position is not None:
+            character.root.location = tuple(float(v) for v in position)
+        if facing is not None:
+            from ..utils.geometry import facing_to_rotation_z
+            character.root.rotation_euler = (
+                0.0, 0.0,
+                facing_to_rotation_z(tuple(float(v) for v in facing)))
+        bpy.context.view_layer.update()
+        mark_agent_edited(character.root)
     location = tuple(round(v, 3) for v in character.root.matrix_world.translation)
+    refresh_world_state(get_context())
     return f"角色 {character_id} 已就位：位置 {location}"
 
 
@@ -268,15 +307,19 @@ def _tool_character_action(character_id: str, action_type: str,
         return _fail("end_frame 必须大于 start_frame")
 
     params = normalize_action_params(action_type, dict(params or {}))
-    blender = MotionBlender(character)
-    blender.add(action_type, int(start_frame), int(end_frame), **params)
-    conflicts = blender.validate()
-    if conflicts:
-        return _fail("动作冲突：" + "；".join(conflicts))
-    try:
-        result = blender.bake(clear=False)      # 叠加，不清掉已有动画
-    except ValueError as exc:
-        return _fail(f"动作烘焙失败：{exc}")
+    #: 缺陷 C：动作烘焙也是 agent 写入，同样包 suppress + 打标记。
+    with suppress_sync(get_synchronizer()):
+        blender = MotionBlender(character)
+        blender.add(action_type, int(start_frame), int(end_frame), **params)
+        conflicts = blender.validate()
+        if conflicts:
+            return _fail("动作冲突：" + "；".join(conflicts))
+        try:
+            result = blender.bake(clear=False)      # 叠加，不清掉已有动画
+        except ValueError as exc:
+            return _fail(f"动作烘焙失败：{exc}")
+        mark_agent_edited(character.root)
+    refresh_world_state(get_context())
     return (f"已为 {character_id} 添加动作 {action_type}"
             f"（{start_frame}-{end_frame} 帧，{result.keyframes} 个关键帧）")
 
@@ -375,16 +418,19 @@ def _tool_face_character(character_id: str, target: str = "",
         return _fail("face_character 需要 target（角色 ID）"
                      "或 target_position（坐标）之一")
 
-    bpy.context.view_layer.update()
-    origin = character.root.matrix_world.translation
-    dx = float(position[0]) - float(origin.x)
-    dy = float(position[1]) - float(origin.y)
-    if abs(dx) < 1e-9 and abs(dy) < 1e-9:
-        return _fail(f"角色 {character_id} 与目标位置重合，无法确定朝向")
-    from ..utils.geometry import facing_to_rotation_z
-    character.root.rotation_euler = (
-        0.0, 0.0, facing_to_rotation_z((dx, dy, 0.0)))
-    bpy.context.view_layer.update()
+    with suppress_sync(get_synchronizer()):
+        bpy.context.view_layer.update()
+        origin = character.root.matrix_world.translation
+        dx = float(position[0]) - float(origin.x)
+        dy = float(position[1]) - float(origin.y)
+        if abs(dx) < 1e-9 and abs(dy) < 1e-9:
+            return _fail(f"角色 {character_id} 与目标位置重合，无法确定朝向")
+        from ..utils.geometry import facing_to_rotation_z
+        character.root.rotation_euler = (
+            0.0, 0.0, facing_to_rotation_z((dx, dy, 0.0)))
+        bpy.context.view_layer.update()
+        mark_agent_edited(character.root)
+    refresh_world_state(get_context())
     return (f"角色 {character_id} 已转身面向 "
             f"({round(float(position[0]), 2)}, {round(float(position[1]), 2)})")
 
@@ -411,7 +457,11 @@ def _tool_interact_with(character_id: str, prop_id: str, interaction_type: str,
                                     start_frame, end_frame, params)
     if isinstance(result, ToolResult):
         return result
-    prop["bd_state"] = str(interaction_type)
+    #: 缺陷 C：道具状态写入也是 agent 写入。
+    with suppress_sync(get_synchronizer()):
+        prop["bd_state"] = str(interaction_type)
+        mark_agent_edited(prop)
+    refresh_world_state(get_context())
     context = get_context()
     if context is not None:
         context.notes.append(f"{character_id} {interaction_type} {prop_id}"
@@ -472,40 +522,49 @@ def _tool_setup_camera(shot_id: str = "", shot_type: str = "MS",
     if start:
         scene.frame_set(start)
         bpy.context.view_layer.update()
-    try:
-        axis = axis_for_shot(context, shot)
-        #: 对象、**数据**与对准 Empty 一起放掉：只删对象会留下同名残留，
-        #: 下一次建的相机就只能叫 `…​.001`，而按名字找对准点的地方拿的是旧的
-        #: （见 `shot_builder.release_shot_camera` 的抬头）。
-        release_shot_camera(shot_id)
-        bundle, solution, _frame = place_shot_camera(
-            replace(shot, shot_type=ShotType(resolved_type)),
-            {}, context.spec, request=request, axis=axis,
-            entries=live_subject_entries(shot, context.characters))
-        #: 先把新相机登记进上下文——`apply_declared_movements` 是**按上下文**取
-        #: 相机对象的，登记晚一步它就会去动那台已经删掉的旧对象。
-        context.cameras[shot_id] = bundle.camera
-        context.shot_types[shot_id] = solution.shot_type
-        #: 重建相机对象会连**关键帧**一起丢；这一镜声明的运镜必须重放，
-        #: 否则"修复"顺手把镜头运动删了（构图门取首/中/尾最小值，运动一没
-        #: 结论就变）。与主构建共用 `apply_declared_movements`。
-        applied, _keyframes, warnings = apply_declared_movements(
-            replace(shot, shot_type=ShotType(resolved_type)),
-            context.characters, start or 1,
-            int((context.schedule.get(shot_id) or (0, 1))[1] or 1),
-            camera=bundle.camera, target=bundle.target)
-    finally:
-        if start and int(bpy.context.scene.frame_current) != original_frame:
-            bpy.context.scene.frame_set(original_frame)
-            bpy.context.view_layer.update()
+    #: 缺陷 C：整段相机写入（删旧建新＋重放运镜＋剪切标记）都是 agent 写入，
+    #: 必须包在 suppress 窗口内，否则 depsgraph 回调会把脏集合污染成"用户
+    #: 改动"，下一次 rebuild 前 sync 就会把模型自己摆的机位固化。
+    with suppress_sync(get_synchronizer()):
+        try:
+            axis = axis_for_shot(context, shot)
+            #: 对象、**数据**与对准 Empty 一起放掉：只删对象会留下同名残留，
+            #: 下一次建的相机就只能叫 `…​.001`，而按名字找对准点的地方拿的是旧的
+            #: （见 `shot_builder.release_shot_camera` 的抬头）。
+            release_shot_camera(shot_id)
+            bundle, solution, _frame = place_shot_camera(
+                replace(shot, shot_type=ShotType(resolved_type)),
+                {}, context.spec, request=request, axis=axis,
+                entries=live_subject_entries(shot, context.characters))
+            #: 先把新相机登记进上下文——`apply_declared_movements` 是**按上下文**取
+            #: 相机对象的，登记晚一步它就会去动那台已经删掉的旧对象。
+            context.cameras[shot_id] = bundle.camera
+            context.shot_types[shot_id] = solution.shot_type
+            #: 重建相机对象会连**关键帧**一起丢；这一镜声明的运镜必须重放，
+            #: 否则"修复"顺手把镜头运动删了（构图门取首/中/尾最小值，运动一没
+            #: 结论就变）。与主构建共用 `apply_declared_movements`。
+            applied, _keyframes, warnings = apply_declared_movements(
+                replace(shot, shot_type=ShotType(resolved_type)),
+                context.characters, start or 1,
+                int((context.schedule.get(shot_id) or (0, 1))[1] or 1),
+                camera=bundle.camera, target=bundle.target)
+        finally:
+            if start and int(bpy.context.scene.frame_current) != original_frame:
+                bpy.context.scene.frame_set(original_frame)
+                bpy.context.view_layer.update()
 
-    marker = scene.timeline_markers.get(f"BD_Cut_{shot_id}")
-    if marker is not None:
-        marker.camera = bundle.camera
-    bpy.context.view_layer.update()
+        marker = scene.timeline_markers.get(f"BD_Cut_{shot_id}")
+        if marker is not None:
+            marker.camera = bundle.camera
+        bpy.context.view_layer.update()
+        mark_agent_edited(bundle.camera)
+        if bundle.target is not None:
+            mark_agent_edited(bundle.target)
+    refresh_world_state(get_context())
     return (f"镜头 {shot_id} 机位已重设：{solution.shot_type} / {side}，"
             f"位置 {tuple(round(v, 3) for v in solution.position)}，"
             f"距离 {solution.distance:.2f}，焦距 {solution.lens:g}mm"
+            f"（相机稳定引用：{shot_id}）"
             + (f"，重放运镜 {applied} 段" if applied else "")
             + ("；" + "；".join(warnings) if warnings else ""))
 
@@ -513,6 +572,98 @@ def _tool_setup_camera(shot_id: str = "", shot_type: str = "MS",
 def _shot_target_object(shot_id: str):
     """取某镜相机对应的对准 Empty（Track To 的目标）。"""
     return bpy.data.objects.get(f"BD_CamTarget_{shot_id}")
+
+
+@main_thread_only("restore_world_snapshot")
+def restore_world_snapshot(payload, context=None) -> List[str]:
+    """按最高分世界状态快照恢复角色/相机/道具（缺陷 B / T6）。
+
+    恢复写入包 ``suppress_sync`` 并打 agent 标记（缺陷 C 语义：这是 agent
+    版本回退，不是用户改动），随后刷新 ``runtime_world_state.json``（R11）。
+    返回恢复记录（每类恢复一条），失败由调用方转成工具观察文本。
+    """
+    from ..utils.geometry import facing_to_rotation_z
+
+    context = context or get_context()
+    notes: List[str] = []
+    if context is None:
+        return notes
+    with suppress_sync(get_synchronizer()):
+        for op in revert_ops(payload):
+            kind = op["kind"]
+            if kind == "character":
+                character = context.characters.get(op["id"])
+                if character is None or character.root is None:
+                    continue
+                character.root.location = tuple(float(v) for v in op["position"])
+                character.root.rotation_euler = (
+                    0.0, 0.0, facing_to_rotation_z(tuple(op["facing"])))
+                mark_agent_edited(character.root)
+                notes.append(f"{op['id']} 位置/朝向已恢复")
+            elif kind == "camera":
+                camera = context.cameras.get(op["id"])
+                if camera is None:
+                    continue
+                camera.location = tuple(float(v) for v in op["position"])
+                if getattr(camera, "data", None) is not None:
+                    camera.data.lens = float(op["lens_mm"])
+                mark_agent_edited(camera)
+                target = _shot_target_object(op["id"])
+                if target is not None:
+                    target.location = tuple(float(v) for v in op["target"])
+                    mark_agent_edited(target)
+                notes.append(f"相机 {op['id']} 位置/目标/焦距已恢复")
+            elif kind == "prop":
+                prop = bpy.data.objects.get(f"BD_Prop_{op['id']}")
+                if prop is None:
+                    continue
+                prop.location = tuple(float(v) for v in op["position"])
+                prop.rotation_euler = (
+                    float(prop.rotation_euler[0]),
+                    float(prop.rotation_euler[1]),
+                    float(op["rotation_z"]))
+                mark_agent_edited(prop)
+                notes.append(f"道具 {op['id']} 位置/旋转已恢复")
+    #: 恢复后必须先求值 depsgraph：``collect_world_state`` 读的是
+    #: ``matrix_world``，不刷新会把恢复前的陈旧矩阵写进 JSON（探针实测：
+    #: 角色已回到 [-0.9,0,0]，JSON 却留下 [9,9,0]）。
+    bpy.context.view_layer.update()
+    refresh_world_state(context)
+    return notes
+
+
+@main_thread_only("tool_revert_shot")
+def _tool_revert_shot(shot_id: str = ""):
+    """把当前镜回滚到最高分版本快照（相机+角色+道具，JSON 同步刷新）。"""
+    context = get_context()
+    if context is None:
+        return _fail("场景上下文为空：请先构建场景")
+    shot_id = shot_id or context.current_shot_id
+    snapshot = getattr(context, "react_best_snapshot", {}).get(shot_id)
+    if snapshot is None:
+        return _fail(
+            f"镜头 {shot_id} 没有最高分版本快照；revert_shot 只在精修回溯阶段"
+            f"可用（需先有一次审核分数并记录 best）")
+    try:
+        restored = restore_world_snapshot(snapshot, context)
+    except Exception as exc:  # noqa: BLE001 - §16.2：工具永不抛异常
+        return _fail(f"回滚失败：{type(exc).__name__}: {exc}")
+    return (f"镜头 {shot_id} 已回滚到最高分版本（"
+            + "、".join(restored) + "）；runtime_world_state.json 已同步刷新")
+
+
+@main_thread_only("register_react_tools")
+def register_react_tools(registry) -> None:
+    """注册仅 ReAct 精修阶段使用的工具（缺陷 B / T6，重复调用安全）。"""
+    registry.add(
+        name="revert_shot",
+        description="把当前镜头回滚到历史最高分版本（相机位置/目标/焦距、"
+                    "角色位置/朝向、道具位置），并同步刷新运行时世界坐标 JSON。"
+                    "分数没升时用它回到最高分版本再试。",
+        parameters={"type": "object", "additionalProperties": False,
+                    "properties": {"shot_id": {"type": "string"}}},
+        handler=_tool_revert_shot,
+    )
 
 
 def _placement_axis(context, shot_id: str) -> Optional[Axis]:
@@ -541,8 +692,13 @@ def _tool_move_camera(movement_type: str, start_frame: int, end_frame: int,
     shot_id = camera_id or context.current_shot_id
     camera = context.cameras.get(shot_id)
     if camera is None:
-        known = ", ".join(sorted(context.cameras)) or "（无）"
-        return _fail(f"找不到镜头 {shot_id} 的相机。可用镜头: {known}")
+        #: 缺陷 E：模型手里的 camera_id 可能是对象名/旧引用，按纯层解析
+        #: （对象名 → 镜头键 → BD_Cam_ 前缀），重建后旧 ID 不再失效。
+        resolved, resolved_shot, problem = resolve_camera_ref(
+            context.cameras, camera_id)
+        if resolved is None:
+            return _fail(problem)
+        camera, shot_id = resolved, resolved_shot
 
     default_amount = 1.0 if movement_type in TRANSLATIONS else 15.0
     #: v1.6 G2：平移类运镜在写入前先采样路径——若会跨到摆位线的另一侧，就是
@@ -587,13 +743,20 @@ def _tool_move_camera(movement_type: str, start_frame: int, end_frame: int,
                     if int(bpy.context.scene.frame_current) != original_frame:
                         scene.frame_set(original_frame)
                         bpy.context.view_layer.update()
-    try:
-        report = apply_camera_movement(
-            camera, _shot_target_object(shot_id), str(movement_type),
-            float(amount) if amount else default_amount,
-            int(start_frame), int(end_frame))
-    except ValueError as exc:
-        return _fail(str(exc))
+    with suppress_sync(get_synchronizer()):
+        try:
+            report = apply_camera_movement(
+                camera, _shot_target_object(shot_id), str(movement_type),
+                float(amount) if amount else default_amount,
+                int(start_frame), int(end_frame))
+            #: 缺陷 C：运镜关键帧是 agent 写入，打标记防回读。
+            mark_agent_edited(camera)
+            target = _shot_target_object(shot_id)
+            if target is not None:
+                mark_agent_edited(target)
+        except ValueError as exc:
+            return _fail(str(exc))
+    refresh_world_state(get_context())
     return (f"镜头 {shot_id} 已加运镜 {movement_type}"
             f"（{describe(str(movement_type))}，"
             f"{start_frame}-{end_frame} 帧，{report['keyframes']} 个关键帧）")
@@ -601,7 +764,8 @@ def _tool_move_camera(movement_type: str, start_frame: int, end_frame: int,
 
 @main_thread_only("tool_reframe")
 def _tool_reframe(shot_id: str = "", shot_type: Optional[str] = None,
-                  lens: Optional[float] = None):
+                  lens: Optional[float] = None,
+                  preserve_pose: bool = False):
     """只调取景：复用同一台相机与同一个对准 Empty，重建位置/焦距。
 
     **解算与主构建是同一份**（`place_shot_camera` ＋ `reuse=`）。抬头自称"与主
@@ -636,26 +800,82 @@ def _tool_reframe(shot_id: str = "", shot_type: Optional[str] = None,
     if start:
         scene.frame_set(start)
         bpy.context.view_layer.update()
+    if preserve_pose:
+        def restore_original_frame() -> None:
+            if start and int(scene.frame_current) != original_frame:
+                scene.frame_set(original_frame)
+                bpy.context.view_layer.update()
+
+        try:
+            target = _shot_target_object(shot_id)
+            if target is None:
+                return _fail(f"镜头 {shot_id} 缺少对准 Empty，无法只调焦距")
+            previous_lens = float(camera.data.lens)
+            desired_lens = (float(lens) if lens is not None
+                            else (float(shot_frame_for(resolved_type).lens)
+                                  if resolved_type != context.shot_types.get(
+                                      shot_id, str(shot.shot_type))
+                                  else previous_lens))
+            if not 8.0 <= desired_lens <= 300.0:
+                return _fail(f"焦距必须在 8–300mm，实际 {desired_lens:g}mm")
+            with suppress_sync(get_synchronizer()):
+                ratio = desired_lens / previous_lens \
+                    if previous_lens > 0.0 else 1.0
+                animation = camera.data.animation_data
+                action = getattr(animation, "action", None)
+                if action is not None and abs(ratio - 1.0) > 1e-12:
+                    for curve in action_fcurves(action):
+                        if curve.data_path != "lens":
+                            continue
+                        for point in curve.keyframe_points:
+                            point.co.y *= ratio
+                        curve.update()
+                camera.data.lens = desired_lens
+                position = tuple(camera.location)
+                aim = tuple(target.location)
+                distance = math.sqrt(sum(
+                    (float(aim[index]) - float(position[index])) ** 2
+                    for index in range(3)))
+                camera["bd_frame_height"] = (
+                    2.0 * distance
+                    * math.tan(vertical_fov(desired_lens) / 2.0))
+                camera["bd_shot_type"] = resolved_type
+                context.shot_types[shot_id] = resolved_type
+                mark_agent_edited(camera)
+                mark_agent_edited(target)
+            restore_original_frame()
+            refresh_world_state(get_context())
+            return (f"镜头 {shot_id} 仅调整焦距：{previous_lens:g}→"
+                    f"{desired_lens:g}mm；机位与对准点保持不动")
+        finally:
+            restore_original_frame()
     #: side 用**计划自己声明的**那一个（以前写死 "front"）：`reframe` 的契约是
     #: "只调取景"，那就没有理由把机位挪到另一侧去。
     plan_side = str((getattr(shot, "camera", None) or {}).get("side") or "front")
     request: Dict[str, Any] = {"side": plan_side}
     if lens is not None:
         request["lens"] = float(lens)
-    try:
-        bundle, solution, _frame = place_shot_camera(
-            replace(shot, shot_type=ShotType(resolved_type)),
-            {}, context.spec, request=request,
-            axis=axis_for_shot(context, shot),
-            entries=live_subject_entries(shot, context.characters),
-            #: 复用同一台相机与同一个对准 Empty（对象不重建）。
-            reuse=CameraBundle(camera=camera,
-                               target=_shot_target_object(shot_id)))
-    finally:
-        if start and int(bpy.context.scene.frame_current) != original_frame:
-            bpy.context.scene.frame_set(original_frame)
-            bpy.context.view_layer.update()
-    context.shot_types[shot_id] = solution.shot_type
+    with suppress_sync(get_synchronizer()):
+        try:
+            bundle, solution, _frame = place_shot_camera(
+                replace(shot, shot_type=ShotType(resolved_type)),
+                {}, context.spec, request=request,
+                axis=axis_for_shot(context, shot),
+                entries=live_subject_entries(shot, context.characters),
+                #: 复用同一台相机与同一个对准 Empty（对象不重建）。
+                reuse=CameraBundle(camera=camera,
+                                   target=_shot_target_object(shot_id)))
+        finally:
+            if start and int(bpy.context.scene.frame_current) != original_frame:
+                bpy.context.scene.frame_set(original_frame)
+                bpy.context.view_layer.update()
+        context.shot_types[shot_id] = solution.shot_type
+        #: 缺陷 C：取景调整是 agent 写入，打标记防回读。
+        mark_agent_edited(camera)
+        target = _shot_target_object(shot_id)
+        if target is not None:
+            mark_agent_edited(target)
+    refresh_world_state(get_context())
     return (f"镜头 {shot_id} 取景已调整：{solution.shot_type}，"
             f"位置 {tuple(round(v, 3) for v in solution.position)}，"
             f"焦距 {solution.lens:g}mm（相机对象未重建）")
@@ -800,7 +1020,10 @@ def register_action_tools(registry) -> None:
                         "shot_type": {"type": "string",
                                       "enum": list(SHOT_TYPES)},
                         "lens": {"type": "number", "minimum": 8,
-                                 "maximum": 300}}},
+                                 "maximum": 300},
+                        "preserve_pose": {"type": "boolean",
+                                          "description":
+                                          "只改焦距，保持已审机位与对准点"}}},
         handler=_tool_reframe,
     )
     log.info("已注册动作工具：%s", ", ".join(ACTION_TOOLS))
@@ -815,5 +1038,6 @@ def register_all_scene_tools(registry) -> None:
     """
     register_scene_tools(registry)
     register_action_tools(registry)
+    register_react_tools(registry)
     register_knowledge_tools(registry)
     log.info("已注册知识工具：%s", ", ".join(KNOWLEDGE_TOOLS))

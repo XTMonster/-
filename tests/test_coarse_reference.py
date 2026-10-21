@@ -34,9 +34,9 @@ def _reference(**overrides):
         "anchors": [],
         "camera_intents": [{
             "shot_id": "shot_001",
-            "position": {"x": -0.5, "y": 5.5, "z": 2.0},
-            "target": {"x": -0.2, "y": 0.0, "z": 0.8},
-            "lens_mm": 35.0, "fov_deg": 54.4,
+            "position": [-0.5, 5.5, 2.0],
+            "target": [-0.2, 0.0, 0.8],
+            "lens": 35.0, "fov_deg": 54.4,
             "movement": None, "provenance": "script_declaration",
             "resolved": True,
         }],
@@ -121,7 +121,7 @@ def test_empty_wall_produces_target_prescription_towards_subject():
     assert p["derived_from"]["check_id"] == "E_BLOCKOUT_EMPTY_WALL"
     assert p["target_value"]["x"] == -0.8  #: 指向主体质心
     assert p["applied"] is False
-    assert p["current_value"] == ref["camera_intents"][0]["target"]
+    assert p["current_value"] == {"x": -0.2, "y": 0.0, "z": 0.8}
 
 
 def test_composition_fail_produces_distance_prescription():
@@ -147,9 +147,9 @@ def test_occlusion_fail_produces_camera_raise_prescription():
     ps = build_coarse_prescriptions(report=report, reference=_reference())
     assert len(ps) == 1
     p = ps[0]
-    assert p["component"] == "position.y" and p["direction"] == "up"
+    assert p["component"] == "position.z" and p["direction"] == "up"
     assert p["magnitude"] > 0
-    assert p["target_value"] == 5.5 + p["magnitude"]  #: 相机 y=5.5 抬高
+    assert p["target_value"] == 2.0 + p["magnitude"]  #: 世界 z=2.0 抬高
     assert p["derived_from"]["check_id"] == "occlusion"
 
 

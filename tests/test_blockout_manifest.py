@@ -125,6 +125,65 @@ def test_human_scale_character_blocks():
             block["source"]["id"] == "米迦尔" else 0.9, abs=1e-3)
 
 
+def test_character_local_staging_becomes_auditable_shot_positions():
+    design = _design()
+    design["shots"] = [
+        {"shot_id": "shot_001", "order": 1, "duration_frames": 24,
+         "characters": ["米迦尔", "伊恩"], "actions": []},
+        {"shot_id": "shot_002", "order": 2, "duration_frames": 12,
+         "characters": ["米迦尔"], "actions": []},
+    ]
+    design["shot_staging"] = {
+        "shot_001": {
+            "米迦尔": {
+                "position": {"x": 1.25, "y": 0.5, "z": 0.0},
+                "provenance": "agent_local_revision",
+                "reason": "第一镜双人构图错开",
+            },
+        },
+    }
+
+    manifest = _build(design=design)
+    michael = next(
+        primitive for primitive in manifest["primitives"]
+        if primitive["kind"] == "character"
+        and primitive["source"]["id"] == "米迦尔")
+
+    assert michael["position"] == {"x": -0.9, "y": 0.0, "z": 0.0}
+    assert michael["shot_positions"] == [
+        {
+            "shot_id": "shot_001",
+            "position": {"x": 1.25, "y": 0.5, "z": 0.0},
+            "start_frame": 1,
+            "end_frame": 24,
+            "provenance": "agent_local_revision",
+            "reason": "第一镜双人构图错开",
+        },
+        {
+            "shot_id": "shot_002",
+            "position": {"x": -0.9, "y": 0.0, "z": 0.0},
+            "start_frame": 25,
+            "end_frame": 36,
+            "provenance": "plan_intent",
+            "reason": "",
+        },
+    ]
+    ian = next(
+        primitive for primitive in manifest["primitives"]
+        if primitive["kind"] == "character"
+        and primitive["source"]["id"] == "伊恩")
+    assert ian["shot_positions"] == [
+        {
+            "shot_id": "shot_001",
+            "position": {"x": 0.9, "y": 0.0, "z": 0.0},
+            "start_frame": 1,
+            "end_frame": 24,
+            "provenance": "plan_intent",
+            "reason": "",
+        },
+    ]
+
+
 def test_cameras_come_first_with_movements_and_frames():
     manifest = _build()
     cameras = {c["shot_id"]: c for c in manifest["cameras"]}
@@ -190,3 +249,142 @@ def test_checkpoints_declared_global_and_per_shot():
     assert "scene_01_blockout.blend" in checkpoint_ids
     assert "scene_s01_blockout.blend" in checkpoint_ids
     assert "scene_s02_blockout.blend" in checkpoint_ids
+
+
+def test_design_shots_priority_drives_shot_table():
+    """R10：design.shots[]（参考世界 JSON 语义层）优先决定分镜表。"""
+    design = _design()
+    design["shots"] = [
+        {"shot_id": "shot_001", "order": 1, "duration_frames": 30,
+         "intent": "开场", "characters": ["米迦尔"], "actions": []},
+        {"shot_id": "shot_002", "order": 2, "duration_frames": 18,
+         "intent": "空镜", "characters": [], "actions": []},
+    ]
+    manifest = _build(design=design)
+    rows = {s["shot_id"]: s for s in manifest["shot_table"]}
+    assert rows["shot_001"]["start_frame"] == 1
+    assert rows["shot_001"]["end_frame"] == 30       # 跟随 design，非 plan 的 24
+    assert rows["shot_002"]["start_frame"] == 31
+    assert rows["shot_002"]["end_frame"] == 48       # 跟随 design 的 18 帧
+
+
+def test_routes_derived_from_design_motion_by_shot():
+    """R10：manifest.routes 从角色 motion_by_shot 确定性派生（walk_path actual）。"""
+    design = _design()
+    design["characters"][0]["motion_by_shot"] = [{
+        "shot_id": "shot_001", "start": [-0.9, 0.0, 0.0],
+        "end": [2.0, 1.0, 0.0], "speed_m_s": 1.0,
+    }]
+    manifest = _build(design=design)
+    routes = {r["character"]: r for r in manifest["routes"]}
+    assert routes["米迦尔"]["end"] == [2.0, 1.0, 0.0]
+    assert routes["米迦尔"]["shot_id"] == "shot_001"
+    assert routes["米迦尔"]["speed_m_s"] == 1.0
+
+
+def test_manifest_with_routes_passes_schema():
+    import json
+
+    import jsonschema
+
+    manifest = _build()
+    manifest["routes"] = [{
+        "character": "米迦尔", "shot_id": "shot_001",
+        "start": [-0.9, 0.0, 0.0], "end": [2.0, 1.0, 0.0],
+        "speed_m_s": 1.0, "provenance": "plan_intent",
+    }]
+    schema = json.loads((
+        ROOT / "block_director" / "contracts" / "blockout" / "schema"
+        / "blockout-manifest.v1.schema.json").read_text(encoding="utf-8"))
+    jsonschema.validate(instance=manifest, schema=schema)
+
+
+def test_coin_kind_aliases_do_not_fall_back_to_default_block_size():
+    """真实 brief 的 ``kind="货币"`` 必须有硬币尺度，不能落默认 0.9×1.2。
+
+    final16 真跑把银币标成 ``kind=货币``；旧尺寸表只认 ``prop`` 等少数
+    英文键，于是银币成了 0.9×0.9×1.2 的巨块，在 shot_002/003 挡住
+    偷盗者的手/脸。该测试从公开 manifest 边界验证中文与英文别名。
+    """
+    design = _design()
+    design["props"] = [
+        {"id": "银币", "kind": "货币", "owner": "偷盗者", "parent": None,
+         "position": [0.22, 0.25, 0.91], "rotation": None, "motion": None,
+         "provenance": "plan_intent"},
+        {"id": "纪念币", "kind": "coin", "owner": "米迦尔", "parent": None,
+         "position": [-0.22, 0.25, 0.91], "rotation": None, "motion": None,
+         "provenance": "plan_intent"},
+    ]
+    manifest = _build(design=design)
+    props = {p["source"]["id"]: p for p in manifest["primitives"]
+             if p["kind"] == "prop"}
+
+    assert set(props) == {"银币", "纪念币"}
+    for prop in props.values():
+        assert prop["size"]["x"] <= 0.2
+        assert prop["size"]["y"] <= 0.2
+        assert prop["size"]["z"] <= 0.1
+
+
+def test_free_text_coin_kind_resolves_by_explicit_longest_alias():
+    """final12 的 ``kind="银币化为金子"`` 必须命中“银币”别名。
+
+    该输入不是闭集 kind，而是 Stage S 对状态变化的自由文本描述。尺寸档
+    解析只允许显式别名命中：返回命中的别名与规范化档位供审计，不能靠
+    模糊相似度猜。
+    """
+    from block_director.cinema.blockout import resolve_prop_kind
+
+    resolved = resolve_prop_kind("银币化为金子")
+
+    assert resolved.raw_kind == "银币化为金子"
+    assert resolved.canonical_kind == "coin"
+    assert resolved.matched_alias == "银币"
+    assert resolved.match_mode == "alias"
+    assert resolved.size == (0.12, 0.12, 0.03)
+
+
+def test_exact_coin_kind_wins_before_alias_matching():
+    from block_director.cinema.blockout import resolve_prop_kind
+
+    resolved = resolve_prop_kind("货币")
+
+    assert resolved.canonical_kind == "货币"
+    assert resolved.matched_alias == ""
+    assert resolved.match_mode == "exact"
+    assert resolved.size == (0.12, 0.12, 0.03)
+
+
+def test_unmatched_prop_kind_stays_auditable_fallback():
+    from block_director.cinema.blockout import (
+        DEFAULT_BLOCK_SIZE,
+        resolve_prop_kind,
+    )
+
+    resolved = resolve_prop_kind("未知机械装置")
+
+    assert resolved.canonical_kind == "prop"
+    assert resolved.matched_alias == ""
+    assert resolved.match_mode == "fallback"
+    assert resolved.size == DEFAULT_BLOCK_SIZE
+
+
+def test_manifest_records_free_text_kind_resolution():
+    """别名归一化必须进入 manifest notes，保留原文、命中词和档位。"""
+    design = _design()
+    design["props"] = [
+        {"id": "银币-金子", "kind": "银币化为金子", "owner": "偷盗者",
+         "parent": None, "position": [0.22, 0.25, 0.91], "rotation": None,
+         "motion": None, "provenance": "algorithmic_measurement"},
+    ]
+
+    manifest = _build(design=design)
+    prop = next(p for p in manifest["primitives"] if p["kind"] == "prop")
+    asset = next(a for a in manifest["asset_registry"]
+                 if a["asset_id"] == prop["asset_ref"])
+
+    assert prop["size"] == {"x": 0.12, "y": 0.12, "z": 0.03}
+    assert asset["kind"] == "coin"
+    assert any(
+        "银币化为金子" in note and "银币" in note and "coin" in note
+        for note in manifest["notes"])

@@ -39,6 +39,12 @@ class SceneContext:
     #: 调整，不是重跑全片状态机）。
     axis_advanced_shots: set = field(default_factory=set)
     notes: List[str] = field(default_factory=list)
+    #: R11 / T4：runtime_world_state.json 的落盘路径（driver 建 run 目录后
+    #: 登记；未登记 = 不写盘，零行为差）。
+    world_state_path: Optional[str] = None
+    #: 缺陷 B / T6：每镜的最高分世界状态快照（shot_id → payload），
+    #: 由 driver 在 ReAct 新高时写入；revert_shot 工具从这里取回滚目标。
+    react_best_snapshot: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
     def character(self, character_id: str):
         return self.characters.get(character_id)

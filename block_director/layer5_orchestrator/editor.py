@@ -274,6 +274,11 @@ class ShotDraft:
     beats: List[Dict[str, Any]] = field(default_factory=list)
     composition: Dict[str, Any] = field(default_factory=dict)
     rule_justifications: List[Dict[str, Any]] = field(default_factory=list)
+    #: R2 S2：这一镜"拍谁"（角色/局部部位/道具）。草案 schema 本就暴露它
+    #: （shot_schema.py 的 ``framing_target`` 块），旧实现把它**静默丢弃**，
+    #: 连"精修试图改拍对象"都检测不到。随草案往返，供
+    #: :func:`identity_conflicts` 与 :func:`merge_draft` 使用。
+    framing_target: Optional[Dict[str, Any]] = None
     #: D1 阶段 3（决策树投影）：tree 给定且发生了 PROJECTED/REJECTED 时的
     #: 投影审计记录（``ProjectionRecord.to_dict()`` 全量）。**不进 ``to_dict``**：
     #: 交付层/shots.json 不该出现投影内部记录；它只供驱动器写 ``draft_projected``
@@ -312,7 +317,12 @@ class ShotDraft:
             rule_justifications=[dict(item)
                                  for item in (data.get("rule_justifications")
                                               or [])
-                                 if isinstance(item, dict)])
+                                 if isinstance(item, dict)],
+            framing_target=(dict(raw_target)
+                            if isinstance(
+                                (raw_target := data.get("framing_target")),
+                                dict)
+                            else None))
 
     def to_dict(self) -> Dict[str, Any]:
         return {"shot_id": self.shot_id, "shot_type": self.shot_type,
@@ -326,7 +336,9 @@ class ShotDraft:
                 "beats": [dict(item) for item in self.beats],
                 "composition": dict(self.composition),
                 "rule_justifications": [dict(item)
-                                        for item in self.rule_justifications]}
+                                        for item in self.rule_justifications],
+                "framing_target": (None if self.framing_target is None
+                                   else dict(self.framing_target))}
 
 
 def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
@@ -358,14 +370,15 @@ def build_editor_payload(shot: ShotPlan, plan: Optional[Plan], *,
         if query:
             knowledge = retriever.block_for_shot(
                 query, shot_id=str(getattr(shot, "shot_id", "") or ""),
-                analogy=analogy)
+                analogy=analogy, stage="editor")
         else:
             knowledge = retriever.block_for_shot(str(shot.shot_type),
                                                  shot.intent or "",
                                                  action_types,
                                                  shot_id=str(getattr(
                                                      shot, "shot_id", "") or ""),
-                                                 analogy=analogy)
+                                                 analogy=analogy,
+                                                 stage="editor")
     memory = render_shot_memory(shot_memory(plan))
     continuity_text = continuity or memory or "（第一镜，无历史）"
     #: v1.5 §3.2（P2-T4）：场级锚点的**名字**必须让 B1 看见——`beats[].target`
@@ -605,8 +618,53 @@ def rank_drafts(candidates: Sequence["ShotDraft"], *, characters=(),
     return best, alternates
 
 
-def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
+def identity_conflicts(plan: Plan, draft: ShotDraft) -> List[str]:
+    """精修草案试图改写的镜头身份字段清单（R2 S2）。
+
+    冻结字段：``shot_type``（景别）、``characters``（主体集合）、
+    ``framing_target``（拍对象）。草案提供了与计划**不同的非空值**才算
+    冲突；草案没提供（空/None）、或提供值与计划一致、或目标镜不存在，
+    都返回空（零行为差）。
+
+    返回人类可读的逐条消息；驱动器拿到非空清单时记 E 类审计事件并
+    **拒绝该草案**（保持计划原值，不静默改写）。
+    """
+    conflicts: List[str] = []
+    target = None
+    for shot in (plan.shots or ()):
+        if str(shot.shot_id) == str(draft.shot_id):
+            target = shot
+            break
+    if target is None:
+        return conflicts
+    if draft.shot_type and str(draft.shot_type) != str(target.shot_type):
+        conflicts.append(
+            f"shot_type：计划 {target.shot_type}，草案 {draft.shot_type}")
+    if draft.characters and list(draft.characters) != list(target.characters):
+        conflicts.append(
+            f"characters：计划 {list(target.characters)}，"
+            f"草案 {list(draft.characters)}")
+    if draft.framing_target is not None:
+        planned_ft = (None if target.framing_target is None
+                      else target.framing_target.to_dict())
+        if draft.framing_target != planned_ft:
+            conflicts.append(
+                f"framing_target：计划 {planned_ft}，"
+                f"草案 {dict(draft.framing_target)}")
+    return conflicts
+
+
+def merge_draft(plan: Plan, draft: ShotDraft, *,
+                freeze_identity: bool = False) -> Plan:
     """把草案合并回计划：只改这一镜，镜号/顺序/时长仍以计划为准。
+
+    ``shot_type`` 始终遵循"声明 > 理解 > 草案"：计划已有非空景别时，
+    草案只能补空值，不能静默覆盖阶段 A/理解已经确定的景别。
+
+    ``freeze_identity=True``（精修路径，R2 S2）：草案的 ``characters`` /
+    ``framing_target`` 也不生效，计划保留原值；动作/对白/相机/提示词等
+    非身份字段照常合并。冲突方应在合并前先用 :func:`identity_conflicts`
+    检测并记 E 类错误——本函数只负责"冻结"，不吞错误也不改判据。
 
     v1.3 追加一条保护：**剧本已经给出的对白文本不允许被草案改写**。
     草案只能补时间轴，文字本身必须与剧本一致（R016 会逐字核对）。
@@ -616,10 +674,12 @@ def merge_draft(plan: Plan, draft: ShotDraft) -> Plan:
     for shot in payload.get("shots", []):
         if shot.get("shot_id") != draft.shot_id:
             continue
-        if draft.shot_type:
+        if draft.shot_type and not shot.get("shot_type"):
             shot["shot_type"] = draft.shot_type
-        if draft.characters:
+        if draft.characters and not freeze_identity:
             shot["characters"] = list(draft.characters)
+        if (draft.framing_target is not None and not freeze_identity):
+            shot["framing_target"] = dict(draft.framing_target)
         shot["actions"] = [dict(item) for item in draft.actions]
         shot["dialogues"] = merge_dialogues(shot.get("dialogues") or [],
                                             draft.dialogues)

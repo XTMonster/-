@@ -43,6 +43,7 @@ from ..contracts.beats import (
 )
 from ..contracts.enums import MOVEMENT_TYPES, VFX_TYPES
 from ..contracts.rhythm import CURVE_VALUES
+from ..contracts.plan import FRAMING_TARGET_KINDS, FRAMING_TARGET_PARTS
 from ..contracts.tools import SHOT_DRAFT_TOOL
 from ..motion.model import (
     ACTION_PARAM_ALIASES,
@@ -336,6 +337,23 @@ def base_draft_parameters() -> Dict[str, Any]:
                     "rule": {"type": "string", "enum": list(COMPOSITION_RULES)},
                     "subject_position": {"type": "string",
                                          "enum": list(SUBJECT_POSITIONS)},
+                },
+            },
+            #: T3：这一镜拍谁（角色/局部部位/道具）。kind/part 是闭集，
+            #: 表外值 schema 直接拒收；ref 是全剧组/道具名的自由字符串。
+            "framing_target": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["kind", "ref", "part"],
+                "properties": {
+                    "kind": {"type": "string",
+                             "enum": list(FRAMING_TARGET_KINDS)},
+                    "ref": {"type": "string"},
+                    "part": {"type": "string",
+                             "enum": list(FRAMING_TARGET_PARTS)},
+                    "anchor_offset": {"type": "array", "minItems": 3,
+                                      "maxItems": 3,
+                                      "items": {"type": "number"}},
                 },
             },
             "rule_justifications": {

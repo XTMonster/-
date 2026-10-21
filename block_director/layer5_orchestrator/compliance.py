@@ -274,6 +274,7 @@ def check_compliance(plan: Plan, script, *, fps: int = FPS,
             has_break = any(
                 str(j.get("rule") or "") == RULE_SHOT_TYPE
                 and str(j.get("action") or "").lower() == "break"
+                and str(j.get("reason") or "").strip()
                 for j in justifications)
             distance_text = item.field("拍摄距离") or item.shot_type
             severity = Severity.WARNING if has_break else Severity.ERROR

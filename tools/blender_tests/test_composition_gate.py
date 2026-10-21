@@ -2,7 +2,7 @@
 
 §1.4b 的两条防自证要求都在这里：
 
-① 分子只读 ``shot_audit.composition_score ≥ composition_threshold``——
+① 分子只读 ``shot_audit.composition_score > composition_threshold``——
    **不得**用 ``passed``（那是"整镜无阻断错误"，把轴线/穿模/台词都算进来了）；
 ② 阈值必须等于**独立读到的**默认 ``PASS_SCORE``（v1.7 空间尺转正后为 80.0，
    2026-10-18 用户裁决，严格高于才算过），且把镜头做坏之后

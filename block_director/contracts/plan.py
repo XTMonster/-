@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import re
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 from .enums import SHOT_TYPES, ShotType
 
@@ -21,6 +21,10 @@ FPS = 24
 #: 于是计划里写 ``../../../../Users/Public/x`` 就能把文件写到导出目录之外
 #: （LLM 输出、手改的 project.bdproj、重放的旧日志都是入口）。
 SHOT_ID_PATTERN = re.compile(r"^[A-Za-z0-9_.\-]{1,64}$")
+
+#: framing_target 的闭集取值（T3 单一真源；schema 与提示从这里引用，不手抄）。
+FRAMING_TARGET_KINDS = ("character", "prop")
+FRAMING_TARGET_PARTS = ("hand", "face", "none")
 
 
 def validate_shot_id(value: object, *, where: str = "shot_id") -> str:
@@ -88,6 +92,40 @@ class Responsibility:
             prompt=[str(item) for item in (data.get("prompt") or [])],
             ref_image=[str(item) for item in (data.get("ref_image") or [])],
             skip_white_model=bool(data.get("skip_white_model") or False),
+        )
+
+
+@dataclass
+class FramingTarget:
+    """镜头"拍什么"声明（缺陷 A / R1，数据类真源）。
+
+    ``kind=character`` 拍角色整体或局部部位（``part=hand|face|none``）；
+    ``kind=prop`` 拍道具（``ref`` 为道具 id）。``anchor_offset`` 是可选的
+    局部锚点偏移（无手部子网格时用锚点＋预设偏移，见 spec D1=A）。
+    """
+
+    kind: str = "character"                  # character | prop
+    ref: str = ""                            # 角色 id 或道具 id
+    part: str = "none"                       # hand | face | none
+    anchor_offset: Optional[List[float]] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "kind": str(self.kind),
+            "ref": str(self.ref),
+            "part": str(self.part),
+            "anchor_offset": (None if self.anchor_offset is None
+                              else [float(v) for v in self.anchor_offset]),
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "FramingTarget":
+        offset = data.get("anchor_offset")
+        return cls(
+            kind=str(data.get("kind") or "character"),
+            ref=str(data.get("ref") or ""),
+            part=str(data.get("part") or "none"),
+            anchor_offset=([float(v) for v in offset] if offset else None),
         )
 
 
@@ -163,6 +201,9 @@ class ShotPlan:
     #: v1.7 §14.1（R-痛点 M5）：分工声明。None = 未声明（≠ 全空），
     #: 未声明镜全链零行为差。数据类真源 = :class:`Responsibility`。
     responsibility: Optional[Responsibility] = None
+    #: 缺陷 A / R1：这一镜"拍谁"（角色/局部部位/道具）。None = 未声明
+    #: （构图评分退回整身口径，零行为差）。
+    framing_target: Optional[FramingTarget] = None
 
     @property
     def duration_seconds(self) -> float:
@@ -199,6 +240,8 @@ class ShotPlan:
             #: 旧 SDL/plan 文件零 error。
             "responsibility": (None if self.responsibility is None
                                else self.responsibility.to_dict()),
+            "framing_target": (None if self.framing_target is None
+                               else self.framing_target.to_dict()),
         }
 
     @classmethod
@@ -239,6 +282,9 @@ class ShotPlan:
                                  if isinstance(item, dict)],
             responsibility=(Responsibility.from_dict(data["responsibility"])
                             if isinstance(data.get("responsibility"), dict)
+                            else None),
+            framing_target=(FramingTarget.from_dict(data["framing_target"])
+                            if isinstance(data.get("framing_target"), dict)
                             else None),
         )
 
@@ -281,3 +327,40 @@ class Plan:
             scene_heading=str(data.get("scene_heading", "")),
             environment=dict(data.get("environment") or {}),
         )
+
+
+#: 粗排通过后，B1 与后续修复只能细化这些镜头字段的**外围内容**
+#: （动作、对白、提示词、相机请求等）；镜头身份仍由 R2 S2 冻结。
+_COARSE_IDENTITY_SHOT_FIELDS = (
+    "shot_id", "order", "shot_type", "characters", "framing_target",
+)
+
+
+def coarse_plan_identity_drift(approved: Any, current: Any) -> List[str]:
+    """Return the frozen shot-identity fields that moved after coarse approval.
+
+    A checkpoint is expected to evolve after the coarse gate: B1 adds actions,
+    dialogue timing, prompts, gaze and camera intent, while repairs may refine
+    those same fields.  Comparing the complete serialized plan therefore
+    rejects a valid resume even though its physical coarse evidence still
+    describes the same shots.  The coarse evidence is bound to the shot shell
+    below; camera/manifest integrity is verified separately by fingerprints.
+    """
+    before = (approved.to_dict() if isinstance(approved, Plan)
+              else dict(approved) if isinstance(approved, Mapping) else {})
+    after = (current.to_dict() if isinstance(current, Plan)
+             else dict(current) if isinstance(current, Mapping) else {})
+    before_shots = list(before.get("shots") or [])
+    after_shots = list(after.get("shots") or [])
+    drift: List[str] = []
+    if len(before_shots) != len(after_shots):
+        drift.append(f"shots（{len(before_shots)} → {len(after_shots)}）")
+    for index, (left, right) in enumerate(
+            zip(before_shots, after_shots)):
+        if not isinstance(left, Mapping) or not isinstance(right, Mapping):
+            drift.append(f"shots[{index}]")
+            continue
+        for key in _COARSE_IDENTITY_SHOT_FIELDS:
+            if left.get(key) != right.get(key):
+                drift.append(f"shots[{index}].{key}")
+    return drift

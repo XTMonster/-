@@ -14,6 +14,10 @@ from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional, Sequence
 
 from .anchor import DEFAULT_PROFILE as _PROFILE
+from ..contracts.quality import (
+    COMPOSITION_PASS_SCORE as PASS_SCORE,
+    composition_decision,
+)
 
 WEIGHTS: Dict[str, float] = {
     "headroom": 0.15,
@@ -24,8 +28,10 @@ WEIGHTS: Dict[str, float] = {
     "framing": 0.10,
 }
 
-# 空间尺正式门槛：构图分必须严格高于 80 才算通过。
-PASS_SCORE = 80.0
+def composition_passed(score: Optional[float], *,
+                       threshold: float = PASS_SCORE) -> bool:
+    """构图分是否过线；未测得分不过线，恰好 80.0 也不过线。"""
+    return composition_decision(score, threshold=threshold)["status"] == "pass"
 
 # 头部留白的理想区间（占画面高度的比例）
 HEADROOM_IDEAL = (0.03, 0.12)
@@ -35,6 +41,10 @@ HEADROOM_IDEAL = (0.03, 0.12)
 #: v1.4 P10：头顶留白只在"比全身更紧"的景别里才有意义，阈值必须跟着
 #: §2.1 的冻结身高走（旧值 1.45 是 v1.3 的几何）。
 SUBJECT_HEIGHT_FOR_HEADROOM = _PROFILE.total_height
+
+#: 主体投影高度相对景别期望值的允许偏差。局部主体相机用它反解"离镜头
+#: 多近仍能被同一把评分尺接受"：``1 - tolerance`` 是最紧的合法占画高度。
+FRAMING_SIZE_TOLERANCE = 0.35
 
 # 三分线交点
 THIRDS = (1.0 / 3.0, 2.0 / 3.0)
@@ -63,6 +73,9 @@ class SubjectBox:
     facing: float = 0.0          # 屏幕空间朝向：-1 向左，+1 向右，0 无方向
     clipped_top: bool = False    # 包围盒被"该景别看到的窗口"从上方截断
     clipped_sides: bool = False  # 主体比这个景别的画面还宽，左右本就该出画
+    #: 局部主体框的来源（缺陷 A / T5）：``measured`` = 真实子对象包围盒；
+    #: ``anchored`` = 锚点+预设偏移（裁决 D1=A，测量对象仍是手部，如实标注）。
+    provenance: str = "measured"
 
     @property
     def center_x(self) -> float:
@@ -106,7 +119,7 @@ class CompositionReport:
     def passed(self) -> bool:
         #: 用户 2026-10-18 裁决：构图分必须**严格高于** 80 才算通过，
         #: 恰好等于 80.0 不算过（score == PASS_SCORE 仍为 False）。
-        return self.score > PASS_SCORE
+        return composition_passed(self.score)
 
     def to_dict(self) -> dict:
         return {
@@ -156,7 +169,7 @@ def _lead_room(box: SubjectBox) -> CompositionItem:
                                "主体朝画面外，视线方向没有留白；建议反转机位或平移构图")
     ratio = ahead / max(ahead + behind, 1e-9)
     score = _clamp01((ratio - 0.4) / 0.35)
-    suggestion = "" if score >= 0.8 else "视线方向留白不足；建议把主体放到画面偏对侧"
+    suggestion = "" if score > 0.8 else "视线方向留白不足；建议把主体放到画面偏对侧"
     return CompositionItem("lead_room", score, WEIGHTS["lead_room"], suggestion)
 
 
@@ -164,7 +177,7 @@ def _thirds(box: SubjectBox) -> CompositionItem:
     best = min(abs(box.center_x - tx) + abs(box.center_y - ty)
                for tx in THIRDS for ty in THIRDS)
     score = _clamp01(1.0 - best / 0.35)
-    suggestion = "" if score >= 0.8 else "主体偏离三分线交点；可微调构图让主体落到交点附近"
+    suggestion = "" if score > 0.8 else "主体偏离三分线交点；可微调构图让主体落到交点附近"
     return CompositionItem("rule_of_thirds", score, WEIGHTS["rule_of_thirds"],
                            suggestion)
 
@@ -181,7 +194,7 @@ def _balance(boxes: Sequence[SubjectBox]) -> CompositionItem:
     offset = abs(mean_x - 0.5)
     dead_zone = 0.20 if len(boxes) == 1 else 0.12
     score = _clamp01(1.0 - max(0.0, offset - dead_zone) / 0.30)
-    suggestion = "" if score >= 0.8 else "画面重心偏塌；建议左右重新平衡人物位置"
+    suggestion = "" if score > 0.8 else "画面重心偏塌；建议左右重新平衡人物位置"
     return CompositionItem("balance", score, WEIGHTS["balance"], suggestion)
 
 
@@ -213,8 +226,10 @@ def _framing(box: SubjectBox,
         ratio = box.height / expected_height
         deviation = abs(ratio - 1.0)
         # 允许 ±35% 偏差；偏差越大扣分越多
-        score *= _clamp01(1.0 - max(0.0, deviation - 0.35) / 0.65)
-        if deviation > 0.35 and not suggestion:
+        score *= _clamp01(
+            1.0 - max(0.0, deviation - FRAMING_SIZE_TOLERANCE)
+            / (1.0 - FRAMING_SIZE_TOLERANCE))
+        if deviation > FRAMING_SIZE_TOLERANCE and not suggestion:
             suggestion = f"主体在画面中的大小与景别不符（实际/预期={ratio:.2f}）"
     return CompositionItem("framing", _clamp01(score), WEIGHTS["framing"], suggestion)
 
@@ -222,26 +237,46 @@ def _framing(box: SubjectBox,
 def evaluate_composition(boxes: Iterable[SubjectBox],
                          occluded: Optional[Dict[str, bool]] = None,
                          expected_height: Optional[float] = None,
-                         headroom_applies: bool = True
+                         headroom_applies: bool = True,
+                         primary: Optional[str] = None
                          ) -> CompositionReport:
     """按 §10.4 的六项加权评分，返回百分制结果与建议。"""
     subjects: List[SubjectBox] = list(boxes)
     if not subjects:
         return CompositionReport(score=0.0, suggestions=["画面里没有被摄主体"])
 
-    #: v1.6 G2（延续"双人镜对准谁"的授权语义）：完全出画的主体不该当构图
-    #: 主锚——v10 真跑 4 镜因计划里多声明了一个站在画面外的角色，RK-10 硬闸
-    #: 把**画内主体**的合格镜头一起压到 20。主锚取"可见"的最高盒，全可见时
-    #: 仍是最高盒（与旧行为一致）；出画者继续参与 balance/occlusion 的计分。
-    primary = max(subjects,
-                  key=lambda b: (b.inside_ratio() > 0.05, b.height))
+    #: 缺陷 A / T5：显式主锚（局部主体框优先）。剧本声明 ``framing_target``
+    #: 时，特写镜头的评分对象是手部/道具框而不是整身框；主锚缺失（如道具
+    #: 未建）时回落既有启发（可见的最高盒），与旧行为一致、不崩。
+    if primary is not None:
+        named = [b for b in subjects if b.name == primary]
+        primary_box = named[0] if named else None
+    else:
+        primary_box = None
+    if primary_box is None:
+        #: v1.6 G2（延续"双人镜对准谁"的授权语义）：完全出画的主体不该当构图
+        #: 主锚——v10 真跑 4 镜因计划里多声明了一个站在画面外的角色，RK-10 硬闸
+        #: 把**画内主体**的合格镜头一起压到 20。主锚取"可见"的最高盒，全可见时
+        #: 仍是最高盒（与旧行为一致）；出画者继续参与 balance/occlusion 的计分。
+        primary_box = max(subjects,
+                          key=lambda b: (b.inside_ratio() > 0.05, b.height))
+
+    #: 局部主体模式（显式 primary）：整身框降级为 balance/occlusion 辅助，
+    #: 但**几乎全出画**的整身框不该参与 balance——特写拍手/道具时持有者
+    #: 身体出画是正常构图，拿它算重心会把合格镜头压到线下（探针实测
+    #: 71.6：身体在画外左上，重心偏塌 0 分）。全出画时回落全部（硬闸兜底）。
+    if primary is not None:
+        visible = [b for b in subjects if b.inside_ratio() > 0.05]
+        balance_boxes = visible or subjects
+    else:
+        balance_boxes = subjects
     items = {
-        "headroom": _headroom(primary, headroom_applies),
-        "lead_room": _lead_room(primary),
-        "rule_of_thirds": _thirds(primary),
-        "balance": _balance(subjects),
+        "headroom": _headroom(primary_box, headroom_applies),
+        "lead_room": _lead_room(primary_box),
+        "rule_of_thirds": _thirds(primary_box),
+        "balance": _balance(balance_boxes),
         "occlusion": _occlusion(subjects, occluded),
-        "framing": _framing(primary, expected_height),
+        "framing": _framing(primary_box, expected_height),
     }
     total_weight = sum(item.weight for item in items.values()) or 1.0
     score = sum(item.score * item.weight for item in items.values()) / total_weight * 100.0
@@ -249,7 +284,7 @@ def evaluate_composition(boxes: Iterable[SubjectBox],
     # ——头部留白、遮挡、重心这些判据在"画框里根本没有主体"时都会**真空成立**，
     # 于是把角色挪到 30 米外，构图分还能有 60。这条硬闸把这种情况压到 20 分
     # 以下，让"做坏镜 → 掉 ≥20 分"真的成立（也让阈值不被写死成 -1e9 蒙过）。
-    if primary.inside_ratio() <= 0.05:
+    if primary_box.inside_ratio() <= 0.05:
         score = min(score, 20.0)
     suggestions = [item.suggestion for item in items.values() if item.suggestion]
     return CompositionReport(score=round(score, 1), items=items,

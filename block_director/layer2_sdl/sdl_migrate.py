@@ -20,7 +20,8 @@ from ..contracts.sdl import SDL_VERSION
 #: 版本"。这里把 "1.4" 显式钉死，再追加当前版本。
 #: v1.6：同样把 "1.5" 逐条钉死（只增不改），再追加当前版本。
 #: v1.7：把 "1.6" 逐条钉死（只增不改），再追加当前版本。
-KNOWN_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6",
+#: v1.8：把 "1.7" 逐条钉死（只增不改），再追加当前版本。
+KNOWN_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7",
                   SDL_VERSION)
 
 #: 写入器从 1.2 起就会把完整的 ``characters`` 名册写进文件。比这更老的文件
@@ -151,6 +152,16 @@ def _migrate_shot(shot: Dict[str, Any], notes: List[str]) -> None:
                      f"按未声明处理")
         responsibility = None
     shot["responsibility"] = responsibility
+    # v1.8（T3）：拍摄对象声明缺省 = 整身口径（character/none，ref 空）。
+    # 已存在的坏类型（str 等）只报 finding、不崩，并一律按整身处理。
+    framing_target = shot.get("framing_target")
+    if framing_target is not None and not isinstance(framing_target, dict):
+        notes.append(f"镜头 {shot.get('id')}：framing_target 类型非法，"
+                     f"按整身口径处理")
+        framing_target = None
+    if framing_target is None:
+        framing_target = {"kind": "character", "part": "none", "ref": ""}
+    shot["framing_target"] = framing_target
 
 
 def migrate_sdl(data: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
@@ -193,6 +204,7 @@ def migrate_sdl(data: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
         _heal_cast(payload, notes)
     #: 迁移说明只记一条（不逐镜刷屏）；坏数据 finding 已由 _migrate_shot 记。
     notes.append("补齐 responsibility：未声明镜记 null（v1.7）")
+    notes.append("补齐 framing_target：整身口径 character/none（v1.8）")
     payload["version"] = SDL_VERSION
     notes.append(f"已从 {version} 迁移到 {SDL_VERSION}")
     return payload, notes

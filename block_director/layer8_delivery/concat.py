@@ -41,8 +41,18 @@ def concat_shot_clips(scene, clips: Sequence[str], output_base: str, *,
     ``clip_frames`` 是每个片段的确切帧数（分段渲染时已知）。给了就按它**钉死**
     片段长度：VSE 从容器元数据推算时长时会多算一帧，累计下来全片会比各镜之和
     长出好几帧——那不是我们想要的"全片"。
+
+    片段缺失时（fail 镜现在也照常出最佳版本 mp4，见 export_director；
+    缺失仅发生在 skip/渲染失败）**连同帧数一起过滤**，否则 ``existing``
+    子序列会让 ``clip_frames`` 索引错位，中段缺片之后每段都会钉错时长。
+    过滤后的全片只含真实产物，不造假画面。
     """
-    existing = [path for path in clips if os.path.exists(path)]
+    existing: List[tuple] = []
+    for index, path in enumerate(clips):
+        if os.path.exists(path):
+            frames = (clip_frames[index] if index < len(clip_frames)
+                      else None)
+            existing.append((path, frames))
     if not existing:
         raise ConcatUnavailable("没有可拼接的分镜视频；请先确认 per_shot_clips 已产出")
 
@@ -65,12 +75,12 @@ def concat_shot_clips(scene, clips: Sequence[str], output_base: str, *,
     try:
         strips = sequence_strips(editor)
         cursor = 1
-        for index, path in enumerate(existing, start=1):
+        for index, (path, frames) in enumerate(existing, start=1):
             strip = strips.new_movie(
                 name=f"BD_Clip_{index:03d}", filepath=path, channel=1,
                 frame_start=cursor)
-            if index <= len(clip_frames):
-                strip.frame_final_duration = max(int(clip_frames[index - 1]), 1)
+            if frames:
+                strip.frame_final_duration = max(int(frames), 1)
             added.append(strip)
             # 实测：VSE 的 ``frame_final_end`` 是**开区间右端**（start=1、
             # 时长 6 → end=7）。写成 end+1 会让每段多出一帧的空白。
@@ -102,8 +112,9 @@ def concat_shot_clips(scene, clips: Sequence[str], output_base: str, *,
                 break
     log.info("全片拼接：%d 段 → %s", len(existing), produced)
     return {"ok": os.path.exists(produced), "path": produced,
-            "clips": len(existing), "skipped": [p for p in clips
-                                                if p not in existing],
+            "clips": len(existing),
+            "skipped": [p for p in clips
+                        if not os.path.exists(p)],
             "frames": cursor - 1, "resolution": [width, height]}
 
 

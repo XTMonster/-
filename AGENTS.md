@@ -377,40 +377,128 @@ assistant-panel/sprite/ruler-probe）、pytest 4101 passed / 2 skipped、
 冻结链于 `950875a` 捕获，其后 `5e1cf38`/`8dd596b` 为纯台账文本提交
 （PROGRESS/AGENTS 状态行），代码树与链读数不变。
 
-**2026-10-18 D1 合入后（最新，以这行为准）**：D1 决策树投影（逐镜决策树 / 工具
-投影 / 连续优化 / 对抗评审 / 镜版本化 / 逐镜预演路径）已由提交 `a32366b`
-（codex/vlm-feedback）cherry-pick 并入 main，冲突适配保留 main 的
-v1.7/空间尺基座（合入 commit 见 `v1.7/PROGRESS.md`）；新增
-`tools/blender_tests/test_per_shot_previz.py` 探针 ⇒ 探针清单 **51 支**、
-链规模 **55/55**（51 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，
-与 `test_agents_status_is_current.py` 同源对拍）；集成验证树全量 pytest
-**4400 passed / 0 failed / 2 skipped**（4402 tests，main 树 2026-10-18 实读、
-`-o addopts=""`，exit 0；2 skip 均为既有条件守卫：build_ledger 索引刷新、
-secret_store Windows 权限位）；gen_specs --check
-OK；门①–⑩ 全 pass、`holdout_gates.overall == "pass"`（仍指
-`docs/evidence/20261017-103308/`）、唯一红 RK-13/E1 为已结案残留（判据未动）；
-vlm 侧 2026-10-12 台账降为历史，源码存档 `E:\bd_vlm_v2`；另，
-**2026-10-18 spatial-understanding-json（本分支）**：并行实现已
-收口（`0c29d94`：`DesignSnapshot`/`ObservationSnapshot` DTO ＋ 阈值单一真源），
-Tickets 01–07 全部落地（空间 DTO 扩展 / 前向设计转换 / 后向观测装配 / 设计 vs
-实测对照 / 计划与修复提示注入 / 三份 schema＋审计事件＋零 LLM 重放 / Blender
-端到端冒烟 `tools/blender_tests/test_spatial_understanding_smoke.py` ⇒ 探针清单
-**51 支**、链规模 **55/55**，与 `test_agents_status_is_current.py` 同源对拍）；
-运行链接线（Ticket 08）已接：计划定稿即生成设计快照（`SceneSpec.from_plan`
-站位，纯层确定性）、收尾全场采样出观测快照与设计 vs 实测 diff、三个审计事件
-带 schema 版本＋指纹＋完整 payload（`layer9_persistence.replay` 零 LLM 复原）、
-修复提示注入 diff 块（无 diff 零形状差）、计划提示注入设计摘要（无 design 零
-形状差）、交付包落 `spatial_design_snapshot.json`/
-`spatial_observation_snapshot.json`/`spatial_diff_report.json`（结构校验，坏数据
-即中止）；全量 pytest **4503 passed / 2 skipped / 0 failed**（2026-10-18 本分支
-实读，232.53s，exit 0；含 Ticket 08 新增的 `test_spatial_runtime_wiring.py`、
-`test_ruler_observation_audit_history.py` 与 blockout Tickets 01–03 的
-`test_blockout_manifest.py`/`test_blockout_contracts.py`）；并行 blockout 分支
-（Tickets 01–03）已叠在本分支上（`be6d954`/`60c55af`/`1d2c9cd`），其
-`test_blockout_scene_smoke.py` 已登记进 `run_tests.ps1`（第 47 支探针 ⇒ 链规模
-**55/55**，2026-10-18 重排并与 `test_agents_status_is_current.py` 同源对拍）；
-`blockout-scene-smoke` Blender 冒烟绿（体块/相机/运镜/切点全对，证据
-`docs/evidence/20261018-blockout-scene-smoke/`）。
+**2026-10-21 R2-10 收尾（最新，以这行为准）**：白模粗排／细排真跑闭环已收口。
+粗排空间设计按真实主体局部坐标求解：角色移动后重新求机位、逐镜使用主体面向，
+道具 framing target 以真实 AABB 和 owner facing 求解；未显式声明机位侧时按
+`over_shoulder -> front_left -> front_right -> left -> right` 顺序自动避让遮挡，
+成功记录 `side_provenance=occlusion_avoidance`。道具别名先精确匹配，只在候选唯一
+时按前缀／包含关系解析，多候选或零候选保持 unresolved；预览 framing target、
+处方与构图 primary 共用同一解析器。另修复空墙回归：镜头窗口裁剪只接收确实位于
+相机前方的投影，主体完全在相机背后时不得被镜像回画面。
+`tools/run_tests.ps1` 已注册全部 **80 支** Blender 探针，链规模
+**84/84**（80 探针 ＋ spec/golden、pytest、契约冒烟、headless 4 步，与
+`test_agents_status_is_current.py` 同源对拍；on-disk/registered 对拍为
+完全一致、unregistered=0、missing=0）。R2-10 正式证据：
+`docs/evidence/20261021-final12-coarse-r2-10/`。final12 粗排 approved、
+`gates.coarse=pass`、baseline frozen、best score 82.0，七镜构图均高于 80，
+shot_002 的 `prop/银币` framing target 可见比为 1.0；final16 粗排 approved，
+细排全 gate pass，七镜均生成 mp4，共 1120 帧，`blockout_full.mp4` 与
+`final_video.mp4` 均存在。受影响回归中的 shot_003 恢复
+`E_BLOCKOUT_EMPTY_WALL` 单条 finding，空镜 shot_002 仍不误报。
+`contracts/`、`cinema/`、`utils/` 仍保持零 `bpy` 导入；spec/golden 与
+`git diff --check` 通过；2026-10-21 本轮全量 pytest
+**4965 passed / 2 skipped / 0 failed**（4967 tests，`-o addopts=""`，
+220.42s，exit 0；两个 skip 为既有 build_ledger 索引刷新与 Windows
+secret_store 权限位条件守卫），最终全链读数在提交前写回
+`v1.7/PROGRESS.md`。Ticket 03 的物理回滚探针证据落
+`docs/evidence/20261021-coarse-best-rollback/`：低分候选连续两次重建后，
+最终相机位置与两镜角色关键帧均恢复 best，blocked 原因为
+`candidate_cycle_detected`。
+
+**2026-10-20 F10 镜头隔离**：粗排逐镜 staging 验证新增
+镜头隔离——本镜外的角色/持有道具体块临时隐藏（`blockout_sequence.py::
+blockout_isolation_primitive_ids` 纯层单一真源，`blockout_preview.py` 只做
+对象解析），场景级道具与锚点保留（环境连续性）；`ray_cast` 前景遮挡判定
+改为先跳过 `hide_render` 辅助物（此前隐藏对象仍被误计为前景遮挡，隔离
+失效）；渲染循环改 `try/finally` 保证异常路径也恢复可见性。新增纯层
+`tests/test_blockout_isolation.py`（9 项）与 Blender 探针
+`tools/blender_tests/test_shot_isolation_probe.py` ⇒ 探针清单 **62 支**、
+链规模 **66/66**，与 `test_agents_status_is_current.py` 同源对拍；探针实测：
+可见比例 0.33 → 1.0、shot_001 无 `E_FOREGROUND_OCCLUSION`、渲染后与注入
+异常后 `hide_render` 全部恢复；证据
+`docs/evidence/20261020-shot-isolation-probe/`。
+
+**2026-10-20 F11/F12（本分支）**：真跑 final8（run `3c4a82f134d6`）确认
+细排 ReAct 低分震荡会耗尽墙钟 → 新增 `orchestration.react_max_rounds`（默认
+4，0=关，CFG_010 校验）＋连续整回合只读触发 `react_terminal_fail`，计数随
+ResumeState 落盘/恢复；final9（run `d5af1bf50faf`）确认两处新缺陷并已修：
+① shot_002 v5=80.7 adopt 后被 Level 2 自我审核 reopen、最终错记 failed
+（`_audit_and_route` 丢弃 `_record_react_score` 返回值；现 adopt 即
+`react_adopted_terminal` → `passed` 并前进）；② D3"fail 镜跳过渲染"导致
+final9 一个 mp4 都不出（现 fail 镜照常产出最佳版本 mp4/首帧并标
+`failed`，`delivered_shot_ids` 收所有 video 非空的镜，`passed_shot_ids`
+再从其中排除 failed；
+`failures.py` 文案与 best 数字一致，不再出现"80.7 未达到 80 分门槛"）。
+TDD：`test_react_adopt_terminal.py`（adopt 即收尾、无 REVIEW reopen）、
+`test_delivery_with_failures.py` +3；全量 pytest **4785 passed / 2 skipped**
+（2026-10-20 实读，`-o addopts=""`）；缺陷台账
+`.scratch/iteration-fix/defects_20261019.md` F12/F13。
+
+**2026-10-20 F14/F15/F16（本分支）**：真跑 final10（run `51a0c71e39ac`，
+被打断取证，墙钟 7200s 未耗尽）确认高分版本被覆盖丢失：空间尺自动
+reframe 把 shot_001 推到 **79.5 分**（36mm，subject_not_visible 消失），
+但普通 CHECKING/REPAIRING 路径从不登记 best，repair 轮模型反复
+`setup_camera(MCU, front, 50mm)` 把 36mm 覆盖回 50mm/53 分，shot_001
+在 53/57 之间空转 17+ 轮（相机恒 1.995/0/1.231）；且
+`_rollback_repair_if_worse` 只回计划不回场景（lens 36mm 丢失），回滚
+形同虚设。修复：① reframe 后的重审自动登记 best 基线（`_audit_and_route`
+判 `_ruler_reframed_shots` 且 `_react_best` 未建立 → baseline 登记），
+低分审核自动 revert 回该世界快照；② 方案 B 回滚先 `_revert_to_best`
+物理恢复最高分世界状态、再 `rebuild_shot(preserve_camera_edits=True)`
+保留恢复成果；③ `_step_repairing` 注入【高分保留】提示（best 分数 +
+"不要用 setup_camera 整位重摆覆盖它"），无 best 时零形状差。TDD：
+新增 `test_react_best_protection.py`（5 项）；全量 pytest **4790 passed /
+2 skipped**（2026-10-20 实读，`-o addopts=""`）；final11 真实验证
+（run `24a8a6bf7334`，`docs/evidence/20261020-market-real-final11/`，
+kimi-k3 sidecar 8782，`--wall 7200`）**已完成收尾**：粗排 gate 一次
+通过（`coarse_status=approved`、`gates.coarse=pass`、0 修正轮），4 镜全部
+渲染出片（`export/blockout_shot_001..004.mp4` ＋ `blockout_full.mp4`
+543382 B ＋ 首帧 ＋ 逐帧遮罩），`runtime_world_state.json` 实时更新
+（4 台相机含 reframe 后的 36mm、6 个锚点：天空/市场摊位群/海面阳光/
+生蚝摊/背景人群/银币摊），`resume_state.json` 与
+`spatial_observation_snapshot.json` 齐全；高分保留（shot_002 36mm
+重构版保留、低分 revert 生效）、过线即采用（adopt 终态不被自我审核
+reopen）两条红线在真跑链路上复证；缺陷台账
+`.scratch/iteration-fix/defects_20261019.md` F14/F15/F16。
+
+**2026-10-21 上下文压缩 + 128k（本分支）**：用户裁决"生成关键信息文档
+当缓存，压缩上下文（类似 codex），调整到 128k"。落地：`context_budget.py`
+新增 `compress_messages()`（被裁旧消息 → 单条关键信息摘要：工具观察只留
+工具名＋关键结论、assistant tool_calls 只留工具名＋参数片段、非工具消息
+压成一行，不保留重复 tool_call_id）；driver 三处上下文裁剪点（react 轮 /
+repair 续轮 / `_continue_repair`）改为"先按 80% 窗口裁、注入 ≤20% 窗口的
+压缩摘要、整体仍 ≤ 窗口"（`_inject_compressed`：装不下则退回纯裁剪，守
+窗口纪律）；`orchestration.context_window_tokens` 默认 **32000 → 128000**
+（gen_specs 已同步）；DeepSeek 真跑配置 `max_tokens` **32768 → 131072**
+（思考 max 实测 32k 被思维链吃满 `finish_reason=length`）。TDD：
+`tests/test_react_and_context.py` ＋5（压缩保留关键信息 / 不重复调用 ID /
+尊重 token 预算 / 默认窗口 128k）；相关 React/上下文/回溯套件全绿；
+全量 pytest 除两个**既有**红项（`test_assertion_hygiene` 指向
+`tools/blender_tests/diag_composition_gradient.py:106-107` 的
+`float('inf')` 空断言、`test_coarse_loop_soft_composition` 粗排距离处方
+未落）外通过，与本改动无关。
+
+**2026-10-20 F13（本分支）**：per-shot 墙钟前瞻均摊落地——真跑 final8/
+final9 实测全局墙钟是唯一时间护栏，单镜 ReAct/修复空转（一次 LLM 调用
+可达 190s+）可耗尽整场墙钟 → CANCELLED，后续镜没有生成机会。新增纯层
+`block_director/layer5_orchestrator/wall_share.py::per_shot_wall_share`
+（剩余镜 > 1 时按 `剩余墙钟/剩余镜数` 均摊、不低于 60s 地板），driver
+`_step_per_shot` 每轮迭代前检查：超份额且未过线 → 保留 best、如实记
+`unfinished`、渲染最佳版本并推进下一镜（等价 F11 `react_round_exhausted`
+的**时间维度**版，U6：拦截后回溯而不是停止、白模预演视频一定要生成；
+分数门槛 80 一字不动）。配置 `orchestration.wall_share_enabled`（默认
+True）/`wall_share_min_seconds`（默认 60，CFG_010 非负校验），
+`specs/config.default.yaml` 经 `tools/gen_specs.py` 重新生成（`--check`
+OK）。TDD：`test_wall_share_budget.py`（9 项纯函数）+
+`test_driver_wall_share.py`（3 项：超份额推进下一镜、开关关闭保留旧行为、
+末镜永不触发）；全量 pytest **4802 passed / 2 skipped**（2026-10-20
+实读，`-o addopts=""`，211.61s）；缺陷台账
+`.scratch/iteration-fix/defects_20261019.md` F13。final12 真实验证
+（run `df5538a9578a`，`docs/evidence/20261020-market-real-final12/`，
+完整 7 镜剧本 `work/market_coin_previz.fountain` = 节点2＋节点3，kimi-k3
+sidecar 8782，`--wall 7200`）运行中，重点复查 7 镜全部进终态出片、
+`blockout_full.mp4` 为全 7 镜拼接、`runtime_world_state.json` 实时更新、
+F13 均摊不把整场打成 CANCELLED。
 
 Blockout Ticket 04 已落地并登记探针：低采样 16:9 预览渲染＋数值/视觉自检
 （`block_director/layer8_delivery/blockout_preview.py` ＋ 纯层

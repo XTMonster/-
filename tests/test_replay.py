@@ -259,7 +259,8 @@ def test_replay_uses_prepare_and_rebuild_for_per_shot_runs(tmp_path):
                     "cameras": 0, "motions": 0, "keyframes": 0,
                     "results": []}
 
-        def rebuild_shot(self, shot_id, *, plan=None, brief=None):
+        def rebuild_shot(self, shot_id, *, plan=None, brief=None,
+                         preserve_camera_edits=False):
             self.calls.append(("rebuild", shot_id))
             return {"shot_id": shot_id, "camera": f"BD_Cam_{shot_id}",
                     "motions": 0, "keyframes": 1, "warnings": [],

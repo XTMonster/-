@@ -170,7 +170,8 @@ def apply_motions(character, requests: List[ActionRequest], *,
                   clear: bool = True,
                   interpolation: str = "BEZIER",
                   base_pose: Optional[Dict[str, object]] = None,
-                  stagger: bool = True) -> BakeResult:
+                  stagger: bool = True,
+                  trace_end: Optional[int] = None) -> BakeResult:
     """校验冲突 → 合成姿态 → 烘焙关键帧。冲突会抛 ValueError。
 
     v1.4 US-17：先走一次**确定性错开**（同层重叠自动后移，见
@@ -193,7 +194,7 @@ def apply_motions(character, requests: List[ActionRequest], *,
         base_pose = character_base_pose(character)
     if clear:
         clear_animation(character, base_pose)
-    trace = compose(requests, base_pose=base_pose)
+    trace = compose(requests, base_pose=base_pose, trace_end=trace_end)
     result = bake_trace(character, trace)
     set_interpolation(character, interpolation)
     log.info("动作烘焙完成：%d 帧 / %d 个关键帧（%d-%d）",

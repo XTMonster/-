@@ -233,7 +233,7 @@ def t_knowledge_tool_is_callable():
                                     "face_character",
                                     "interact_with", "setup_camera",
                                     "move_camera", "reframe",
-                                    "search_knowledge"}
+                                    "search_knowledge", "revert_shot"}
           and hit.ok and "axis_cross" in hit.content
           and estimate_tokens(hit.content) <= TOKEN_LIMIT_TOOL + 10
           and scoped.ok and "[comp_thirds]" in scoped.content

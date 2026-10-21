@@ -363,6 +363,11 @@ def _clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
 
 
+def _wrap_angle(angle: float) -> float:
+    """把角度差折到最短 [-pi, pi)，避免跨 ±180° 时绕远路。"""
+    return math.atan2(math.sin(angle), math.cos(angle))
+
+
 def _progress(frame: int, start: int, end: int) -> float:
     if end <= start:
         return 1.0
@@ -406,6 +411,10 @@ class MotionSpec:
     blend_in: int = BLEND_FRAMES
     blend_out: int = BLEND_FRAMES
     action_id: str = ""
+    #: 这些通道在动作终点表示**绝对值**（例如走位要面朝运动方向），而不是
+    #: 叠加到当前姿态上的增量。``turn_body`` 之类的旋转不在此列，仍按角度增量
+    #: 累积；两种语义必须显式区分，否则非零初始朝向会被重复叠加。
+    absolute_channels: Tuple[str, ...] = ()
 
 
 # ---------------------------------------------------------------- 姿态函数
@@ -701,12 +710,14 @@ def expand(request: ActionRequest) -> List[MotionSpec]:
 
     def add(layer: str, channels: Sequence[str], pose_fn,
             blend_in: int = BLEND_FRAMES,
-            blend_out: int = BLEND_FRAMES) -> None:
+            blend_out: int = BLEND_FRAMES,
+            absolute_channels: Sequence[str] = ()) -> None:
         specs.append(MotionSpec(action_type=kind, layer=layer,
                                 channels=tuple(channels), start_frame=start,
                                 end_frame=end, pose_fn=pose_fn,
                                 blend_in=blend_in, blend_out=blend_out,
-                                action_id=action_id))
+                                action_id=action_id,
+                                absolute_channels=tuple(absolute_channels)))
 
     if kind in ("walk_to", "run_to"):
         speed = str(params.get("speed", "walk" if kind == "walk_to" else "run"))
@@ -716,7 +727,8 @@ def expand(request: ActionRequest) -> List[MotionSpec]:
         target = _pick(params, "target_position", "to", default=(0.0, 0.0, 0.0))
         bob = float(params.get("bob", 0.03)) * (1.5 if kind == "run_to" else 1.0)
         add(LAYER_BASE, (CH_ROOT_LOC, CH_ROOT_ROT_Z),
-            _walk_root(start, end, source, target, rate, bob, 0.0))
+            _walk_root(start, end, source, target, rate, bob, 0.0),
+            absolute_channels=(CH_ROOT_ROT_Z,))
         add(LAYER_LEGS, (CH_LEG_L, CH_LEG_R),
             _leg_swing(start, end, rate, amplitude))
         if kind == "run_to":
@@ -736,7 +748,8 @@ def expand(request: ActionRequest) -> List[MotionSpec]:
         target = _pick(params, "target_position", "to", default=source)
         bob = float(params.get("bob", 0.03))
         add(LAYER_BASE, (CH_ROOT_LOC, CH_ROOT_ROT_Z),
-            _walk_root(start, end, source, target, rate, bob, 0.0))
+            _walk_root(start, end, source, target, rate, bob, 0.0),
+            absolute_channels=(CH_ROOT_ROT_Z,))
         add(LAYER_LEGS, (CH_LEG_L, CH_LEG_R),
             _leg_swing(start, end, rate, amplitude))
 
@@ -946,7 +959,8 @@ def _weight_at(spec: MotionSpec, frame: int) -> float:
 
 
 def compose(requests: Iterable[ActionRequest],
-            base_pose: Optional[Dict[str, object]] = None
+            base_pose: Optional[Dict[str, object]] = None,
+            trace_end: Optional[int] = None,
             ) -> Dict[int, Dict[str, object]]:
     """把一组动作合成为逐帧姿态：``{frame: {channel: value}}``。
 
@@ -965,6 +979,8 @@ def compose(requests: Iterable[ActionRequest],
 
     start = min(spec.start_frame for spec in specs)
     end = max(spec.end_frame + spec.blend_out for spec in specs)
+    if trace_end is not None:
+        end = min(end, int(trace_end))
     by_layer: Dict[str, List[MotionSpec]] = {}
     for spec in specs:
         by_layer.setdefault(spec.layer, []).append(spec)
@@ -1014,7 +1030,13 @@ def compose(requests: Iterable[ActionRequest],
                 for channel, value in raw.items():
                     baseline = base.get(channel, _zero_like(value))
                     origin = raw_start.get(channel, _zero_like(value))
-                    if isinstance(value, tuple):
+                    if channel in spec.absolute_channels:
+                        target = spec.pose_fn(spec.end_frame).get(channel, value)
+                        progress = _ease(_progress(
+                            frame, spec.start_frame, spec.end_frame))
+                        absolute = float(baseline) + _wrap_angle(
+                            float(target) - float(baseline)) * progress
+                    elif isinstance(value, tuple):
                         absolute = tuple(b + v - o
                                          for b, v, o in zip(baseline, value, origin))  # type: ignore[arg-type]
                     else:

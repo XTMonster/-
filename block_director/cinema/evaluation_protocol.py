@@ -262,24 +262,41 @@ class IntentContract:
 # --------------------------------------------------------------------------- #
 @dataclass(frozen=True)
 class TargetInterval:
-    """目标区间：``min/max`` 任一可缺省；``contains`` 判是否达标。"""
+    """目标区间：``min/max`` 任一可缺省；``contains`` 判是否达标。
+
+    端点默认包含以保持既有指标语义。严格下界（例如构图分量必须
+    ``> 0.8``）通过 ``min_inclusive=False`` 显式表达，不能用浮点 epsilon
+    或其他近似边界冒充数学开区间。
+    """
 
     min_value: Optional[float] = None
     max_value: Optional[float] = None
+    min_inclusive: bool = True
+    max_inclusive: bool = True
 
     def contains(self, value: float) -> bool:
-        if self.min_value is not None and value < self.min_value:
-            return False
-        if self.max_value is not None and value > self.max_value:
-            return False
+        if self.min_value is not None:
+            if value < self.min_value:
+                return False
+            if value == self.min_value and not self.min_inclusive:
+                return False
+        if self.max_value is not None:
+            if value > self.max_value:
+                return False
+            if value == self.max_value and not self.max_inclusive:
+                return False
         return True
 
-    def to_dict(self) -> Dict[str, float]:
-        out: Dict[str, float] = {}
+    def to_dict(self) -> Dict[str, object]:
+        out: Dict[str, object] = {}
         if self.min_value is not None:
             out["min"] = self.min_value
+            if not self.min_inclusive:
+                out["min_inclusive"] = False
         if self.max_value is not None:
             out["max"] = self.max_value
+            if not self.max_inclusive:
+                out["max_inclusive"] = False
         return out
 
 

@@ -33,6 +33,14 @@ PAGE_NUMBER_RE = re.compile(r"^\s*\d+\.?\s*$")
 TITLE_KEYS = ("title:", "credit:", "author:", "authors:", "source:",
               "draft date:", "contact:", "copyright:")
 
+CAST_ANCHOR = "【角色锚】"
+#: R2-F5：场景锚块前缀。跟在角色锚之后，是导演对场景/环境的明确声明。
+SCENE_ANCHOR = "【场景锚】"
+#: 逐行声明：``名字：描述``（名字 ≤12 个汉字/拉丁字符，冒号前无句读）。
+CAST_LINE_RE = re.compile(r"^([^：:、，,。；;\s]{1,12})[：:]")
+#: 同行声明：``【角色锚】名字：描述……名字：描述``——取冒号前的短汉字/拉丁串。
+CAST_INLINE_RE = re.compile(r"([\u4e00-\u9fffA-Za-z]{1,12})[：:]")
+
 SENTENCE_MARKS = "。！？…"
 CLAUSE_MARKS = "，、；：,;:"
 MAX_CUE_CHARS = 24            # 拉丁角色名上限
@@ -99,10 +107,87 @@ def _parse_heading(line: str) -> Tuple[str, str, str, str]:
     return interior, location.strip(), time_of_day.strip(), heading
 
 
+def collect_cast_declarations(lines: List[str]) -> List[str]:
+    """从 ``【角色锚】`` 块里收出场角色名（台词之外的角色也计入角色表）。
+
+    支持两种写法：
+    1. ``【角色锚】`` 独占一行，后续每行 ``名字：描述``（fixtures 写法）；
+    2. ``【角色锚】名字：描述……名字：描述`` 同一行（白模预演剧本写法）。
+    只收明确声明，不猜：名字是冒号前的短汉字/拉丁串，去重保序。
+    """
+    names: List[str] = []
+
+    def _append(name: str) -> None:
+        name = str(name or "").strip()
+        if name and name not in names:
+            names.append(name)
+
+    index = 0
+    while index < len(lines):
+        stripped = lines[index].strip()
+        if stripped.startswith(CAST_ANCHOR):
+            rest = stripped[len(CAST_ANCHOR):].strip()
+            if rest:
+                for name in CAST_INLINE_RE.findall(rest):
+                    _append(name)
+            else:
+                lookahead = index + 1
+                while lookahead < len(lines) and lines[lookahead].strip():
+                    candidate = lines[lookahead].strip()
+                    match = CAST_LINE_RE.match(candidate)
+                    if match is None:
+                        break
+                    _append(match.group(1))
+                    lookahead += 1
+                index = lookahead
+                continue
+        index += 1
+    return names
+
+
+def collect_scene_anchor_texts(lines: List[str]) -> List[str]:
+    """从 ``【场景锚】`` 块收原文（R2-F5）。
+
+    支持两种写法（与角色锚同口径）：
+    1. ``【场景锚】`` 独占一行，后续非空行直到下一个锚块/标题前都是它的
+       内容（fixtures 写法）；
+    2. ``【场景锚】文本`` 同一行（白模预演剧本写法）。
+    只收导演明确写下的声明原文，不在解析层编造或补全。
+    """
+    texts: List[str] = []
+    index = 0
+    while index < len(lines):
+        stripped = lines[index].strip()
+        if stripped.startswith(SCENE_ANCHOR):
+            rest = stripped[len(SCENE_ANCHOR):].strip()
+            if rest:
+                texts.append(rest)
+            else:
+                lookahead = index + 1
+                block: List[str] = []
+                while lookahead < len(lines):
+                    candidate = lines[lookahead].strip()
+                    if not candidate:
+                        break
+                    if candidate.startswith(CAST_ANCHOR) \
+                            or candidate.startswith(SCENE_ANCHOR):
+                        break
+                    block.append(candidate)
+                    lookahead += 1
+                if block:
+                    texts.append("".join(block))
+                index = lookahead
+                continue
+        index += 1
+    return texts
+
+
 def parse_fountain(text: str, *, title: str = "") -> ParsedScript:
     """把 Fountain 文本解析成结构化剧本。"""
     lines = [line.rstrip("\r") for line in (text or "").split("\n")]
     script = ParsedScript(title=title, source_format="fountain")
+    script.cast_declarations = collect_cast_declarations(lines)
+    script.scene_anchor_texts = collect_scene_anchor_texts(lines)
 
     index = 0
     # 标题页：开头连续的 "Key: value" 行
@@ -151,6 +236,14 @@ def parse_fountain(text: str, *, title: str = "") -> ParsedScript:
         if PAGE_NUMBER_RE.match(stripped) and not in_dialogue:
             continue
         if TRANSITION_RE.match(stripped):
+            continue
+        if stripped.startswith(CAST_ANCHOR):
+            #: 角色锚是**角色表声明**，不是角色名 cue；不进入对白解析。
+            ensure_scene()
+            continue
+        if stripped.startswith(SCENE_ANCHOR):
+            #: 场景锚是**环境声明**，不是对白/动作；不进入对白解析。
+            ensure_scene()
             continue
 
         if SCENE_HEADING_RE.match(stripped) or CHINESE_SCENE_RE.match(stripped):

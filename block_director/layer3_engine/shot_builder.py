@@ -689,6 +689,8 @@ def prepare_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     set_context(context)
     from .scene_sync import note_build
     note_build()
+    from .world_state import refresh_world_state
+    refresh_world_state(get_context())
     summary.shots = len(plan.shots)
     summary.total_frames = scene.frame_end
     log.info("场景元素就位：%d 镜 / %d 角色 / %d 环境件（未摆机位）",
@@ -997,6 +999,8 @@ def build_scene(plan: Plan, spec: Optional[SceneSpec] = None,
     # §8.3：把这次插件写入记为基线，之后才分得清"哪些是用户改的"。
     from .scene_sync import note_build
     note_build()
+    from .world_state import refresh_world_state
+    refresh_world_state(get_context())
     summary.shots = len(plan.shots)
     summary.total_frames = scene.frame_end
     log.info("场景构建完成：%d 镜 / %d 角色 / %d 相机 / %d 关键帧 / 共 %d 帧",
@@ -1050,6 +1054,31 @@ class BpySceneBuilder:
         self.spec = spec
         self.clear_scene = clear_scene
         self.crowd = crowd
+        self._coarse_cameras: Dict[str, Dict[str, Any]] = {}
+        self._coarse_baseline_attached = False
+
+    def attach_coarse_baseline(self, baseline: Dict[str, Any]) -> int:
+        """Store the coarse gate's frozen, already-approved shot cameras."""
+        if str(baseline.get("state") or "") != "frozen":
+            raise ValueError("只能接入 state=frozen 的粗排基准")
+        manifest = baseline.get("manifest")
+        if not isinstance(manifest, dict):
+            raise ValueError("粗排基准缺少 manifest")
+        cameras: Dict[str, Dict[str, Any]] = {}
+        for raw in manifest.get("cameras") or []:
+            if not isinstance(raw, dict):
+                raise ValueError("粗排 manifest.cameras 含非对象条目")
+            if raw.get("resolved") is not True:
+                continue
+            shot_id = str(raw.get("shot_id") or "")
+            if not shot_id:
+                raise ValueError("粗排相机缺少 shot_id")
+            if shot_id in cameras:
+                raise ValueError(f"粗排相机 shot_id 重复：{shot_id}")
+            cameras[shot_id] = dict(raw)
+        self._coarse_cameras = cameras
+        self._coarse_baseline_attached = True
+        return len(cameras)
 
     def build(self, plan: Plan, brief=None) -> Dict[str, Any]:
         return build_scene(plan, self.spec, clear_scene=self.clear_scene,
@@ -1062,14 +1091,25 @@ class BpySceneBuilder:
                              brief=brief, crowd=self.crowd).to_dict()
 
     def rebuild_shot(self, shot_id: str, *, plan: Optional[Plan] = None,
-                     brief=None) -> Dict[str, Any]:
+                     brief=None,
+                     preserve_camera_edits: bool = False) -> Dict[str, Any]:
         """方案 B：只重建/预演当前镜（增量，不推倒环境/角色/其他镜）。"""
         from .scene_sync import get_synchronizer
-        from .shot_regenerator import regenerate_shot
+        from .shot_regenerator import ShotRegenError, regenerate_shot
+
+        approved = None
+        if self._coarse_baseline_attached:
+            approved = self._coarse_cameras.get(str(shot_id))
+            if approved is None:
+                raise ShotRegenError(
+                    f"{shot_id} 不在已冻结的粗排相机基准内；"
+                    f"禁止静默重解详细机位")
 
         #: 与 UI 的"重生成此镜"同一条口径：先 ``sync_from_blender`` 回读
         #: 工具/用户改动（挪过的角色、改过的相机），再按计划重建当前镜——
         #: 否则修复回路里模型刚调好的机位/走位会被计划旧坐标覆盖
         #: （§8.3 的 DoD："手动修改被保留"）。
         return regenerate_shot(shot_id, plan=plan, spec=self.spec,
-                               sync=get_synchronizer())
+                               sync=get_synchronizer(),
+                               preserve_camera_edits=preserve_camera_edits,
+                               approved_camera=approved)

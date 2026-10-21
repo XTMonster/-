@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 import bpy
 
@@ -72,6 +72,7 @@ def render_blockout_sequence_video(
     *,
     fps: int = 24,
     preset: str = "hd16x9",
+    shot_ids: Optional[Sequence[str]] = None,
 ) -> Dict[str, Any]:
     """逐镜渲染 16:9 低采样 mp4 并拼接成全片参考视频。
 
@@ -87,8 +88,12 @@ def render_blockout_sequence_video(
     clips: List[str] = []
     clip_frames: List[int] = []
     shot_videos: List[Dict[str, Any]] = []
+    allowed = ({str(item) for item in shot_ids}
+               if shot_ids is not None else None)
     for camera in manifest.get("cameras") or []:
         shot_id = str(camera.get("shot_id") or "")
+        if allowed is not None and shot_id not in allowed:
+            continue
         camera_obj = bpy.data.objects.get(
             f"BD_Blockout_{camera.get('camera_id')}")
         if camera_obj is not None:
@@ -98,8 +103,36 @@ def render_blockout_sequence_video(
         #: 与既有导出器同口径：base 带 .mp4 后缀，Blender 才不把帧号插进
         #: 文件名（实测裸名会产出 shot_0010001-0024.mp4）。
         base = video_dir / f"blockout_{shot_id}.mp4"
-        path, frames = render_shot_video(
-            scene, start, end, str(base), codec="H264", crf="LOW")
+        #: 粗排逐镜 staging 的隔离语义必须延续到最终 MP4：其它镜头的
+        #: 角色/持有道具不能作为本镜前景被烘进参考视频。只隔离 owned
+        #: characters/props；环境锚点保留。异常路径也必须恢复原状态。
+        from .blockout_preview import (
+            _apply_character_staging,
+            _restore_character_staging,
+            _shot_isolation_objects,
+        )
+
+        shot_row = next(
+            (row for row in manifest.get("shot_table") or []
+             if str(row.get("shot_id") or "") == shot_id), {})
+        isolated = _shot_isolation_objects(manifest, shot_row)
+        previous = [(obj, bool(obj.hide_render)) for obj in isolated]
+        for obj in isolated:
+            obj.hide_render = True
+        staged_previous: Dict[str, Any] = {}
+        try:
+            staged_previous, _staging_audit = _apply_character_staging(
+                manifest, shot_id)
+            try:
+                path, frames = render_shot_video(
+                    scene, start, end, str(base), codec="H264", crf="LOW")
+            finally:
+                _restore_character_staging(staged_previous)
+        finally:
+            if staged_previous:
+                _restore_character_staging(staged_previous)
+            for obj, hide_render in previous:
+                obj.hide_render = hide_render
         clips.append(path)
         clip_frames.append(frames)
         shot_videos.append({"shot_id": shot_id, "video": path,

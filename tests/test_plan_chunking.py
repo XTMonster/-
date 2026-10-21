@@ -157,3 +157,49 @@ def test_a_bad_segment_is_re_asked_and_does_not_double_count(tmp_path):
     assert driver.plan is not None
     assert len(driver.plan.shots) == 64, "重问不许把前几段弄丢或弄重"
     assert any(event.kind == "plan_invalid" for event in audit.recent(400))
+
+
+def test_a_coarse_replan_starts_from_chunk_zero_without_duplicating_shots(
+        tmp_path):
+    """粗排回溯是一次新计划，不能续接上一版的最后一桶。
+
+    真跑 20261021 的长剧本（64 镜）连续 4 次粗排评估，传入 gate 的镜头
+    数量从 64 涨到 80/96/112：回溯只重置了失败计数，没有重置
+    ``_plan_chunk_index`` 与已累计镜头，于是每次都只重问第 3/3 段并追加
+    16 镜。质量报告按 shot_id 建字典，重复镜会静默折叠，最后只剩被放大
+    的错误项。这个测试从 gate 的公开边界观察，不看私有累计器。
+    """
+    from block_director.layer5_orchestrator.driver import (
+        DriverLimits,
+        PrevisDriver,
+    )
+    from block_director.layer6_audit.audit_logger import AuditLogger
+
+    parsed = parse_script(LONG)
+    transport = OfflineTransport(declarations=parsed.declared_shots)
+    evaluated = []
+
+    def blocked_gate(plan, brief=None):
+        evaluated.append([str(shot.shot_id) for shot in plan.shots])
+        return {
+            "ready": False,
+            "reason": "构图未过线",
+            "payload": {"rounds": [{"findings": 1}]},
+            "gates": {"coarse": "blocked", "baseline": "missing"},
+        }
+
+    driver = PrevisDriver(
+        transport=transport,
+        audit=AuditLogger(directory=tmp_path),
+        script="",
+        parsed_script=parsed,
+        builder=object(),
+        limits=DriverLimits(coarse_replan_attempts=2),
+        knowledge=None,
+        coarse_gate=blocked_gate,
+    )
+    driver.run_to_completion(poll_interval=0.0, max_wall_s=30)
+
+    assert [len(ids) for ids in evaluated] == [64, 64, 64]
+    assert [len(set(ids)) for ids in evaluated] == [64, 64, 64]
+    assert evaluated[0] == evaluated[1] == evaluated[2]

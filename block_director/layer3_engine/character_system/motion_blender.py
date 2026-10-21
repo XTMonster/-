@@ -51,7 +51,8 @@ class MotionBlender:
     @main_thread_only("MotionBlender.bake")
     def bake(self, *, clear: bool = True,
              interpolation: str = "BEZIER",
-             base_pose: Optional[Dict[str, object]] = None) -> BakeResult:
+             base_pose: Optional[Dict[str, object]] = None,
+             trace_end: Optional[int] = None) -> BakeResult:
         return apply_motions(self.character, self.requests,
                              clear=clear, interpolation=interpolation,
-                             base_pose=base_pose)
+                             base_pose=base_pose, trace_end=trace_end)

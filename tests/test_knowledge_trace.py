@@ -79,3 +79,40 @@ def test_a_headless_run_writes_the_trace_file():
         payload = json.loads(trace_path.read_text(encoding="utf-8"))
         assert payload["backend"] and "degraded" in payload
         assert payload["written_at"]
+
+
+def test_headless_trace_and_audit_share_the_canonical_retrieval_ledger():
+    from block_director.layer5_orchestrator.headless_runner import run_headless
+
+    with tempfile.TemporaryDirectory(prefix="bd_trace_audit_") as tmp:
+        summary = run_headless(
+            "INT. 房间 - 日\n\n两人围绕轴线和构图争执。\n",
+            offline=True,
+            project_dir=Path(tmp),
+        )
+        trace = json.loads(
+            Path(summary["knowledge_trace"]).read_text(encoding="utf-8"))
+        audit_rows = [
+            json.loads(line)
+            for line in Path(summary["audit_log"]).read_text(
+                encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+
+    trace_events = trace["retrieval_events"]
+    audit_events = [
+        row["data"] for row in audit_rows
+        if row.get("kind") == "retrieval_call"
+    ]
+    assert trace["retrieval_event_count"] == len(trace_events)
+    assert trace_events
+    assert [
+        event["retrieval_event_id"] for event in audit_events
+    ] == [
+        event["retrieval_event_id"] for event in trace_events
+    ]
+    assert sum(
+        int(event["actual_injected_tokens"]) for event in audit_events
+    ) == sum(
+        int(event["actual_injected_tokens"]) for event in trace_events
+    )

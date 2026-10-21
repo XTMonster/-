@@ -144,9 +144,17 @@ def t_missing_clip_is_reported_as_failure():
     payload = report.to_dict()
     return {"ok": (report.ok is False and not report.aborted
                    and len(report.missing_clips) >= 2
-                   and len(payload["missing_clips"]) == len(report.missing_clips)),
+                   and len(payload["missing_clips"]) == len(report.missing_clips)
+                   and payload["delivered_shots"] == []
+                   and payload["passed_shots"] == []
+                   and all(shot["video"] is None
+                           for shot in payload["shots"])),
             "report_ok": report.ok, "aborted": report.aborted,
-            "missing": len(report.missing_clips), "files": len(report.files)}
+            "missing": len(report.missing_clips), "files": len(report.files),
+            "delivered_shots": payload.get("delivered_shots"),
+            "passed_shots": payload.get("passed_shots"),
+            "shot_videos": [shot.get("video")
+                            for shot in payload.get("shots", [])]}
 
 
 def t_relative_out_dir_lands_in_the_asked_directory():

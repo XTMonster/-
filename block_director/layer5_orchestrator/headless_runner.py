@@ -94,10 +94,17 @@ def run_headless(
     scene_state_provider=None,
     human_gate=None,
     parsed_script=None,
+    coarse_gate=None,
+    transport=None,
+    transport_mode: Optional[str] = None,
+    knowledge=None,
 ) -> Dict[str, Any]:
     """把状态机跑到终止，返回结果摘要（含审计日志路径）。"""
     config = config or get_config()
-    transport, mode = make_transport(config, offline=offline)
+    if transport is None:
+        transport, mode = make_transport(config, offline=offline)
+    else:
+        mode = str(transport_mode or ("offline" if offline else "injected"))
     _apply_declarations(transport, parsed_script, config)
     #: v1.5 §5.5（P6-T1）：审核器可能先于传输建好（`tools/run_headless.py`
     #: 在调本函数前就构造了 auditor），外部评审需要同一条传输，这里补挂。
@@ -108,13 +115,17 @@ def run_headless(
         root = Path(project_dir) if project_dir else default_project_root()
         audit = AuditLogger(directory=ensure_dir(root / "runs"),
                             **trace_options(config))
+    if knowledge is None:
+        knowledge = _make_knowledge(config, transport, audit)
+
     driver = PrevisDriver(transport=transport, audit=audit, script=script,
                           parsed_script=parsed_script,
                           config=config, limits=limits, builder=builder,
                           registry=registry, auditor=auditor,
                           scene_state_provider=scene_state_provider,
                           human_gate=human_gate,
-                          knowledge=_make_knowledge(config, transport, audit))
+                          knowledge=knowledge,
+                          coarse_gate=coarse_gate)
     # v1.7 D1：运行入口一行注册 UI 事件桥（ui.enabled=false 则 no-op）。
     if getattr(config.ui, "enabled", True):
         from .ui_bridge import UIBridge, make_observer
@@ -314,9 +325,10 @@ def _make_knowledge(config, transport=None, audit=None):
     **自己**降级为 BM25 并置 ``degraded``，由 trace 如实记录。
     """
     rag = getattr(config, "rag", None)
+    audit_hook = _audit_hook(audit)
     client = None
     if transport is not None and hasattr(transport, "retrieve_response"):
-        client = KnowledgeClient(transport, audit=_audit_hook(audit))
+        client = KnowledgeClient(transport, audit=audit_hook)
     # v2 平行层接缝（默认零行为）：未设置
     # ``BLOCKDIRECTOR_DYNAMIC_KNOWLEDGE_DIR`` 时 dynamic_kwargs 为空，
     # 下面的静态路径逐字节不变；一旦设置，目录/快照不合法就显式抛错，
@@ -333,8 +345,12 @@ def _make_knowledge(config, transport=None, audit=None):
             raise
     if rag is None:
         if client is None:
-            return default_retriever(**dynamic_kwargs)
-        return default_retriever()
+            return default_retriever(audit=audit_hook, **dynamic_kwargs)
+        return default_retriever(
+            backend=RagBackend.HYPERGRAPH,
+            client=client,
+            audit=audit_hook,
+        )
     backend = RagBackend.DIGEST if not rag.enabled else RagBackend(str(rag.backend))
     retriever = default_retriever(
         backend=backend, top_k=int(rag.top_k or 5),
@@ -343,6 +359,7 @@ def _make_knowledge(config, transport=None, audit=None):
         client=client,
         cases_backend=str(getattr(rag, "cases_backend", "lightrag") or "lightrag"),
         cases_top_k=int(getattr(rag, "cases_top_k", 3) or 3),
+        audit=audit_hook,
         #: v1.5 §5.2（FR-6）：每桶的规则条数上限（``rag.rule_top_k``，缺省 5）。
         rule_top_k=int(getattr(rag, "rule_top_k", 5) or 5),
         **(dynamic_kwargs if client is None else {}))
@@ -381,6 +398,7 @@ def save_run_project(
     结论照带回；要不要据此拦住什么，是调用方的策略（§14.2 的工作流不能被它挡死）。
     """
     from ..contracts.plan import Plan
+    from ..contracts.evidence import inspect_evidence_store_payload
     from ..layer2_sdl import build_sdl, validate_sdl
     from ..layer9_persistence import findings_report, save_project
 
@@ -410,7 +428,18 @@ def save_run_project(
         crowd=crowd,
     )
     findings = validate_sdl(sdl)
-    path = save_project(Path(out_dir), sdl)
+    evidence_store = None
+    evidence_status: Dict[str, Any] = {"status": "missing"}
+    evidence_payload = (summary or {}).get("evidence_store")
+    if evidence_payload is not None:
+        evidence_store, evidence_status = inspect_evidence_store_payload(
+            evidence_payload)
+        if evidence_store is None:
+            raise ValueError(
+                "运行摘要中的 evidence_store 不是权威证据："
+                + str(evidence_status.get("reason") or "unknown"))
+    path = save_project(
+        Path(out_dir), sdl, evidence_store=evidence_store)
     report = findings_report(findings, path=str(path))
     if not report["ok"]:
         #: 进日志是为了让**那次运行自己的输出**就带这条事实，而不是等下一次加载。
@@ -418,7 +447,8 @@ def save_run_project(
             "项目落盘：SDL 校验未通过 %d 条（规则 %s）——文件照写，"
             "但交付前必须看这些 finding",
             len(report["errors"]), "、".join(report["rules"]))
-    return SavedProject(path=path, validation=report)
+    return SavedProject(path=path, validation=report,
+                        evidence=evidence_status)
 
 
 @dataclass(frozen=True)
@@ -432,3 +462,4 @@ class SavedProject:
 
     path: Path
     validation: Dict[str, Any] = field(default_factory=dict)
+    evidence: Dict[str, Any] = field(default_factory=dict)

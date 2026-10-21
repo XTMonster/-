@@ -38,6 +38,7 @@ def build_manifest(plan: Plan, *,
                    registry: Optional[ElementRegistry] = None,
                    rhythm_arc: Optional[Sequence[Dict[str, Any]]] = None,
                    ruler_observation: Optional[Dict[str, Any]] = None,
+                   failures: Optional[Dict[str, Any]] = None,
                   ) -> Dict[str, Any]:
     """把分镜计划与构建结果拼成交付用清单。
 
@@ -64,6 +65,16 @@ def build_manifest(plan: Plan, *,
     review_counts = Counter(str(item.get("shot_id") or "")
                             for item in (review_requests or []))
     tensions = _rhythm_tensions(rhythm_arc)
+    failed_ids = {
+        str(item.get("shot_id") or "")
+        for item in (failures or {}).get("failures") or []
+        if isinstance(item, dict)
+    }
+    pending_review_ids = {
+        str(item.get("shot_id") or "")
+        for item in (failures or {}).get("pending_review") or []
+        if isinstance(item, dict)
+    }
 
     shots: List[Dict[str, Any]] = []
     cursor = 1
@@ -162,6 +173,12 @@ def build_manifest(plan: Plan, *,
         responsibility = getattr(shot, "responsibility", None)
         if bool(getattr(responsibility, "skip_white_model", False)):
             payload["skip_white_model"] = True
+        #: 与 DeliveryReport 使用同一对布尔键。只给失败/待复核镜出键；
+        #: 未标问题的镜保持原形状，避免把“没有记录”冒充成“已验证通过”。
+        if shot.shot_id in failed_ids:
+            payload["failed"] = True
+        elif shot.shot_id in pending_review_ids:
+            payload["pending_review"] = True
         shots.append(payload)
 
     manifest = {

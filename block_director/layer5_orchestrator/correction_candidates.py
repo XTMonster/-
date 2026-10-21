@@ -15,8 +15,14 @@ VLM 只作提示、永远不进门（不影响 passed/score）：候选的 ``adv
 
 from __future__ import annotations
 
+import hashlib
+import json
 from typing import Any, Dict, Iterable, List, Tuple
 
+from ..contracts.correction import (
+    correction_candidate_dispositions,
+    correction_candidate_lifecycle,
+)
 from ..contracts.guard import Confidence, GuardWarning, Severity
 from .repair import guard_warning_line
 
@@ -47,6 +53,17 @@ _VLM_REQUIRED = ("kind", "subject", "frame", "suggested_tool")
 def kind_for_guard(guard_type: str) -> str:
     """guard 告警类型 → VLM issue kind；映射表之外的保留原名。"""
     return GUARD_KIND_MAP.get(guard_type, guard_type)
+
+
+def _candidate_id(kind: str, subject: str) -> str:
+    """Stable cross-round identity for one semantic problem."""
+    raw = json.dumps(
+        [str(kind), str(subject)],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    return "correction-" + hashlib.sha256(
+        raw.encode("utf-8")).hexdigest()[:16]
 
 
 def _severity_value(value: Any) -> str:
@@ -216,6 +233,7 @@ def build_correction_candidates(guard_warnings: Iterable[Any],
         tool = next((item["suggested_tool"] for item in entry["vlm"]
                      if item["suggested_tool"]), "")
         payload.append((entry["first"], {
+            "candidate_id": _candidate_id(entry["kind"], entry["subject"]),
             "kind": entry["kind"],
             "subject": entry["subject"],
             "source": entry["source"],

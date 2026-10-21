@@ -18,6 +18,7 @@ from bpy.props import StringProperty
 from bpy.types import Operator, Panel
 
 from ..layer2_sdl import build_sdl, validate_sdl
+from ..contracts.evidence import EvidenceStore, evidence_status_text
 from ..layer3_engine.scene_state import collect_scene_state
 from ..layer5_orchestrator.runtime import get_active
 from ..layer9_persistence import save_project
@@ -91,7 +92,20 @@ class BLOCKDIRECTOR_OT_export_sdl(Operator):
             self.report({'ERROR'},
                         f"SDL 校验未通过（{len(errors)} 项），未导出")
             return {'CANCELLED'}
-        path = save_project(_project_dir(context), sdl)
+        evidence_store = getattr(driver, "evidence_store", None)
+        if evidence_store is not None:
+            if not isinstance(evidence_store, EvidenceStore):
+                self.report({'ERROR'}, "当前证据不是权威证据库，未导出")
+                return {'CANCELLED'}
+            evidence_errors = evidence_store.validate()
+            if evidence_errors:
+                self.report(
+                    {'ERROR'},
+                    f"证据库校验未通过（{len(evidence_errors)} 项），未导出",
+                )
+                return {'CANCELLED'}
+        path = save_project(
+            _project_dir(context), sdl, evidence_store=evidence_store)
         self.report({'INFO'}, f"SDL 已导出：{path}")
         return {'FINISHED'}
 
@@ -154,6 +168,12 @@ class BLOCKDIRECTOR_PT_debug(Panel):
         if knowledge:
             layout.label(text=f"知识库：{knowledge['backend']} / "
                               f"{knowledge['cards']} 条", icon='INFO')
+        evidence_status = snap.get("evidence_status")
+        if evidence_status:
+            status_value = str(evidence_status.get("status") or "")
+            icon = 'ERROR' if status_value in {"stale", "invalid"} else 'INFO'
+            layout.label(
+                text=evidence_status_text(evidence_status), icon=icon)
 
         row = layout.row(align=True)
         row.operator("blockdirector.open_llm_trace", icon='TEXT')

@@ -26,7 +26,11 @@ from .plan import Responsibility
 #:
 #: v1.7（A6，R-痛点 M5）：``SDLShot.responsibility``（分工声明）——只增字段、
 #: 无删除无改名；旧文件迁移后每镜补 ``null``（未声明）。
-SDL_VERSION = "1.7"
+#
+#: v1.8（T3，iteration-fix）：``SDLShot.framing_target``（拍摄对象声明）——
+#: 只增字段、无删除无改名；旧文件迁移后每镜补
+#: ``{"kind": "character", "part": "none", "ref": ""}``（整身口径）。
+SDL_VERSION = "1.8"
 
 
 @dataclass
@@ -93,6 +97,9 @@ class SDLShot:
     #: v1.7 §14.1（R-痛点 M5）：分工声明。None = 未声明（≠ 全空）；
     #: ``skip_white_model`` 的执行语义在卡 J3（本卡只落数据）。
     responsibility: Optional[Responsibility] = None
+    #: v1.8（T3）：拍摄对象声明（``{kind, ref, part, anchor_offset?}``）。
+    #: None = 未声明（构图评分退回整身口径）。
+    framing_target: Optional[Dict[str, Any]] = None
 
 
 @dataclass

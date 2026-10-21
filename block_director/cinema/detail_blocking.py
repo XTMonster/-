@@ -18,8 +18,24 @@ SPATIAL_DRIFT_TOLERANCE_M = 0.01
 
 E_DETAIL_SPATIAL_DRIFT = "E_DETAIL_SPATIAL_DRIFT"
 
+#: R2 07/S2：镜头身份冻结错误码。细排/精修/回溯不得改写分镜表声明的
+#: ``characters``（主体集合）／``framing_target``（拍摄对象）／``shot_type``
+#: （景别）；冲突即报此错误并保留计划声明。
+E_IDENTITY_DRIFT = "E_IDENTITY_DRIFT"
+
+#: A detail proposal may explain a local staging change only when the target
+#: shot carries explicit Agent provenance.  This is separate from identity
+#: freeze: it governs *where* a permitted revision may physically act.
+E_DETAIL_SCOPE_VIOLATION = "E_DETAIL_SCOPE_VIOLATION"
+
 
 def _vec3(value: Any) -> Dict[str, float] | None:
+    if isinstance(value, (list, tuple)) and len(value) >= 3:
+        try:
+            return {"x": float(value[0]), "y": float(value[1]),
+                    "z": float(value[2])}
+        except (TypeError, ValueError):
+            return None
     if isinstance(value, Mapping):
         try:
             return {k: float(value.get(k, 0.0)) for k in ("x", "y", "z")}
@@ -74,6 +90,10 @@ def derive_detail_shots(
         duration = int(shot.get("duration_frames") or 1)
         camera = _camera_intent(reference, shot_id)
         character_names = [str(n) for n in (shot.get("characters") or [])]
+        #: R2 07/S2：身份字段（主体/拍摄对象/景别）随派生镜头一起携带，
+        #: 供 ``identity_freeze_review`` 与计划声明逐镜对拍；缺失时不编造。
+        declared_shot_type = str(shot.get("shot_type") or "")
+        declared_framing_target = str(shot.get("framing_target") or "")
         detail_chars: List[Dict[str, Any]] = []
         for name in character_names:
             src = chars.get(name)
@@ -111,7 +131,8 @@ def derive_detail_shots(
             {"x": 0.0, "y": 5.0, "z": 1.6},
             "target": _vec3(camera.get("target")) if camera else
             {"x": 0.0, "y": 0.0, "z": 0.9},
-            "lens_mm": float(camera.get("lens_mm")
+            "lens_mm": float(camera.get("lens")
+                             or camera.get("lens_mm")
                              or 35.0) if camera else 35.0,
             "movements": list(camera.get("movement") or []) if camera else [],
         }
@@ -122,6 +143,8 @@ def derive_detail_shots(
             "start_frame": _start_frame(plan_shots, shot_id),
             "end_frame": _end_frame(plan_shots, shot_id),
             "characters": detail_chars,
+            "shot_type": declared_shot_type or None,
+            "framing_target": declared_framing_target or None,
             "props": detail_props,
             "camera": camera_entry,
             "beats": _beats(shot, duration),
@@ -241,10 +264,287 @@ def spatial_drift_review(
     return findings
 
 
+def identity_freeze_review(
+    *,
+    detail_shots: List[Mapping[str, Any]],
+    plan: Any,
+) -> List[Dict[str, Any]]:
+    """细排/精修后镜头身份与计划声明逐镜对拍（R2 07/S2）。
+
+    冻结字段：``characters``（主体集合，集合相等判定）、``framing_target``、
+    ``shot_type``。任何不一致 ⇒ E 类 error finding（拒绝应用，计划原样
+    保留）；一致返回空表。相机/走位/道具/动作等非身份字段不在此检查范围。
+    """
+    plan_shots = _plan_shots(plan)
+    by_shot = _shot_by_id(plan_shots)
+    findings: List[Dict[str, Any]] = []
+    for shot in detail_shots:
+        shot_id = str(shot.get("shot_id") or "")
+        declared = by_shot.get(shot_id)
+        if declared is None:
+            continue
+        declared_chars = sorted(
+            {str(n) for n in (declared.get("characters") or [])})
+        actual_chars = sorted(
+            {str(c.get("name") or "")
+             for c in shot.get("characters") or []
+             if isinstance(c, Mapping)})
+        if actual_chars != declared_chars:
+            findings.append({
+                "check_id": E_IDENTITY_DRIFT,
+                "shot_id": shot_id,
+                "severity": "error",
+                "path": f"{shot_id}.characters",
+                "message": (f"镜头主体集合被精修改写：计划声明 "
+                            f"{declared_chars}，实际 {actual_chars}；"
+                            f"分镜表是剧本的产物，精修不得越权改分镜"),
+            })
+        for key, label in (("framing_target", "拍摄对象"),
+                           ("shot_type", "景别")):
+            declared_value = str(declared.get(key) or "")
+            actual_value = str(shot.get(key) or "")
+            if not declared_value:
+                continue
+            if actual_value != declared_value:
+                findings.append({
+                    "check_id": E_IDENTITY_DRIFT,
+                    "shot_id": shot_id,
+                    "severity": "error",
+                    "path": f"{shot_id}.{key}",
+                    "message": (f"{label}被精修改写：计划声明 "
+                                f"{declared_value!r}，实际 {actual_value!r}；"
+                                f"精修不得越权改分镜"),
+                })
+    return findings
+
+
+def reference_scope_review(
+    *,
+    previous: Mapping[str, Any],
+    candidate: Mapping[str, Any],
+    shot_id: str,
+    mode: str = "revision",
+) -> List[Dict[str, Any]]:
+    """Validate that a candidate mutation is confined to one shot.
+
+    Revision candidates must carry ``agent_local_revision`` provenance for
+    every target-shot physical drift.  Restore candidates replay an already
+    retained best state, so the target camera may return to its earlier value
+    without masquerading as a new Agent revision.  Neighbor and global state
+    remain immutable in both modes.
+    """
+    if mode not in {"revision", "restore"}:
+        raise ValueError(f"unknown detail scope mode: {mode}")
+    target_shot = str(shot_id)
+    findings: List[Dict[str, Any]] = []
+    overlays = candidate.get("shot_staging")
+    previous_overlays = previous.get("shot_staging")
+    previous_staging = (
+        previous_overlays if isinstance(previous_overlays, Mapping) else {})
+    candidate_staging = (
+        overlays if isinstance(overlays, Mapping) else {})
+    for neighbor_id in sorted(
+            {str(key) for key in previous_staging}
+            | {str(key) for key in candidate_staging}):
+        if not neighbor_id or neighbor_id == target_shot:
+            continue
+        if candidate_staging.get(neighbor_id) != previous_staging.get(
+                neighbor_id):
+            findings.append({
+                "check_id": E_DETAIL_SCOPE_VIOLATION,
+                "shot_id": target_shot,
+                "severity": "error",
+                "path": f"shot_staging.{neighbor_id}",
+                "message": (
+                    f"detail revision for {target_shot} changed neighbor "
+                    f"staging {neighbor_id}"),
+            })
+    target_overlay = (
+        (overlays.get(target_shot) or {})
+        if isinstance(overlays, Mapping)
+        else {}
+    )
+    if not isinstance(target_overlay, Mapping):
+        return [{
+            "check_id": E_DETAIL_SCOPE_VIOLATION,
+            "shot_id": target_shot,
+            "severity": "error",
+            "path": f"shot_staging.{target_shot}",
+            "message": "target-shot staging must be an object",
+        }]
+    for name, raw_entry in target_overlay.items():
+        entry = raw_entry if isinstance(raw_entry, Mapping) else {}
+        if str(entry.get("provenance") or "") != "agent_local_revision":
+            findings.append({
+                "check_id": E_DETAIL_SCOPE_VIOLATION,
+                "shot_id": target_shot,
+                "severity": "error",
+                "path": f"shot_staging.{target_shot}.{name}.provenance",
+                "message": (
+                    f"local staging for {name} in {target_shot} lacks "
+                    "agent_local_revision provenance"),
+            })
+    if candidate.get("characters") != previous.get("characters"):
+        findings.append({
+            "check_id": E_DETAIL_SCOPE_VIOLATION,
+            "shot_id": target_shot,
+            "severity": "error",
+            "path": "characters",
+            "message": (
+                "detail revisions may not move the global character "
+                "continuity baseline; use target-shot staging"),
+        })
+    previous_cameras = {
+        str(row.get("shot_id") or ""): row
+        for row in (previous.get("camera_intents") or [])
+        if isinstance(row, Mapping)
+    }
+    candidate_cameras = {
+        str(row.get("shot_id") or ""): row
+        for row in (candidate.get("camera_intents") or [])
+        if isinstance(row, Mapping)
+    }
+    for neighbor_id in sorted(set(previous_cameras) | set(candidate_cameras)):
+        if not neighbor_id or neighbor_id == target_shot:
+            continue
+        if candidate_cameras.get(neighbor_id) != previous_cameras.get(
+                neighbor_id):
+            findings.append({
+                "check_id": E_DETAIL_SCOPE_VIOLATION,
+                "shot_id": target_shot,
+                "severity": "error",
+                "path": f"camera_intents.{neighbor_id}",
+                "message": (
+                    f"detail revision for {target_shot} changed neighbor "
+                    f"camera {neighbor_id}"),
+            })
+    previous_target_camera = previous_cameras.get(target_shot)
+    candidate_target_camera = candidate_cameras.get(target_shot)
+    if mode == "revision" \
+            and candidate_target_camera != previous_target_camera:
+        provenance = (
+            candidate_target_camera.get("provenance")
+            if isinstance(candidate_target_camera, Mapping) else None
+        )
+        if str(provenance or "") != "agent_local_revision":
+            findings.append({
+                "check_id": E_DETAIL_SCOPE_VIOLATION,
+                "shot_id": target_shot,
+                "severity": "error",
+                "path": f"camera_intents.{target_shot}.provenance",
+                "message": (
+                    f"camera drift for {target_shot} lacks "
+                    "agent_local_revision provenance"),
+            })
+
+    target_shots = {
+        str(row.get("shot_id") or ""): row
+        for row in (candidate.get("shots") or [])
+        if isinstance(row, Mapping)
+    }
+    target_shot_row = target_shots.get(target_shot) or {}
+    target_characters = {
+        str(name) for name in (target_shot_row.get("characters") or [])
+        if str(name)
+    }
+    framing = target_shot_row.get("framing_target")
+    target_framing_ref = (
+        str(framing.get("ref") or "")
+        if isinstance(framing, Mapping)
+        and str(framing.get("kind") or "") == "prop"
+        else ""
+    )
+    previous_props = {
+        str(row.get("id") or ""): row
+        for row in (previous.get("props") or [])
+        if isinstance(row, Mapping)
+    }
+    candidate_props = {
+        str(row.get("id") or ""): row
+        for row in (candidate.get("props") or [])
+        if isinstance(row, Mapping)
+    }
+    for prop_id in sorted(set(previous_props) | set(candidate_props)):
+        before = previous_props.get(prop_id)
+        after = candidate_props.get(prop_id)
+        if before == after:
+            continue
+        owner = (
+            str(after.get("owner") or "")
+            if isinstance(after, Mapping)
+            else str(before.get("owner") or "")
+            if isinstance(before, Mapping)
+            else ""
+        )
+        belongs_to_target = (
+            (owner and owner in target_characters)
+            or (target_framing_ref and prop_id == target_framing_ref)
+        )
+        if not belongs_to_target:
+            findings.append({
+                "check_id": E_DETAIL_SCOPE_VIOLATION,
+                "shot_id": target_shot,
+                "severity": "error",
+                "path": f"props.{prop_id}",
+                "message": (
+                    f"detail revision for {target_shot} changed non-target "
+                    f"prop {prop_id}"),
+            })
+            continue
+        prop_shots: set[str] = set()
+        for other_shot_id, other_shot in target_shots.items():
+            other_characters = {
+                str(name) for name in (other_shot.get("characters") or [])
+                if str(name)
+            }
+            other_framing = other_shot.get("framing_target")
+            other_framing_ref = (
+                str(other_framing.get("ref") or "")
+                if isinstance(other_framing, Mapping)
+                and str(other_framing.get("kind") or "") == "prop"
+                else ""
+            )
+            if (owner and owner in other_characters) \
+                    or (other_framing_ref and prop_id == other_framing_ref):
+                prop_shots.add(other_shot_id)
+        if len(prop_shots) > 1:
+            findings.append({
+                "check_id": E_DETAIL_SCOPE_VIOLATION,
+                "shot_id": target_shot,
+                "severity": "error",
+                "path": f"props.{prop_id}",
+                "message": (
+                    f"prop {prop_id} is shared by shots "
+                    f"{sorted(prop_shots)}; a global prop mutation for "
+                    f"{target_shot} would leak into another shot"),
+            })
+            continue
+        provenance = (
+            after.get("provenance")
+            if isinstance(after, Mapping) else None
+        )
+        if mode == "revision" \
+                and str(provenance or "") != "agent_local_revision":
+            findings.append({
+                "check_id": E_DETAIL_SCOPE_VIOLATION,
+                "shot_id": target_shot,
+                "severity": "error",
+                "path": f"props.{prop_id}.provenance",
+                "message": (
+                    f"prop drift for {prop_id} in {target_shot} lacks "
+                    "agent_local_revision provenance"),
+            })
+    return findings
+
+
 def _dist(a: Mapping[str, float], b: Mapping[str, float]) -> float:
     return ((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2
             + (a["z"] - b["z"]) ** 2) ** 0.5
 
 
 __all__ = ["derive_detail_shots", "spatial_drift_review",
-           "E_DETAIL_SPATIAL_DRIFT", "SPATIAL_DRIFT_TOLERANCE_M"]
+           "identity_freeze_review",
+           "reference_scope_review",
+           "E_DETAIL_SPATIAL_DRIFT", "E_IDENTITY_DRIFT",
+           "E_DETAIL_SCOPE_VIOLATION",
+           "SPATIAL_DRIFT_TOLERANCE_M"]

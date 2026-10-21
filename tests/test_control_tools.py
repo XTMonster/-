@@ -168,6 +168,27 @@ def test_finish_shot_skips_the_repair_loop():
     assert transport.calls == 4
 
 
+def test_finish_shot_advance_event_does_not_claim_audit_passed():
+    transport = ScriptedTransport([
+        (PLAN_TOOL_NAME, {"shots": [{"shot_id": "shot_001", "order": 1,
+                                     "intent": "x", "shot_type": "MS",
+                                     "duration_frames": 24}]}),
+        (FINISH_SHOT, {"summary": "就这样"}),
+    ])
+    driver = make_driver(transport, builder=StubBuilder(),
+                         auditor=StubAuditor(),
+                         limits=DriverLimits(max_repairs_per_shot=2))
+    driver.run_to_completion()
+
+    advances = [
+        event for event in driver.audit.recent(120)
+        if event.kind == "shot_advanced"
+    ]
+    assert advances
+    assert all("通过" not in event.message for event in advances)
+    assert any("待复核" in event.message for event in advances)
+
+
 def test_finish_shot_without_a_current_shot_is_refused():
     driver = make_driver(ScriptedTransport([(FINISH_SHOT, {})]),
                          limits=DriverLimits(plan_attempts=1))

@@ -53,9 +53,11 @@ class RecordingRegistry:
         self._registry = registry
         self.executed: List[tuple] = []
 
-    def execute(self, name: str, args: Dict[str, Any]):
+    def execute(self, name: str, args: Dict[str, Any], *,
+                wrap: bool = True, context: Dict[str, Any] | None = None):
         self.executed.append((name, dict(args)))
-        return self._registry.execute(name, args)
+        return self._registry.execute(
+            name, args, wrap=wrap, context=context)
 
     def openai_schemas(self):
         return self._registry.openai_schemas()

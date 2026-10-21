@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Mapping, Tuple, Optional, Sequence
 
 #: 默认几何（与 ``contracts/config.py`` 的 ``character`` 段逐字段一致）。
 DEFAULT_TOTAL_HEIGHT = 1.70
@@ -38,6 +38,38 @@ DEFAULT_EYE_R = 0.035
 DEFAULT_EYE_DX = 0.11
 DEFAULT_EYE_PROTRUSION = 0.015
 DEFAULT_NECK_GAP = 0.0
+
+
+def facing_for_shot(character: Mapping[str, object], shot_id: str,
+                    default: Sequence[float] = (0.0, 1.0, 0.0)
+                    ) -> Tuple[float, float, float]:
+    """Return the heading declared for one shot, falling back to scene-level.
+
+    A character can turn inside a shot.  ``facing_by_shot`` is the projection
+    produced by the spatial layer for exactly that reason; consumers that
+    build local hand/face geometry must use the same heading as the camera
+    solver.  Missing or malformed declarations fall back explicitly instead of
+    guessing a heading.
+    """
+    for raw in character.get("facing_by_shot") or []:
+        if not isinstance(raw, Mapping):
+            continue
+        if str(raw.get("shot_id") or "") != str(shot_id or ""):
+            continue
+        value = raw.get("direction") or raw.get("facing")
+        if isinstance(value, (list, tuple)) and len(value) >= 2:
+            values = [float(value[0]), float(value[1]),
+                      float(value[2]) if len(value) > 2 else 0.0]
+            return (values[0], values[1], values[2])
+
+    value = character.get("facing")
+    if isinstance(value, (list, tuple)) and len(value) >= 2:
+        values = [float(value[0]), float(value[1]),
+                  float(value[2]) if len(value) > 2 else 0.0]
+        return (values[0], values[1], values[2])
+    values = [float(default[0]), float(default[1]),
+              float(default[2]) if len(default) > 2 else 0.0]
+    return (values[0], values[1], values[2])
 
 #: 躯干内部的高度比例（沿用 v1.3 的相对位置：胸口 0.55/0.70、腰 0.30/0.70）
 CHEST_RATIO_OF_TORSO = 0.55 / 0.70
@@ -60,6 +92,11 @@ NECK_GAP_TOLERANCE = 0.005
 #: 这三个量是**设计选择**、不是冻结几何：改它们不动头顶/头球/眼睛任何一条。
 HAND_PROXY_FORWARD = 0.25
 HAND_PROXY_SIDE = 0.22
+
+#: 手部测量窗边长（裁决 D1=A 的"手部"框尺寸）。与 ``HAND_PROXY_SIDE`` 同值
+#: 是巧合——这是构图测量窗，不是手部代理偏移；单一真源放这里，细排的
+#: ``composition_guide.HAND_BOX_SIZE`` 从这里导入，粗排局部框也用同一个数。
+HAND_BOX_SIZE = 0.22
 
 
 @dataclass(frozen=True)
@@ -199,6 +236,121 @@ def hand_offset(profile: CharacterProfile = DEFAULT_PROFILE,
     """
     return (float(side) * HAND_PROXY_SIDE, HAND_PROXY_FORWARD,
             profile.chest_z - profile.hip_z)
+
+
+def hand_world_position(
+    base: Sequence[float],
+    facing: Sequence[float],
+    *,
+    profile: CharacterProfile = DEFAULT_PROFILE,
+    side: float = 1.0,
+) -> Tuple[float, float, float]:
+    """Resolve the hand proxy in world space from a character's foot point.
+
+    ``base`` is the character's ground point and ``facing`` is its local +Y
+    heading in world space.  Hand offsets are expressed in the torso-local
+    frame, so both the forward and lateral components rotate with the heading.
+    """
+    if len(base) < 3:
+        raise ValueError("base must contain x, y and z")
+    if len(facing) < 2:
+        raise ValueError("facing must contain x and y")
+    fx, fy = float(facing[0]), float(facing[1])
+    norm = math.hypot(fx, fy)
+    if norm <= 1e-9:
+        fx, fy, norm = 0.0, 1.0, 1.0
+    fx, fy = fx / norm, fy / norm
+    local_x, local_y, _ = hand_offset(profile, side=side)
+    return (
+        float(base[0]) + fx * local_y + fy * local_x,
+        float(base[1]) + fy * local_y - fx * local_x,
+        float(base[2]) + float(profile.chest_z),
+    )
+
+
+def coarse_local_bounds(
+    *,
+    kind: str,
+    part: str,
+    low,
+    high,
+    facing: Sequence[float] = (0.0, 1.0, 0.0),
+    profile: CharacterProfile = DEFAULT_PROFILE,
+) -> Optional[Tuple[Tuple[float, float, float], Tuple[float, float, float]]]:
+    """纯几何局部主体框：体块 AABB + facing -> hand/face/prop 世界包围盒。
+
+    粗排 preview 只有纯体块（无网格/body_pivot/parts），而细排与 ruler 的
+    ``composition_guide._local_subject_box`` 用的是角色真实网格（手部子网格、
+    头球、道具体块）。两把尺子必须同源：本函数按**同一份冻结几何**（
+    ``anchor.profile`` / ``hand_offset``）从体块 AABB 推导局部框，几何语义
+    与细排的 ``_anchored_hand_box``／头球推导／道具体块框一致，只是把
+    "网格锚点"换成"体块中心 + facing"。返回 ``((x0,y0,z0),(x1,y1,z1))``，
+    体块缺失/无法推导返回 None（退回整身框，不脑补）。
+
+    * ``kind=prop``：道具体块 AABB 直接作主锚（道具即被摄对象）；
+    * ``kind=character + part=hand``：手部代理立方（``hand_offset`` 相对
+      体块水平中心 + facing 旋转 + 脚底胸口高）；
+    * ``kind=character + part=face``：头球立方（头球中心 = 腿+躯干+头球
+      半径，从冻结比例推导，不另写数字）。
+    """
+    try:
+        low_v = (float(low[0]), float(low[1]), float(low[2]))
+        high_v = (float(high[0]), float(high[1]), float(high[2]))
+    except (TypeError, ValueError, IndexError):
+        return None
+    center = ((low_v[0] + high_v[0]) / 2.0,
+              (low_v[1] + high_v[1]) / 2.0,
+              (low_v[2] + high_v[2]) / 2.0)
+
+    if kind == "prop":
+        extent = (high_v[0] - low_v[0],
+                  high_v[1] - low_v[1],
+                  high_v[2] - low_v[2])
+        if (extent[2] < 0.5 * max(extent[0], extent[1])
+                and max(extent[0], extent[1]) > 0.0):
+            #: 扁平道具（银币这类薄片）的 AABB 高度远小于直径，按原盒投影
+            #: 永远填不满特写画幅（composition_guide._local_subject_box 的
+            #: 同款口径：测量对象仍是道具，但投影框取支配维度立方）。
+            dominant = max(extent[0], extent[1])
+            half = dominant / 2.0
+            return (
+                (center[0] - half, center[1] - half, center[2] - half),
+                (center[0] + half, center[1] + half, center[2] + half),
+            )
+        return low_v, high_v
+
+    if kind != "character":
+        return None
+
+    if part == "face":
+        head_d = float(profile.head_d)
+        half = head_d / 2.0
+        #: 头球中心 = 腿高 + 躯干高 + 头球半径（与 CharacterProfile.head_center_z
+        #: 同源；体块脚底即 ground_z=0，故不用 low.z 再加偏移）。
+        head_cz = float(profile.leg_h) + float(profile.torso_h) + float(profile.head_r)
+        c = (center[0], center[1], head_cz)
+        return (
+            (c[0] - half, c[1] - half, c[2] - half),
+            (c[0] + half, c[1] + half, c[2] + half),
+        )
+
+    if part == "hand":
+        #: 手部锚点与空间设计的手持道具共用同一旋转公式。facing 是角色
+        #: 局部 +Y 的世界朝向，局部 +X（右手侧）随之旋转为 ``(fy, -fx)``。
+        hand_cx, hand_cy, hand_cz = hand_world_position(
+            (center[0], center[1], low_v[2]),
+            facing,
+            profile=profile,
+            side=1.0,
+        )
+        half = HAND_BOX_SIZE / 2.0
+        c = (hand_cx, hand_cy, hand_cz)
+        return (
+            (c[0] - half, c[1] - half, c[2] - half),
+            (c[0] + half, c[1] + half, c[2] + half),
+        )
+
+    return None
 
 
 def profile_from(config=None) -> CharacterProfile:

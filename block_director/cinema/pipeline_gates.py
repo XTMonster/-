@@ -23,6 +23,11 @@ from block_director.contracts.coarse_reference import (
     coarse_reference_content_fingerprint,
 )
 
+from ..contracts.quality import (
+    COMPOSITION_PASS_SCORE,
+    blockout_quality_report,
+)
+
 COARSE_BASELINE_SCHEMA_VERSION = "coarse-baseline/v1"
 
 
@@ -77,17 +82,44 @@ def can_transition(current: str, target: str) -> bool:
 
 
 def coarse_gate(report: Mapping[str, Any]) -> Dict[str, Any]:
-    """粗排 gate：BlockoutReport 无 error finding（硬伤）。
+    """粗排 gate：BlockoutReport 无 error finding（硬伤）且构图全过线。
 
-    构图/遮挡/出画等软指标按项目裁决保留为细排提示（T07），不阻塞粗排；
+    v1.8（2026-10-21 DeepSeek 真跑修复）：真跑 4 镜 composition
+    20/20/77/77（阈值 80）全 fail，旧实现只拦 error finding 放行进细排，
+    细排 4 镜全未过 80。粗排 gate 从此把构图作为**硬门**：任一非空镜
+    composition 不严格 >80（含 unresolved/None）即 blocked，进入回溯重规划；
     verdict 是全 checks 口径，不作为粗排 gate 依据。
     """
     reasons: List[str] = []
-    errors = [f for f in (report.get("findings") or [])
-              if isinstance(f, Mapping) and f.get("severity") == "error"]
-    if errors:
-        reasons.append(f"粗排存在 {len(errors)} 条 error finding，未修正不进入细排")
-    return {"passed": not reasons, "reasons": reasons}
+    quality = blockout_quality_report(report)
+    if quality["hard_error_count"]:
+        reasons.append(
+            f"粗排存在 {quality['hard_error_count']} 条 error finding，"
+            "未修正不进入细排")
+    failed_composition = []
+    for shot_id, shot_quality in sorted(quality["shots"].items()):
+        decision = shot_quality["composition"]
+        if decision["status"] in {"pass", "exempt"}:
+            continue
+        if decision["reason"] == "composition_unresolved":
+            failed_composition.append(f"{shot_id}（unresolved）")
+        else:
+            actual = decision.get("score")
+            failed_composition.append(
+                f"{shot_id}（{float(actual):g} ≤ {COMPOSITION_PASS_SCORE:g}）"
+                if actual is not None else
+                f"{shot_id}（{decision['reason']}）")
+    if not quality["shots"] and not quality["gate_ready"]:
+        failed_composition.append("composition_unresolved")
+    if failed_composition:
+        reasons.append(
+            "粗排构图门未过："
+            + "、".join(failed_composition)
+            + "（构图分必须严格高于 "
+            + f"{COMPOSITION_PASS_SCORE:g}，门槛不下放）")
+    return {"passed": bool(quality["gate_ready"]) and not reasons,
+            "reasons": reasons,
+            "quality": quality}
 
 
 def freeze_coarse_baseline(
@@ -152,8 +184,10 @@ def final_gate(
         reasons.append("粗排未通过")
     if not baseline_frozen:
         reasons.append("粗排基准未冻结")
+    if not detail_results:
+        reasons.append("细排没有可审核的镜头结果")
     failed_shots = [sid for sid, ok in (detail_results or {}).items()
-                    if not ok]
+                    if ok is not True]
     if failed_shots:
         reasons.append(f"细排未全部通过：{failed_shots}")
     if sequence_verdict != "pass":

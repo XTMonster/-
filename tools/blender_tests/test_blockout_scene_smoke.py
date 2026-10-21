@@ -137,6 +137,15 @@ def run_smoke(out_dir: Path) -> dict:
             f"{BD_BLOCKOUT_PREFIX}CamTarget_{camera['shot_id']}")
         if target is None:
             mismatches.append(f"缺对准目标 {camera['shot_id']}")
+        elif camera.get("movements"):
+            expected_target = tuple(float(v) for v in camera.get("target") or ())
+            actual_target = tuple(float(v) for v in target.matrix_world.translation)
+            if len(expected_target) == 3 and any(
+                    abs(actual_target[i] - expected_target[i]) > 1e-3
+                    for i in range(3)):
+                mismatches.append(
+                    f"{camera_name} 运镜起始对准点偏离："
+                    f"{actual_target} != {expected_target}")
         if camera["movements"]:
             action = (cam.animation_data.action
                       if cam.animation_data and cam.animation_data.action

@@ -14,11 +14,12 @@ token 计数用 §6.5 的上限（按需 800 / 计划预取 2000）。Blender �
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
 
 from ..contracts.enums import RagBackend
-from ..contracts.knowledge import Card, Case
+from ..contracts.knowledge import Card, Case, RetrievalEvent
 from .bm25 import make_bm25, ranked, tokenize
 from .cases import (CASE_COLUMN_TITLE, CaseIndex, load_index, render_cases,
                     repo_knowledge_dir)
@@ -161,9 +162,10 @@ def _render_conditional_pack(edges: Sequence[Any],
     ``forbid`` 切掉，模型就照样做禁忌动作。共享 token 上限由调用方
     （:meth:`KnowledgeRetriever.edge_columns`）在栏一级用 ``_take`` 收口，这里
     只按传入的 ``token_limit`` 做整条丢弃；顺序 = 检索顺序（确定性）。
-    返回 ``(文本, dropped_edge_ids, quality_fail)``。
+    返回 ``(文本, dropped_edge_ids, injected_edge_ids, quality_fail)``。
     """
     lines: List[str] = []
+    injected: List[str] = []
     used = 0
     dropped: List[str] = []
     quality_fail = False
@@ -178,8 +180,9 @@ def _render_conditional_pack(edges: Sequence[Any],
             dropped.append(edge.edge_id)
             continue
         lines.append(line)
+        injected.append(str(edge.edge_id))
         used += cost
-    return "\n".join(lines), dropped, quality_fail
+    return "\n".join(lines), dropped, injected, quality_fail
 
 
 @dataclass
@@ -233,6 +236,12 @@ class KnowledgeRetriever:
     rule_top_k: int = DEFAULT_RULE_TOP_K
     #: v1.4 §2.4：检索调用与 ``llm_calls`` **分列**记账。
     retrieval_calls: int = 0
+    #: Canonical prompt-injection events.  This is deliberately separate from
+    #: ``retrieval_calls``: process-local indexes consume no network budget but
+    #: still need auditable provenance.
+    audit: Optional[Callable[[Dict[str, Any]], None]] = None
+    retrieval_events: List[RetrievalEvent] = field(default_factory=list,
+                                                   init=False, repr=False)
     warnings: List[str] = field(default_factory=list)
     #: v1.4 §2.3：**降级必须留痕**——``knowledge_trace.json`` 里的
     #: ``degraded`` / ``degraded_reason`` 由它产出（否则那是死字段）。
@@ -244,6 +253,9 @@ class KnowledgeRetriever:
     #: 记下它是为了让"硬约束"与"参考案例"共用**同一次** ``/v1/retrieve``，
     #: 而不是各发一次（那会把 §2.4 的 ``retrieval_calls`` 账算成两倍）。
     last_cases: List[Any] = field(default_factory=list)
+    last_case_hits: List[Any] = field(default_factory=list)
+    last_case_injected: List[Any] = field(default_factory=list)
+    last_case_drops: List[Dict[str, str]] = field(default_factory=list)
     #: 上一段案例属于哪条查询（查询变了就必须重取，绝不把 A 的案例贴到 B 上）。
     #: 初值 ``None`` 表示"这一次查询还没取过 bundle"——用空串当哨兵会与
     #: 真正的空查询混淆。取过之后就记下查询串，**空结果也算取过**
@@ -254,6 +266,8 @@ class KnowledgeRetriever:
     #: 必须在**同一次**检索里留下来——再查一次会把 §2.4 的 ``retrieval_calls``
     #: 记账翻倍（RK-18 会红），而 E2 只是诊断量，不值得拿预算账换。
     last_edges: List[Any] = field(default_factory=list)
+    last_edge_hits: List[Any] = field(default_factory=list)
+    last_edge_drops: List[Dict[str, str]] = field(default_factory=list)
     #: 上面那批边属于哪条查询（查询不同就不许把 A 的溯源贴到 B 上）。
     last_edges_query: str = ""
     _index_cards: List[Card] = field(default_factory=list, init=False, repr=False)
@@ -366,6 +380,13 @@ class KnowledgeRetriever:
         payload.update(self.cases_info())
         payload.setdefault("shot_scope", {})
         payload.setdefault("plan_scope", {})
+        # Canonical ledgers are written last so an upstream/sidecar trace can
+        # never shadow or stale the event count.
+        payload["retrieval_calls"] = int(self.retrieval_calls)
+        payload["retrieval_event_count"] = len(self.retrieval_events)
+        payload["retrieval_events"] = [
+            event.to_dict() for event in self.retrieval_events
+        ]
         return payload
 
     # ------------------------------------------------------------ 检索
@@ -448,6 +469,11 @@ class KnowledgeRetriever:
         """
         if self.backend is not RagBackend.HYPERGRAPH:
             return []
+        self.last_trace = {}
+        self.last_edge_hits = []
+        self.last_edges = []
+        self.last_edge_drops = []
+        self.last_edges_query = ""
         limit = int(top_k or self.top_k)
         if self.client is not None:
             return self._edges_from_client(query, limit, scope=scope,
@@ -479,11 +505,13 @@ class KnowledgeRetriever:
         """
         from .client import to_internal_edges
 
+        self._reset_case_bundle()
         response = self.client.retrieve_or_none(query, top_k=limit,
                                                 cases_top_k=self._cases_request(
                                                     analogy_query),
                                                 scope=scope, shot_id=shot_id,
-                                                analogy_query=analogy_query)
+                                                analogy_query=analogy_query,
+                                                record_event=self.audit is None)
         self.retrieval_calls = int(getattr(self.client, "retrieval_calls", 0) or 0)
         if response is None:
             self.degraded = True
@@ -493,6 +521,28 @@ class KnowledgeRetriever:
                 "sidecar 检索不可达，本次退回卡片检索并在 knowledge_trace 记 degraded")
             return []
         self.last_trace = dict(response.trace or {})
+        self.degraded = bool(self.last_trace.get("degraded", False))
+        self.degraded_reason = str(
+            self.last_trace.get("degraded_reason", "") or "")
+        trace_backend = str(self.last_trace.get("backend") or "")
+        if trace_backend != str(RagBackend.HYPERGRAPH):
+            self.degraded = True
+            self.degraded_reason = (
+                self.degraded_reason
+                or f"backend_degraded:{trace_backend or 'unknown'}")
+        if trace_backend != str(RagBackend.HYPERGRAPH):
+            # A successful HTTP response is not proof that the hypergraph
+            # answered.  Never render edges unless the sidecar positively
+            # identifies the hypergraph backend; otherwise the card fallback
+            # could smuggle untrusted edge IDs into the prompt and provenance.
+            self.last_edge_drops = [{
+                "id": str(edge.edge_id),
+                "kind": "edge",
+                "reason": "backend_degraded",
+            } for edge in (response.edges or [])]
+            edges = []
+        else:
+            edges = to_internal_edges(response.edges)
         #: §2.3b 的第三栏与硬约束**共用这一次调用**（再发一次会让 §2.4 的
         #: `retrieval_calls` 账翻倍）。案例在这里缓存，`case_block()` 直接取。
         #: 只留**真要注入**的条数（`rag.cases_top_k`）；`off` 时是空——
@@ -503,7 +553,15 @@ class KnowledgeRetriever:
         #: `case_block(analogy)` 查不到缓存，会再发一次 `/v1/retrieve`：
         #: 既让 `retrieval_calls` 的账翻倍，又让 §2.4 的预算口径失真。
         self.last_cases_query = analogy_query or None
-        return to_internal_edges(response.edges)
+        return edges
+
+    def _reset_case_bundle(self) -> None:
+        """Clear the previous sidecar case bundle before a new retrieval."""
+        self.last_cases = []
+        self.last_case_hits = []
+        self.last_case_injected = []
+        self.last_case_drops = []
+        self.last_cases_query = None
 
     # ------------------------------------------------- v1.4 §2.3b L3 案例（第三栏）
     def _cases_request(self, analogy_query: str = "") -> int:
@@ -536,11 +594,14 @@ class KnowledgeRetriever:
         if self.last_cases_query is not None and self.last_cases_query == query:
             return list(self.last_cases)[:limit]
         if self.client is not None and self.backend is RagBackend.HYPERGRAPH:
+            self._reset_case_bundle()
+            self.last_trace = {}
             response = self.client.retrieve_or_none(query, top_k=self.top_k,
                                                     cases_top_k=limit,
                                                     scope=scope,
                                                     shot_id=shot_id,
-                                                    analogy_query=query)
+                                                    analogy_query=query,
+                                                    record_event=self.audit is None)
             self.retrieval_calls = int(getattr(self.client, "retrieval_calls", 0) or 0)
             if response is None:
                 self.degraded = True
@@ -639,7 +700,9 @@ class KnowledgeRetriever:
                    title: str = CASE_COLUMN_TITLE,
                    scope: str = "shot",
                    shot_id: str = "",
-                   budgets: Optional[Dict[str, int]] = None) -> str:
+                   budgets: Optional[Dict[str, int]] = None,
+                   stage: str = "direct",
+                   _record_event: bool = True) -> str:
         """§2.3b 的第三栏「参考案例（仅参考）」。
 
         **原子注入**：一条案例装不下就整条丢弃并写 ``dropped_case_ids``，
@@ -650,18 +713,34 @@ class KnowledgeRetriever:
         v1.4 §2.3b：这一栏的查询是 **`analogy_query`（散文）**，不是约束串。
         空查询 ⇒ 整栏不产出（**不**退回"拿约束串查案例"——那是噪声）。
         """
-        if str(self.cases_backend) == "off":
-            return ""
-        if not str(query or "").strip():
-            return ""
-        top_k = int(top_k or self.cases_top_k or 3)
-        cases = self.cases_for(query, top_k=top_k, scope=scope, shot_id=shot_id)
-        self._record_budget(scope, budgets)
-        if not cases:
-            return ""
+        self.last_case_hits = []
+        self.last_case_injected = []
+        self.last_case_drops = []
+        resolved_top_k = int(top_k or self.cases_top_k or 3)
         limit = int(budgets["remaining"] if budgets
                     else (token_limit or self.token_limit))
-        text, dropped = render_cases(cases, max(limit, 0), title=title)
+        cases: List[Any] = []
+        if str(self.cases_backend) != "off" and str(query or "").strip():
+            cases = self.cases_for(
+                query, top_k=resolved_top_k, scope=scope, shot_id=shot_id)
+            self.last_case_hits = list(cases)
+        self._record_budget(scope, budgets)
+        text, dropped = (
+            render_cases(cases, max(limit, 0), title=title)
+            if cases else ("", []))
+        injected = [
+            case for case in cases if f"[{case.case_id}]" in text
+        ]
+        self.last_case_injected = list(injected)
+        injected_ids = {str(case.case_id) for case in injected}
+        self.last_case_drops = [
+            {
+                "id": str(case.case_id),
+                "kind": "case",
+                "reason": "token_budget",
+            }
+            for case in cases if str(case.case_id) not in injected_ids
+        ]
         section = self.last_trace.setdefault(f"{scope}_scope", {})
         section["dropped_case_ids"] = list(dropped)
         section.setdefault("columns", {})
@@ -670,6 +749,38 @@ class KnowledgeRetriever:
         #: 预算的**扣减**由调用方（`_hypergraph_block` 的 `_take`）负责：
         #: 在这里扣一次、调用方再扣一次＝双重记账，三栏的实际体积会比预算小
         #: 得多（而且和 trace 里的数字对不上）。
+        if _record_event:
+            actual_backend = str(self.cases_backend)
+            index = self.cases_index
+            if isinstance(index, CaseIndex):
+                actual_backend = str(index.effective)
+                if index.degraded:
+                    self.degraded = True
+                    self.degraded_reason = str(index.reason or self.degraded_reason)
+            elif self.client is not None and self.last_trace:
+                actual_backend = str(
+                    self.last_trace.get("cases_backend")
+                    or self.cases_backend)
+            self._record_retrieval_event(
+                stage=stage,
+                scope=scope,
+                shot_id=shot_id,
+                query=str(query or ""),
+                analogy_query=str(query or ""),
+                top_k=resolved_top_k,
+                token_budget=limit,
+                actual_backend=actual_backend,
+                capability="cases",
+                network_call=bool(
+                    self.client is not None
+                    and self.backend is RagBackend.HYPERGRAPH),
+                hit_case_ids=[str(case.case_id) for case in cases],
+                injected_case_ids=[
+                    str(case.case_id) for case in injected
+                ],
+                drops=self._canonical_drops(self.last_case_drops),
+                text=text,
+            )
         return text
 
     def _record_budget(self, scope: str, budgets: Optional[Dict[str, int]]) -> None:
@@ -736,6 +847,7 @@ class KnowledgeRetriever:
         edges = self.hypergraph_edges(query, top_k=top_k, token_limit=budget,
                                       scope=scope, shot_id=shot_id,
                                       analogy_query=analogy_query)
+        backend_drops = list(self.last_edge_drops)
         nodes = getattr(self.hypergraph, "nodes", None) or {}
         # 分栏判据（两层）：
         # ① `hardness == "soft"` 且不带 `forbid` 的边是软先验，进「经验建议」；
@@ -760,10 +872,14 @@ class KnowledgeRetriever:
         hard = [edge for edge in hard if edge not in conditional]
         # 硬度孪生（同一 norm_key 的 hard/soft 两条都带 forbid）只留第一条——
         # 检索顺序是确定性顺序，所以结果确定。
+        conditional_before_dedup = list(conditional)
         seen_conditional = set()
         conditional = [edge for edge in conditional
                        if not (edge.norm_key in seen_conditional
                                or seen_conditional.add(edge.norm_key))]
+        dedup_conditional = [
+            edge for edge in conditional_before_dedup if edge not in conditional
+        ]
         # §2.3b 的关键纪律 2：**同一组成员**若同时以 hard 与 soft 出现（抽取器
         # 跨批把同一条理论边标成了两种硬度，索引里实测有 168 组），硬的那条已经
         # 说了同样的话。再把软的那条放进「经验建议」栏，等于同一句话既"必须遵守"
@@ -785,7 +901,8 @@ class KnowledgeRetriever:
             else:
                 self._take(budgets, hard_column, ())
         remaining = max(0, budget - estimate_tokens(hard_column))
-        conditional_text, dropped_conditional, cond_quality_fail = (
+        (conditional_text, dropped_conditional, injected_conditional,
+         cond_quality_fail) = (
             _render_conditional_pack(conditional, nodes, token_limit=remaining))
         regular_limit = max(0, remaining - estimate_tokens(conditional_text))
         soft_raw, dropped_soft, stats_soft = render_rule_pack(
@@ -833,12 +950,58 @@ class KnowledgeRetriever:
         blank = [kind for kind in _parse_query(query)
                  if kind not in set(constrained)]
         self.last_freedom = freedom_block(constrained, blank)
-        # E2 溯源：只留**真的注入了**的边（被预算整条丢掉的不算"检索命中"）。
-        dropped = (set(dropped_hard) | set(dropped_soft)
-                   | set(dropped_conditional))
+        # E2 溯源：只留**真的注入了**的边。整个栏被共享预算拒绝时，栏内
+        # 已经渲染成功的行也没有进入 prompt，不能算作采纳。
+        hard_injected = list(stats_hard.injected_edge_ids) if hard_column else []
+        soft_injected = (
+            list(injected_conditional) + list(stats_soft.injected_edge_ids)
+            if soft_column else [])
+        injected_edge_ids = list(dict.fromkeys(hard_injected + soft_injected))
+        injected_set = set(injected_edge_ids)
         self.last_edges_query = str(query)
-        self.last_edges = [edge for edge in edges
-                           if getattr(edge, "edge_id", "") not in dropped]
+        self.last_edge_hits = list(edges)
+        self.last_edges = [
+            edge for edge in edges
+            if str(getattr(edge, "edge_id", "")) in injected_set
+        ]
+        edge_drops = [
+            {
+                "id": str(edge_id),
+                "kind": "edge",
+                "reason": reason,
+            }
+            for edge_id, reason in (
+                *[(item, "count_budget") for item in stats_hard.count_dropped],
+                *[(item, "count_budget") for item in stats_soft.count_dropped],
+                *[(item, "token_budget") for item in stats_hard.token_dropped],
+                *[(item, "token_budget") for item in stats_soft.token_dropped],
+                *[(item, "token_budget") for item in dropped_conditional],
+                *[(str(edge.edge_id), "hard_soft_duplicate")
+                  for edge in suppressed_soft],
+                *[(str(edge.edge_id), "conditional_duplicate")
+                  for edge in dedup_conditional],
+            )
+            if str(edge_id) not in injected_set
+        ]
+        recorded_drop_ids = {item["id"] for item in edge_drops}
+        if not hard_column:
+            edge_drops.extend({
+                "id": str(edge.edge_id),
+                "kind": "edge",
+                "reason": "column_budget",
+            } for edge in hard
+                if (str(edge.edge_id) not in injected_set
+                    and str(edge.edge_id) not in recorded_drop_ids))
+        if soft_raw and not soft_column:
+            edge_drops.extend({
+                "id": str(edge.edge_id),
+                "kind": "edge",
+                "reason": "column_budget",
+            } for edge in [*conditional, *soft]
+                if (str(edge.edge_id) not in injected_set
+                    and str(edge.edge_id) not in recorded_drop_ids))
+        self.last_edge_drops = self._canonical_drops(
+            [*backend_drops, *edge_drops])
         self.last_trace["degraded"] = bool(self.degraded)
         self.last_trace["degraded_reason"] = self.degraded_reason
         return hard_column, soft_column
@@ -908,25 +1071,202 @@ class KnowledgeRetriever:
             blocks.append("\n".join(lines))
         return "\n\n".join(blocks)
 
+    def _record_retrieval_event(
+        self,
+        *,
+        stage: str,
+        scope: str,
+        shot_id: str,
+        query: str,
+        analogy_query: str,
+        top_k: int,
+        token_budget: int,
+        actual_backend: str,
+        capability: str,
+        network_call: bool,
+        hit_card_ids: Sequence[str] = (),
+        hit_edge_ids: Sequence[str] = (),
+        hit_case_ids: Sequence[str] = (),
+        injected_card_ids: Sequence[str] = (),
+        injected_edge_ids: Sequence[str] = (),
+        injected_case_ids: Sequence[str] = (),
+        drops: Sequence[Dict[str, str]] = (),
+        text: str = "",
+    ) -> RetrievalEvent:
+        event = RetrievalEvent(
+            retrieval_event_id=f"retrieval-{len(self.retrieval_events) + 1:04d}",
+            stage=str(stage or "direct"),
+            scope=str(scope or "tool"),
+            shot_id=str(shot_id or ""),
+            query=str(query or ""),
+            analogy_query=str(analogy_query or ""),
+            top_k=max(1, int(top_k)),
+            token_budget=max(0, int(token_budget)),
+            requested_backend=str(self.requested_backend),
+            actual_backend=str(actual_backend),
+            capability=str(capability),
+            degraded=bool(self.degraded),
+            degradation_reason=str(self.degraded_reason),
+            network_call=bool(network_call),
+            hit_card_ids=[str(item) for item in hit_card_ids],
+            hit_edge_ids=[str(item) for item in hit_edge_ids],
+            hit_case_ids=[str(item) for item in hit_case_ids],
+            injected_card_ids=[str(item) for item in injected_card_ids],
+            injected_edge_ids=[str(item) for item in injected_edge_ids],
+            injected_case_ids=[str(item) for item in injected_case_ids],
+            drops=[dict(item) for item in drops],
+            actual_injected_tokens=estimate_tokens(text),
+            injected=bool(text.strip()),
+            injected_sha256=(
+                hashlib.sha256(text.encode("utf-8")).hexdigest() if text else ""),
+        )
+        self.retrieval_events.append(event)
+        if self.audit is not None:
+            payload = event.to_dict()
+            trace = dict(self.last_trace or {})
+            hit_edges = {
+                str(getattr(edge, "edge_id", "")): edge
+                for edge in self.last_edge_hits
+            }
+            forbid_members = sum(
+                len(getattr(hit_edges[edge_id], "forbids", ()) or ())
+                for edge_id in event.hit_edge_ids if edge_id in hit_edges
+            )
+            payload.update({
+                "event": "retrieval_call",
+                "retrieval_event_id": event.retrieval_event_id,
+                "scope": event.scope,
+                "shot_id": event.shot_id or None,
+                "backend": event.actual_backend,
+                "cards": len(event.hit_card_ids),
+                "edges": len(event.hit_edge_ids),
+                "cases": len(event.hit_case_ids),
+                "case_ids": list(event.hit_case_ids),
+                "edge_ids": list(event.hit_edge_ids),
+                "forbid_members": forbid_members,
+                "forbid_members_seen": int(
+                    trace.get("forbid_members_seen", 0) or 0),
+                "forbid_backfilled": list(
+                    trace.get("forbid_backfilled") or []),
+                "lanes": int(trace.get("lanes", 1) or 1),
+                "degraded_reason": event.degradation_reason,
+                "retrieval_calls": int(self.retrieval_calls),
+                "retrieval_event_count": len(self.retrieval_events),
+            })
+            self.audit(payload)
+        return event
+
+    @staticmethod
+    def _canonical_drops(
+        drops: Sequence[Dict[str, str]],
+    ) -> List[Dict[str, str]]:
+        """Keep one stable record per dropped item and reason."""
+        result: List[Dict[str, str]] = []
+        seen = set()
+        for item in drops:
+            row = {
+                "id": str(item.get("id") or ""),
+                "kind": str(item.get("kind") or ""),
+                "reason": str(item.get("reason") or ""),
+            }
+            key = (row["id"], row["kind"], row["reason"])
+            if not row["id"] or key in seen:
+                continue
+            seen.add(key)
+            result.append(row)
+        return result
+
+    def _card_block(self, query: str, domain: Optional[str] = None,
+                    top_k: Optional[int] = None,
+                    token_limit: Optional[int] = None) -> Dict[str, Any]:
+        """Search and render cards without recording a nested retrieval event."""
+        hits = self.search_hits(query, domain, top_k)
+        cards = [hit.card for hit in hits]
+        limit = int(token_limit or self.token_limit)
+        text = truncate_to_tokens(self.render(cards), limit) if cards else ""
+        injected = [card for card in cards if f"[{card.id}]" in text]
+        injected_ids = {card.id for card in injected}
+        drops = [
+            {"id": card.id, "kind": "card", "reason": "token_budget"}
+            for card in cards if card.id not in injected_ids
+        ]
+        return {
+            "text": text,
+            "limit": limit,
+            "hit_ids": [card.id for card in cards],
+            "injected_ids": [card.id for card in injected],
+            "drops": drops,
+        }
+
     def block(self, query: str, domain: Optional[str] = None,
               top_k: Optional[int] = None,
-              token_limit: Optional[int] = None) -> str:
+              token_limit: Optional[int] = None, *,
+              stage: str = "direct", scope: str = "tool",
+              shot_id: str = "", analogy_query: str = "") -> str:
         """检索并渲染成 ≤token 上限的注入块。"""
-        cards = self.retrieve(query, domain, top_k)
-        if not cards:
-            return ""
-        limit = int(token_limit or self.token_limit)
-        return truncate_to_tokens(self.render(cards), limit)
+        result = self._card_block(query, domain, top_k, token_limit)
+        actual_backend = str(self.backend)
+        if self.backend is RagBackend.HYPERGRAPH:
+            # ``block`` is the card-only ``search_knowledge`` seam. It never
+            # touches the sidecar or the hypergraph index, so reporting the
+            # configured hypergraph backend here would invent provenance.
+            actual_backend = str(RagBackend.BM25)
+        self._record_retrieval_event(
+            stage=stage,
+            scope=scope,
+            shot_id=shot_id,
+            query=query,
+            analogy_query=analogy_query,
+            top_k=int(top_k or self.top_k),
+            token_budget=result["limit"],
+            actual_backend=actual_backend,
+            capability="cards",
+            network_call=False,
+            hit_card_ids=result["hit_ids"],
+            injected_card_ids=result["injected_ids"],
+            drops=result["drops"],
+            text=result["text"],
+        )
+        return result["text"]
 
-    def digest_block(self, limit: int = TOKEN_LIMIT_PLAN) -> str:
-        """digest 兜底的注入块（五域摘要）。"""
-        if not self.cards:
-            return ""
-        return truncate_to_tokens(self.render(self._digest_cards(None)), limit)
+    def digest_block(self, limit: int = TOKEN_LIMIT_PLAN, *,
+                     stage: str = "direct", scope: str = "tool",
+                     shot_id: str = "", analogy_query: str = "") -> str:
+        """digest 兜底的注入块（五域摘要），并记录一次真实注入决策。"""
+        cards = list(self._digest_cards(None))
+        text = (
+            truncate_to_tokens(self.render(cards), int(limit))
+            if cards else "")
+        injected = [card for card in cards if f"[{card.id}]" in text]
+        injected_ids = {card.id for card in injected}
+        self._record_retrieval_event(
+            stage=stage,
+            scope=scope,
+            shot_id=shot_id,
+            query="",
+            analogy_query=analogy_query,
+            top_k=max(1, len(cards)),
+            token_budget=int(limit),
+            actual_backend=str(RagBackend.DIGEST),
+            capability="digest",
+            network_call=False,
+            hit_card_ids=[card.id for card in cards],
+            injected_card_ids=[card.id for card in injected],
+            drops=[
+                {
+                    "id": card.id,
+                    "kind": "card",
+                    "reason": "token_budget",
+                }
+                for card in cards if card.id not in injected_ids
+            ],
+            text=text,
+        )
+        return text
 
     # ------------------------------------------------------------ §6.5 时机
     def block_for_plan(self, script_digest: str,
-                       limit: int = 0) -> str:
+                       limit: int = 0, *, stage: str = "plan") -> str:
         """阶段 A：按剧本摘要预取（轴线 / 构图 / 摄影最常相关）。
 
         v1.3：top_k 从 6 提到 8。语料从 37 条扩到 130 余条之后，6 条常常
@@ -935,20 +1275,20 @@ class KnowledgeRetriever:
         """
         limit = int(limit or self.plan_token_limit or TOKEN_LIMIT_PLAN)
         if self.backend is RagBackend.DIGEST:
-            return self.digest_block(limit)
+            return self.digest_block(
+                limit, stage=stage, scope="plan", analogy_query="")
         if self.backend is RagBackend.HYPERGRAPH:
             return self._hypergraph_block(script_digest, limit=limit,
                                           top_k=max(self.top_k, 8),
-                                          cards_top_k=4, scope="plan")
-        if not self.cards:
-            return ""
+                                          cards_top_k=4, scope="plan",
+                                          stage=stage)
         return self.block(script_digest, top_k=max(self.top_k, 8),
-                          token_limit=limit)
+                          token_limit=limit, stage=stage, scope="plan")
 
     def block_for_shot(self, shot_type: str, intent: str = "",
                        action_types: Sequence[str] = (),
                        limit: int = 0, shot_id: str = "",
-                       analogy: str = "") -> str:
+                       analogy: str = "", *, stage: str = "editor") -> str:
         """阶段 B1：按该镜的景别 / 意图 / 动作取条目。
 
         ``shot_id`` 只用于审计（§3.3 的 ``retrieval_call`` 事件要它）：运行侧的
@@ -959,26 +1299,34 @@ class KnowledgeRetriever:
         """
         limit = int(limit or self.token_limit or TOKEN_LIMIT_TOOL)
         if self.backend is RagBackend.DIGEST:
-            return self.digest_block(limit)
+            return self.digest_block(
+                limit, stage=stage, scope="shot", shot_id=shot_id,
+                analogy_query=analogy)
         if self.backend is RagBackend.HYPERGRAPH:
             query = " ".join([shot_type or "", intent or "",
                               " ".join(action_types or ())]).strip()
             if not query:
-                return self.digest_block(limit)
+                return self.digest_block(
+                    limit, stage=stage, scope="shot", shot_id=shot_id,
+                    analogy_query=analogy)
             return self._hypergraph_block(query, limit=limit, top_k=self.top_k,
                                           cards_top_k=self.top_k, scope="shot",
-                                          shot_id=shot_id, analogy_query=analogy)
-        if not self.cards:
-            return ""
+                                          shot_id=shot_id, analogy_query=analogy,
+                                          stage=stage)
         query = " ".join([shot_type or "", intent or "",
-                          " ".join(action_types or ())])
+                          " ".join(action_types or ())]).strip()
         if not query.strip():
-            return self.digest_block(limit)
-        return self.block(query, top_k=self.top_k, token_limit=limit)
+            return self.digest_block(
+                limit, stage=stage, scope="shot", shot_id=shot_id,
+                analogy_query=analogy)
+        return self.block(
+            query, top_k=self.top_k, token_limit=limit, stage=stage,
+            scope="shot", shot_id=shot_id, analogy_query=analogy)
 
     def _hypergraph_block(self, query: str, *, limit: int, top_k: int,
                           cards_top_k: int, scope: str,
-                          shot_id: str = "", analogy_query: str = "") -> str:
+                          shot_id: str = "", analogy_query: str = "",
+                          stage: str = "direct") -> str:
         """§2.3b 的**三栏注入**：硬约束 → 经验建议（软）→ 参考案例 → 卡片补充。
 
         R44/Q6b 的硬约束：**三栏共用一个上限**（每镜 ``rag.max_tokens_per_call``、
@@ -993,30 +1341,108 @@ class KnowledgeRetriever:
                                        scope=scope, shot_id=shot_id,
                                        analogy_query=analogy_query,
                                        budgets=budgets)
+        hit_edges = list(self.last_edge_hits)
+        injected_edges = list(self.last_edges)
+        drops = list(self.last_edge_drops)
         columns: List[str] = []
         if hard:
             columns.append(hard)
         if soft:
             columns.append(soft)
         #: 条数来自 `rag.cases_top_k`（§3.2）；这里**不许**再写死 3。
-        cases_text = self.case_block(analogy_query, scope=scope, shot_id=shot_id,
-                                     budgets=budgets)
-        if cases_text and self._take(budgets, cases_text, columns):
+        cases_text = self.case_block(
+            analogy_query, scope=scope, shot_id=shot_id, budgets=budgets,
+            stage=stage, _record_event=False)
+        case_hits = list(self.last_case_hits)
+        injected_cases = list(self.last_case_injected)
+        case_drops = list(self.last_case_drops)
+        cases_taken = bool(
+            cases_text and self._take(budgets, cases_text, columns))
+        if cases_taken:
             columns.append(cases_text)
-        if budgets["remaining"] > 0:
-            remaining = max(0, budgets["remaining"] - (2 if columns else 0))
-            cards = self.block(query, top_k=cards_top_k, token_limit=remaining)
+        elif cases_text:
+            injected_cases = []
+            case_drops = [
+                {
+                    "id": str(case.case_id),
+                    "kind": "case",
+                    "reason": "column_budget",
+                }
+                for case in case_hits
+            ]
+        drops.extend(case_drops)
+
+        remaining = max(0, budgets["remaining"] - (2 if columns else 0))
+        card_result = self._card_block(
+            query, top_k=cards_top_k, token_limit=remaining)
+        card_hits = list(card_result["hit_ids"])
+        injected_cards = list(card_result["injected_ids"])
+        card_drops = list(card_result["drops"])
+        if card_result["text"]:
+            cards = self._take(
+                budgets, "【卡片正文补充】\n" + card_result["text"], columns)
             if cards:
-                cards = self._take(budgets, "【卡片正文补充】\n" + cards, columns)
-                if cards:
-                    columns.append(cards)
+                columns.append(cards)
+            else:
+                injected_cards = []
+                card_drops = [
+                    {
+                        "id": card_id,
+                        "kind": "card",
+                        "reason": "column_budget",
+                    }
+                    for card_id in card_hits
+                ]
+        drops.extend(card_drops)
         #: v1.5 §5.3：**包末**的自由度声明（两行：已约束／留白）。
         #: 它必须走 `_take`——三栏共享同一个 token 上限这条纪律不因它而例外。
         if self.last_freedom and budgets["remaining"] > 0:
             taken = self._take(budgets, self.last_freedom, columns)
             if taken:
                 columns.append(taken)
-        return "\n\n".join(columns)
+        text = "\n\n".join(columns)
+        network_call = self.client is not None
+        trace_backend = str(self.last_trace.get("backend") or "")
+        actual_backend = trace_backend or str(self.backend)
+        if self.degraded and (
+                self.degraded_reason.startswith("sidecar_unavailable")
+                or self.degraded_reason.startswith("hypergraph_error")):
+            actual_backend = str(RagBackend.BM25)
+        elif self.client is not None and not trace_backend:
+            # HTTP success alone is not backend proof.  The rest of this block
+            # is sourced from the process-local card index when no trusted
+            # hypergraph trace is present, so report that actual path.
+            actual_backend = str(RagBackend.BM25)
+        elif self.requested_backend is RagBackend.HYPERGRAPH and (
+                actual_backend != str(RagBackend.HYPERGRAPH)):
+            self.degraded = True
+            self.degraded_reason = (
+                self.degraded_reason or f"backend_degraded:{actual_backend}")
+        self._record_retrieval_event(
+            stage=stage,
+            scope=scope,
+            shot_id=shot_id,
+            query=query,
+            analogy_query=analogy_query,
+            top_k=top_k,
+            token_budget=limit,
+            actual_backend=actual_backend,
+            capability="hypergraph",
+            network_call=network_call,
+            hit_card_ids=card_hits,
+            hit_edge_ids=[
+                str(getattr(edge, "edge_id", "")) for edge in hit_edges
+            ],
+            hit_case_ids=[str(case.case_id) for case in case_hits],
+            injected_card_ids=injected_cards,
+            injected_edge_ids=[
+                str(getattr(edge, "edge_id", "")) for edge in injected_edges
+            ],
+            injected_case_ids=[str(case.case_id) for case in injected_cases],
+            drops=self._canonical_drops(drops),
+            text=text,
+        )
+        return text
 
 
 _DEFAULT: Optional[KnowledgeRetriever] = None
@@ -1032,7 +1458,9 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
                       cases_index: Optional[Any] = None,
                       cases_backend: str = "lightrag",
                       cases_top_k: int = 3,
-                      rule_top_k: int = DEFAULT_RULE_TOP_K) -> KnowledgeRetriever:
+                      rule_top_k: int = DEFAULT_RULE_TOP_K,
+                      audit: Optional[Callable[[Dict[str, Any]], None]] = None
+                      ) -> KnowledgeRetriever:
     """进程级默认检索器（语料是静态的，默认参数下构建一次即可）。
 
     带了非默认参数时**不缓存**：否则第二次用不同配置调用会拿到上一份配置的
@@ -1044,7 +1472,7 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
             and plan_token_limit == TOKEN_LIMIT_PLAN and hypergraph is None
             and client is None and cases_index is None
             and cases_backend == "lightrag" and cases_top_k == 3
-            and int(rule_top_k) == DEFAULT_RULE_TOP_K):
+            and int(rule_top_k) == DEFAULT_RULE_TOP_K and audit is None):
         if _DEFAULT is None:
             _DEFAULT = KnowledgeRetriever(cards=cards_in_domain_order())
         return _DEFAULT
@@ -1054,7 +1482,7 @@ def default_retriever(backend: RagBackend = RagBackend.BM25,
         plan_token_limit=plan_token_limit, hypergraph=hypergraph,
         client=client, cases_index=cases_index,
         cases_backend=str(cases_backend), cases_top_k=int(cases_top_k),
-        rule_top_k=int(rule_top_k))
+        rule_top_k=int(rule_top_k), audit=audit)
 
 
 def reset_default_retriever() -> None:

@@ -54,6 +54,20 @@ def test_shot_type_with_break_justification_stays_warning():
     assert type_findings[0].severity == Severity.WARNING
 
 
+def test_shot_type_with_reasonless_break_is_error():
+    """旧数据里的无理由破例不满足合法豁免条件。"""
+    script = parse_script(MARKET)
+    plan = _faithful_plan(script).to_dict()
+    plan["shots"][0]["shot_type"] = "LS"
+    plan["shots"][0]["rule_justifications"] = [
+        {"rule": "R015", "action": "break"}]
+    findings = check_compliance(Plan.from_dict(plan), script)
+    type_findings = [item for item in findings
+                     if item.rule == "R015" and "拍摄距离" in item.message]
+    assert len(type_findings) == 1
+    assert type_findings[0].severity == Severity.ERROR
+
+
 def test_other_rule_justifications_do_not_satisfy_r015():
     """只有 rule="R015" + action="break" 才算有效破例。"""
     script = parse_script(MARKET)

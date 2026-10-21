@@ -1,6 +1,11 @@
 # ADR-0012 构图门与断言卫生的防自证条款
 
-状态：Accepted（v1.4 / P16）
+状态：Superseded in part by ADR-0016（v1.4 / P16 的历史记录）
+
+> 2026-10-21 更新：下文的构图门 `>= 70.0` 口径已被
+> [ADR-0016](0016-strict-composition-quality-contract.md) 取代。当前构图总分必须
+> **严格高于 80.0**，并且所有入口只消费 `block_director/contracts/quality.py` 的
+> 同一判定。本文保留原决策与证据，不追改历史读数。
 
 ## 背景
 

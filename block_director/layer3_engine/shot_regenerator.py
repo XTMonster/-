@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import bpy
@@ -18,18 +19,33 @@ import bpy
 from ..contracts.cast import CastMember, SceneSpec
 from ..contracts.plan import Plan
 from ..cinema.schedule import shot_ranges
+from ..cinema.framing import FramingResult, vertical_fov
 from ..motion.model import ActionRequest
 from ..utils.blender_compat import action_fcurves
 from ..utils.logger import get_logger
 from ..utils.threading_guard import main_thread_only
 from .character_system import MotionBlender
 from .scene_context import SceneContext, get_context
-from .scene_sync import SceneSynchronizer, is_user_animated
-from .shot_builder import (ShotBuildResult, action_requests, conflict_warnings,
-                           _axis_for_placement, _initial_cast_positions,
-                           axis_for_shot, live_subject_entries,
-                           place_shot_camera)
-from .cinema_engine import establish_axis_from_speakers
+from .scene_sync import (
+    SceneSynchronizer,
+    is_agent_edited,
+    is_user_animated,
+    mark_agent_edited,
+    note_build,
+)
+from .shot_builder import (
+    ShotBuildResult,
+    _axis_for_placement,
+    _initial_cast_positions,
+    action_requests,
+    apply_declared_movements,
+    axis_for_shot,
+    conflict_warnings,
+    live_subject_entries,
+    place_shot_camera,
+)
+from .cinema_engine import CameraBundle, establish_axis_from_speakers
+from .cinema_engine.camera_manager import create_camera
 from ..cinema.axis import axis_status, camera_side_of, pair_spans
 
 log = get_logger("shot-regen")
@@ -37,6 +53,61 @@ log = get_logger("shot-regen")
 
 class ShotRegenError(RuntimeError):
     """无法重生成。消息里给出可执行的下一步。"""
+
+
+def _required_vector3(value: Any, label: str) -> Tuple[float, float, float]:
+    if not isinstance(value, (list, tuple)) or len(value) < 3:
+        raise ShotRegenError(
+            f"粗排冻结相机缺少有效的 {label}（需要三个坐标）")
+    try:
+        return tuple(float(value[index]) for index in range(3))
+    except (TypeError, ValueError) as exc:
+        raise ShotRegenError(
+            f"粗排冻结相机的 {label} 不是数字：{value!r}") from exc
+
+
+def _camera_from_coarse(
+    shot: Any,
+    approved: Dict[str, Any],
+) -> Tuple[CameraBundle, FramingResult]:
+    """Create the exact camera pose approved by the coarse gate.
+
+    This is deliberately not a second framing solver.  The coarse gate already
+    solved and audited these values; the detail scene must reproduce them
+    exactly, then apply only the shot's declared camera movement on top.
+    """
+    position = _required_vector3(approved.get("position"), "position")
+    target = _required_vector3(approved.get("target"), "target")
+    raw_lens = approved.get("lens_mm", approved.get("lens"))
+    try:
+        lens = float(raw_lens)
+    except (TypeError, ValueError) as exc:
+        raise ShotRegenError(
+            f"粗排冻结相机缺少有效焦距：{raw_lens!r}") from exc
+    if not math.isfinite(lens) or lens <= 0.0:
+        raise ShotRegenError(f"粗排冻结相机焦距必须大于 0，实际 {lens!r}")
+
+    bundle = create_camera(
+        camera_id=str(shot.shot_id), location=position, look_at=target,
+        lens=lens)
+    distance = math.sqrt(sum(
+        (target[index] - position[index]) ** 2 for index in range(3)))
+    frame_height = 2.0 * distance * math.tan(
+        vertical_fov(lens, float(bundle.sensor_width)) / 2.0)
+    bundle.camera["bd_shot_type"] = str(shot.shot_type).upper()
+    bundle.camera["bd_frame_height"] = frame_height
+    bundle.camera["bd_camera_provenance"] = "coarse_frozen"
+    solution = FramingResult(
+        shot_type=str(shot.shot_type).upper(),
+        lens=lens,
+        distance=distance,
+        position=position,
+        target=target,
+        camera_height=position[2],
+        frame_height=frame_height,
+        warnings=[],
+    )
+    return bundle, solution
 
 
 @main_thread_only("clear_keyframes_in_range")
@@ -62,13 +133,44 @@ def clear_keyframes_in_range(character, start: int, end: int,
     return removed
 
 
+def _live_root_positions_at(characters: Dict[str, Any],
+                            frame: int) -> Dict[str, Tuple[float, float, float]]:
+    """Read each character root at the shot's start, then restore the UI frame."""
+    scene = bpy.context.scene
+    previous = int(scene.frame_current)
+    positions: Dict[str, Tuple[float, float, float]] = {}
+    try:
+        scene.frame_set(int(frame))
+        bpy.context.view_layer.update()
+        for character_id, character in (characters or {}).items():
+            root = getattr(character, "root", None)
+            if root is None:
+                continue
+            positions[str(character_id)] = tuple(
+                float(value) for value in root.location)
+    finally:
+        scene.frame_set(previous)
+        bpy.context.view_layer.update()
+    return positions
+
+
 @main_thread_only("regenerate_shot")
 def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
                     spec: Optional[SceneSpec] = None,
                     context: Optional[SceneContext] = None,
                     sync: Optional[SceneSynchronizer] = None,
-                    sync_edits: bool = True) -> Dict[str, Any]:
-    """重建单个镜头：回读用户改动 → 换相机 → 重烘这一镜的动作。"""
+                    sync_edits: bool = True,
+                    preserve_camera_edits: bool = False,
+                    approved_camera: Optional[Dict[str, Any]] = None
+                    ) -> Dict[str, Any]:
+    """重建单个镜头：回读用户改动 → 换相机 → 重烘这一镜的动作。
+
+    ``preserve_camera_edits=True``（逐镜预演的"同镜迭代"用）：重建时**保留**
+    被工具/空间尺改过的相机（``bd_agent_edited`` 标记），不按计划原值重摆；
+    否则每轮迭代都会把 reframe/setup_camera 的成果冲回计划初始值，修复回路
+    无法收敛（final6 实测：空间尺 35→25.2mm 的 reframe 被下一轮重建打回
+    35mm，构图停在 20–43 上不了 80）。手动"重生成此镜"不传该开关，语义不变。
+    """
     context = context or get_context()
     if context is None:
         raise ShotRegenError("当前没有 BlockDirector 场景上下文；请先构建一次场景")
@@ -105,25 +207,50 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
     old_marker = scene.timeline_markers.get(f"BD_Cut_{shot_id}")
     if old_marker is not None:
         scene.timeline_markers.remove(old_marker)
-    if previous is not None:
-        bpy.data.objects.remove(previous, do_unlink=True)
+    #: 逐镜迭代（preserve_camera_edits=True）且相机带着 agent 编辑标记时，
+    #: 保留这台相机与它的对准 Empty，不再按计划重摆（见函数 docstring）。
+    preserve_camera = (preserve_camera_edits and previous is not None
+                       and is_agent_edited(previous))
     # 对准点 Empty 与相机成对存在，必须一起删。否则 create_camera 会新建出
     # ``BD_CamTarget_<shot>.001``，而 ``_shot_target_object()`` 按原名查找时
     # 仍返回旧对象——move_camera / reframe 会去动一个和相机已经没有约束关系
     # 的 Empty，表现为"加了运镜但画面不动"。
     stale_target = scene.objects.get(f"BD_CamTarget_{shot_id}")
-    if stale_target is not None:
-        bpy.data.objects.remove(stale_target, do_unlink=True)
-
-    # v1.3：与主构建共用同一个机位解算入口。
-    # v1.2 这里写死 side="front" 并丢掉 lens，重生成后朝向与焦距都会回退。
-    bundle, solution, _frame = place_shot_camera(
-        shot, cast_map, spec,
-        #: 方案 B（§3.6.4 #5）：与主构建同一条轴线入口——逐镜重建不重新猜
-        #: 轴侧，否则会把机位摆到观众没看见过的一侧（R001 越轴）。
-        axis=axis_for_shot(context, shot),
-        #: 与主构建同一条口径：按**此刻**人在哪、朝哪摆机位（v1.6）。
-        entries=live_subject_entries(shot, context.characters))
+    if not preserve_camera:
+        if previous is not None:
+            bpy.data.objects.remove(previous, do_unlink=True)
+        if stale_target is not None:
+            bpy.data.objects.remove(stale_target, do_unlink=True)
+        if approved_camera is not None:
+            #: 粗排 gate 审批并冻结的正是这一套机位。详细场景若再从计划独立
+            #: 解一遍，等于"粗排审 A、细排审 B"；两个求解器的 0.15m 对准高度
+            #: 差和不同 side 解析都会被伪装成审核失败。这里原样落冻结值。
+            bundle, solution = _camera_from_coarse(shot, approved_camera)
+        else:
+            # v1.3：与主构建共用同一个机位解算入口。
+            # v1.2 这里写死 side="front" 并丢掉 lens，重生成后朝向与焦距都会回退。
+            bundle, solution, _frame = place_shot_camera(
+                shot, cast_map, spec,
+                #: 方案 B（§3.6.4 #5）：与主构建同一条轴线入口——逐镜重建不重新猜
+                #: 轴侧，否则会把机位摆到观众没看见过的一侧（R001 越轴）。
+                axis=axis_for_shot(context, shot),
+                #: 与主构建同一条口径：按**此刻**人在哪、朝哪摆机位（v1.6）。
+                entries=live_subject_entries(shot, context.characters))
+    else:
+        target = stale_target
+        bundle = CameraBundle(
+            camera=previous,
+            target=target,
+            lens=float(previous.data.lens),
+            sensor_width=float(previous.data.sensor_width))
+        solution = FramingResult(
+            shot_type=str(shot.shot_type), lens=bundle.lens, distance=0.0,
+            position=tuple(previous.location),
+            target=tuple(target.location) if target is not None
+            else (0.0, 0.0, 0.0),
+            camera_height=float(previous.location[2]),
+            frame_height=float(previous.data.get("bd_frame_height") or 0.0),
+            warnings=[])
     marker = scene.timeline_markers.new(f"BD_Cut_{shot_id}", frame=start)
     marker.camera = bundle.camera
     context.cameras[shot_id] = bundle.camera
@@ -131,7 +258,9 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
     warnings.extend(solution.warnings)
 
     # 3) 重烘这一镜的动作：帧范围之外的关键帧不动，用户调过的角色整段保护
-    requests = action_requests(shot, start, cast_map, warnings)
+    live_from = _live_root_positions_at(context.characters, start)
+    requests = action_requests(
+        shot, start, cast_map, warnings, live_from=live_from)
     warnings.extend(conflict_warnings(requests, shot_id))
     by_character: Dict[str, List[ActionRequest]] = {}
     for request in requests:
@@ -155,11 +284,26 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
         blender = MotionBlender(character)
         blender.requests.extend(character_requests)
         try:
-            result = blender.bake(clear=False)
+            result = blender.bake(clear=False, trace_end=end)
         except ValueError as exc:
             warnings.append(f"{character_id}: 动作重烘失败（{exc}）")
             continue
         keyframes += result.keyframes
+
+    #: ``place_shot_camera`` 重建的是相机对象本身，连同声明运镜的关键帧一起
+    #: 删除。角色动作先烘完再重放运镜，因为 follow/lead/steadicam 等运镜要读
+    #: 主体逐帧的真实轨迹。保留 Agent 相机时不重放，避免在 Agent 自己的运动
+    #: 之上再叠一遍。
+    camera_movements = 0
+    camera_keyframes = 0
+    if not preserve_camera:
+        camera_movements, camera_keyframes, movement_warnings = (
+            apply_declared_movements(
+                shot, context.characters, start, end,
+                camera=bundle.camera, target=bundle.target)
+        )
+        warnings.extend(movement_warnings)
+        keyframes += camera_keyframes
 
     if scene.camera is previous or scene.camera is None:
         scene.camera = bundle.camera
@@ -272,5 +416,24 @@ def regenerate_shot(shot_id: str, *, plan: Optional[Plan] = None,
     ).to_dict()
     payload["ok"] = True
     payload["keyframes"] = keyframes
+    payload["camera_movements"] = camera_movements
+    payload["camera_keyframes"] = camera_keyframes
     payload["protected"] = protected
+
+    #: 缺陷 C：重建是插件自己的写入——清掉 agent 编辑标记并重记基线，
+    #: 之后用户手挪角色/相机才能再次被识别为"用户改动"回读保留；
+    #: agent 挪过的位置本次重建已按计划原值覆盖，不再固化。
+    #: 例外：逐镜迭代**保留了**这台相机（preserve_camera_edits=True）时
+    #: 不清标记——它本来就不是按计划重建的，清了会导致下一轮又冲回计划值。
+    if not preserve_camera:
+        for agent_obj in (bundle.camera, bundle.target):
+            if agent_obj is not None:
+                mark_agent_edited(agent_obj, False)
+    for character_id in shot.characters:
+        character = context.character(character_id)
+        if character is not None and character.root is not None:
+            mark_agent_edited(character.root, False)
+    note_build()
+    from .world_state import refresh_world_state
+    refresh_world_state(context)
     return payload

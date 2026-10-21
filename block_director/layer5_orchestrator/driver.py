@@ -21,11 +21,16 @@ import traceback
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional
 
 from ..contracts.enums import Purpose, ToolChoice
 from ..contracts.audit import (SCENE_BUILT_RESERVED_KEYS, AuditError,
-                               AuditResult, scene_built_reason)
+                               AuditResult, canonical_fingerprint,
+                               identity_finding, scene_built_reason)
+from ..contracts.blockout import manifest_fingerprint
+from ..contracts.coarse_reference import (
+    coarse_reference_content_fingerprint,
+)
 from ..contracts.messages import (
     ChatPayload,
     ChatReply,
@@ -36,11 +41,29 @@ from ..contracts.messages import (
     tool_message,
     validate_conversation,
 )
-from ..contracts.plan import FPS, Plan, ShotPlan, unknown_cast_ids
+from ..contracts.plan import (
+    FPS,
+    Plan,
+    ShotPlan,
+    coarse_plan_identity_drift,
+    unknown_cast_ids,
+)
 from ..contracts.brief import SOURCE_DETERMINISTIC, SceneBrief
-from ..contracts.enums import ErrorCode
+from ..contracts.enums import SHOT_TYPES, ErrorCode, ShotType
 from ..contracts.errors import user_message
+from ..contracts.evidence import (
+    EvidenceError,
+    EvidenceStore,
+    inspect_evidence_store,
+)
 from ..contracts.tools import MUTATING_TOOLS, READ_ONLY_TOOLS
+from ..contracts.world_state import world_state_target_path
+from ..contracts.config import DEFAULT_CONTEXT_WINDOW_TOKENS
+from ..contracts.quality import (
+    COMPOSITION_PASS_SCORE as PASS_SCORE,
+    COMPOSITION_PASS_TEXT,
+    composition_decision,
+)
 from ..layer6_audit.audit_logger import AuditLogger
 from ..utils.logger import get_logger
 from ..utils.threading_guard import assert_main_thread
@@ -64,9 +87,15 @@ from .repair import (REPAIR_FOLLOWUP_NUDGE, build_repair_payload,
 from .budget import Budget, BudgetLimits
 from .budget_formula import describe as describe_budget_formula
 from .budget_formula import evaluate as evaluate_llm_call_budget
-from .context_budget import budget_report, slim_messages, trim_messages
-from .editor import (build_editor_payload, extract_draft, merge_draft,
-                     normalize_draft_watchdog, rank_drafts)
+from .context_budget import (
+    budget_report,
+    compress_messages,
+    count_tokens,
+    slim_messages,
+    trim_messages,
+)
+from .editor import (build_editor_payload, extract_draft, identity_conflicts,
+                     merge_draft, normalize_draft_watchdog, rank_drafts)
 from .editor import EDITOR_TOOL_NAME, EMIT_SHOT_DRAFT_PARAMETERS
 from .react import build_react_payload, render_shot_memory, should_react, shot_memory
 from .script_polish import build_polish_payload, extract_polish
@@ -80,11 +109,18 @@ from .retry_ladder import (
     STAGE_OF,
     CallOutcome,
     RetryPolicy,
+    is_server_error,
     is_timeout,
     next_step,
 )
-from .loop_detector import LoopDetector
+from .loop_detector import DEFAULT_QUERY_TOOLS, LoopDetector
+from .wall_share import per_shot_wall_share
 from .decision_tree import Verdict, build_tree
+from ..contracts.backtrack import coarse_plan_backtrack
+from ..delivery.coarse_gate import (
+    merge_integrity_decision,
+    plan_integrity_findings,
+)
 from .tool_projection import (
     TOOL_TREE_MAP,
     ToolProjection,
@@ -301,9 +337,11 @@ RESUME_STATE_VERSION = 1
 RESUME_STATE_FILENAME = "resume_state.json"
 
 #: 终态镜的闭集。``finished`` = 模型 `finish_shot` 声明完成但审核未过；
-#: ``unverified`` = 审核器没给出结论（异常路径）就前进的镜头。四种都表示
+#: ``unverified`` = 审核器没给出结论（异常路径）就前进的镜头；
+#: ``unfinished`` = 单镜均摊墙钟耗尽、流程结束但质量未通过。它们都表示
 #: "这一镜的 LLM 流程已结束"，resume 时全部零调用跳过。
-RESUME_TERMINAL_STATUSES = ("passed", "degraded", "finished", "unverified")
+RESUME_TERMINAL_STATUSES = ("passed", "degraded", "finished", "unverified",
+                            "unfinished", "failed")
 
 
 class ResumeStateError(RuntimeError):
@@ -317,7 +355,8 @@ class ResumeState:
     格式（v1）：顶层 ``schema_version`` 固定为 :data:`RESUME_STATE_VERSION`；
     ``plan`` / ``brief`` 是中断那一刻的完整快照（草案已合并进计划）；
     ``drafts`` 记每镜成功合并的 B1 草案（用于算"还有哪些镜没起草"）；
-    ``terminal_shots`` 记每镜终态（passed/degraded/finished/unverified），
+    ``terminal_shots`` 记每镜终态
+    （passed/degraded/finished/unverified/unfinished/failed），
     resume 时对它们**零 LLM 调用**跳过；``delivered_shots`` 记墙钟收尾时
     已经导出的镜头，resume 后的导出不许重渲它们。
     """
@@ -338,6 +377,20 @@ class ResumeState:
     #: D1：逐镜版本历史（`{shot_id: history.to_dict()}`）。断点续跑后
     #: `restore_shot_version` 仍能按版本号取回任意一版计划。
     version_histories: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    #: R2-D3：逐镜回溯最高分版本快照（`{shot_id: {score, version,
+    #: world_state}}`）与连续无新高轮数（`{shot_id: int}`）。断点续跑后
+    #: `_failures_payload()` 用持久化值重建，不再因新进程空内存清零历史最高分
+    #: （"高分保留"跨进程成立，红线 U10）。旧断点无此字段时缺省空表（兼容）。
+    react_best: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    react_no_gain: Dict[str, int] = field(default_factory=dict)
+    #: R2-F11：每镜 ReAct 总回合计数随断点落盘，resume 后不重置回合上限。
+    react_round_counts: Dict[str, int] = field(default_factory=dict)
+    #: Unified per-shot evidence and best pointers.  Kept as a wire-format
+    #: mapping here so the pure resume contract does not own mutable evidence.
+    evidence_store: Optional[Dict[str, Any]] = None
+    #: Exact coarse gate decision associated with that evidence.  Resume must
+    #: not silently replace a passing frozen baseline with a fresh low score.
+    coarse_decision: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -362,6 +415,14 @@ class ResumeState:
             "reason": str(self.reason),
             "version_histories": {
                 str(k): dict(v) for k, v in self.version_histories.items()},
+            "react_best": {
+                str(k): dict(v) for k, v in self.react_best.items()},
+            "react_no_gain": {
+                str(k): int(v) for k, v in self.react_no_gain.items()},
+            "react_round_counts": {
+                str(k): int(v) for k, v in self.react_round_counts.items()},
+            "evidence_store": copy.deepcopy(self.evidence_store),
+            "coarse_decision": copy.deepcopy(self.coarse_decision),
         }
 
     @classmethod
@@ -441,6 +502,64 @@ class ResumeState:
                         f"resume_state.version_histories.{key} 必须是对象")
                 histories[str(key)] = dict(value)
             state.version_histories = histories
+        if "react_best" in payload:
+            raw = payload["react_best"]
+            if not isinstance(raw, dict):
+                raise ResumeStateError(
+                    "resume_state.react_best 必须是对象")
+            best = {}
+            for key, value in raw.items():
+                if not isinstance(value, dict):
+                    raise ResumeStateError(
+                        f"resume_state.react_best.{key} 必须是对象")
+                best[str(key)] = dict(value)
+            state.react_best = best
+        if "react_no_gain" in payload:
+            raw = payload["react_no_gain"]
+            if not isinstance(raw, dict):
+                raise ResumeStateError(
+                    "resume_state.react_no_gain 必须是对象")
+            gain = {}
+            for key, value in raw.items():
+                if isinstance(value, bool) or not isinstance(value, int):
+                    raise ResumeStateError(
+                        f"resume_state.react_no_gain.{key} 必须是整数")
+                gain[str(key)] = int(value)
+            state.react_no_gain = gain
+        if "react_round_counts" in payload:
+            raw = payload["react_round_counts"]
+            if not isinstance(raw, dict):
+                raise ResumeStateError(
+                    "resume_state.react_round_counts 必须是对象")
+            rounds = {}
+            for key, value in raw.items():
+                if isinstance(value, bool) or not isinstance(value, int):
+                    raise ResumeStateError(
+                        f"resume_state.react_round_counts.{key} 必须是整数")
+                rounds[str(key)] = int(value)
+            state.react_round_counts = rounds
+        if payload.get("evidence_store") is not None:
+            raw = payload["evidence_store"]
+            if not isinstance(raw, dict):
+                raise ResumeStateError(
+                    "resume_state.evidence_store 必须是对象或 null")
+            try:
+                store = EvidenceStore.from_dict(raw)
+            except (EvidenceError, KeyError, TypeError, ValueError) as exc:
+                raise ResumeStateError(
+                    f"resume_state.evidence_store 不可用：{exc}") from exc
+            errors = store.validate()
+            if errors:
+                raise ResumeStateError(
+                    "resume_state.evidence_store 不一致："
+                    + "；".join(errors))
+            state.evidence_store = store.to_dict()
+        if payload.get("coarse_decision") is not None:
+            raw = payload["coarse_decision"]
+            if not isinstance(raw, dict):
+                raise ResumeStateError(
+                    "resume_state.coarse_decision 必须是对象或 null")
+            state.coarse_decision = copy.deepcopy(raw)
         return state
 
 
@@ -591,6 +710,10 @@ class DriverLimits:
     #: 死在"查资料 + 看场景就用光唯一一轮"。默认与配置键一致（10，
     #: 2026-10-11 由 3 提到 10，用户裁决）；``from_config`` 会用配置键覆盖。
     repair_turns: int = 10
+    #: R2：粗排门失败后的重规划回溯次数（计划级 U10 三态；0 = 关，
+    #: 保持旧行为）。``from_config`` 从 ``orchestration.coarse_replan_attempts``
+    #: 读取，调用方显式覆盖优先。
+    coarse_replan_attempts: int = 3
 
     @classmethod
     def from_config(cls, config=None, *, llm_timeout_s=None,
@@ -613,6 +736,11 @@ class DriverLimits:
                                    "repair_max_turns", None)
             if repair_turns is not None:
                 overrides["repair_turns"] = int(repair_turns)
+        if config is not None and "coarse_replan_attempts" not in overrides:
+            replans = getattr(getattr(config, "orchestration", None),
+                              "coarse_replan_attempts", None)
+            if replans is not None:
+                overrides["coarse_replan_attempts"] = int(replans)
         return cls(**overrides)
 
 
@@ -724,6 +852,18 @@ class PrevisDriver:
         #: 两者都是可选：不传就退回 v1.5 的"撞线即整跑作废"行为，零差异。
         resume_state_path: Optional[Any] = None,
         resume_state: Optional["ResumeState"] = None,
+        #: R2-F1：headless 的粗排 gate 回调（纯层，默认 None = 零行为差）。
+        #: 签名 ``coarse_gate(plan, brief=None) -> {"ready": bool, "reason": str, ...}``，
+        #: ``brief`` 是 Stage S 的 SceneBrief（粗排设计快照需要 environment[]/
+        #: props[]/space[]，plan 的 emit_plan payload 往往不带）；
+        #: 在 plan 落定、进入逐镜细排构建前调用；blocked 时驱动器转为失败
+        #: 阻止进细排（粗排诊断产物已由调用方落盘）。
+        coarse_gate: Optional[Callable[..., Dict[str, Any]]] = None,
+        #: 计划级回溯耗尽时，用**最高分的计划及其粗排证据**恢复真实 Blender
+        #: 场景。回调只接收已经由 driver 选出的 best，不得重新询问 Agent 或
+        #: 修改计划。缺省 None = 纯测试/无 bpy 场景只能恢复 plan 账，快照会
+        #: 明确记录 ``physical_restore=false``。
+        coarse_restore: Optional[Callable[..., Mapping[str, Any] | None]] = None,
     ) -> None:
         self.transport = transport
         self.audit = audit
@@ -747,6 +887,31 @@ class PrevisDriver:
         self._static_token_floor = int(self.budget.limits.max_tokens)
         self.degraded_reason = ""
         self.human_gate = human_gate
+        self.coarse_gate = coarse_gate
+        self.coarse_restore = (
+            coarse_restore
+            if coarse_restore is not None
+            else getattr(coarse_gate, "restore_best", None))
+        #: R2-F1：最近一次粗排 gate 判定（快照可观测，无 gate 时 None）。
+        self._coarse_decision: Optional[Dict[str, Any]] = (
+            copy.deepcopy(resume_state.coarse_decision)
+            if resume_state is not None
+            and resume_state.coarse_decision is not None
+            else None
+        )
+        self.evidence_store: Optional[EvidenceStore] = None
+        self._evidence_status: Dict[str, Any] = {
+            "status": "missing",
+            "reason": "coarse evidence has not been attached",
+        }
+        if resume_state is not None and resume_state.evidence_store is not None:
+            try:
+                self.evidence_store = EvidenceStore.from_dict(
+                    resume_state.evidence_store)
+            except (EvidenceError, KeyError, TypeError, ValueError) as exc:
+                raise ResumeStateError(
+                    f"断点中的证据库不可用：{exc}") from exc
+            self._evidence_status = self.evidence_store.summary()
         self.knowledge = knowledge
         #: E2 溯源（2026-10-01）：逐镜记下"这一镜的检索**真的注入了**哪几类知识的
         #: 哪些取值"，交付层据此写 ``movements[].source``（``theory`` /
@@ -768,9 +933,36 @@ class PrevisDriver:
         self._react_shot: str = ""
         self._react_messages: List[Message] = []
         self._react_done: set = set()
+        #: 缺陷 B / U10（T6）：每镜的最高分快照与分数轨迹。
+        #: ``_react_best``：shot_id → {score, version, world_state}；
+        #: ``_react_scores``：shot_id → [{version, score, disposition, summary}]；
+        #: ``_react_no_gain``：shot_id → **连续无新高轮数（≥3 单镜 fail）**。
+        #: 这是终态判据的单一真源，只由 ``_record_react_score`` 的审核裁定
+        #: （tie/revert +1，adopt/new_high 归零）写入；``_record_react_tool_progress``
+        #: 的只读连续检测写进独立的 ``_react_readonly_rounds``，绝不改它。
+        #: （R2 ticket 10 修复：原实现两处共用并"混合轮清零"，真跑中模型每轮
+        #: 先调 setup_camera 再打平，累计被反复清零，终态判据永远到不了 3。）
+        self._react_best: Dict[str, Dict[str, Any]] = {}
+        self._react_scores: Dict[str, List[Dict[str, Any]]] = {}
+        self._react_no_gain: Dict[str, int] = {}
+        #: R2-F2：只读步连续计数（诊断用，`repair_no_progress` 事件照记）。
+        #: 与 ``_react_no_gain`` 解耦——它只反映"连续多少个工具步没动手"，
+        #: 不参与任何终态/预算判据；修改步把它清零（空转信号被打断）。
+        self._react_readonly_rounds: Dict[str, int] = {}
+        #: R2-F11：每镜 ReAct 总回合计数（`_start_react` +1；换镜清零）。
+        #: 与 ``_react_no_gain``（连续无新高）互补：微涨 new_high 会把
+        #: no_gain 清零，但回合数只增不减，到达 ``react_max_rounds`` 仍未
+        #: 过 80 分即单镜失败继续，避免墙钟被低分震荡耗尽。
+        self._react_round_counts: Dict[str, int] = {}
         #: 方案 B（§3.6.3）：逐镜预演的迭代计数（同一镜每预演一轮 +1，
         #: 换镜时随 _decision_trees 一起清理）。
         self._per_shot_iterations: Dict[str, int] = {}
+        #: F13：各镜进入逐镜迭代时的墙钟起点（``budget.elapsed``），按
+        #: shot_id 记录、换镜清理。用于 per-shot 前瞻均摊
+        #: （``wall_share.per_shot_wall_share``）——单镜超公平份额且未过线
+        #: 时保留 best、渲染最佳版本、如实记 failed 并推进下一镜（等价
+        #: F11 ``react_round_exhausted`` 的时间维度版，不降门槛）。
+        self._shot_start_wall: Dict[str, float] = {}
         #: D1：每镜对抗审查的版本号（同镜每审一次 +1；跨轮次只增不减，
         #: 保证任何一版审查都有唯一可回溯的 version）。
         self._adversarial_versions: Dict[str, int] = {}
@@ -867,6 +1059,18 @@ class PrevisDriver:
         #: plan 的下一次请求是否用瘦身包（阶梯决定，跨 plan 请求传递）。
         self._plan_next_slim = False
         self._plan_problem = ""
+        #: R2：粗排门回溯状态（计划级 U10 三态）。内存态——resume 时粗排
+        #: gate 会重跑，可从零重新触发回溯；不允许"计划未过粗排却进细排"。
+        self._coarse_attempts = 0
+        self._coarse_best_score: Optional[float] = None
+        self._coarse_no_gain = 0
+        self._coarse_best_plan: Optional[Dict[str, Any]] = None
+        self._coarse_best_plan_heading = ""
+        self._coarse_best_decision: Optional[Dict[str, Any]] = None
+        self._coarse_restore_result: Dict[str, Any] = {}
+        self._coarse_feedback: List[str] = []
+        self._coarse_dispositions: List[str] = []
+        self._coarse_backtracking = False
         self._call_purpose = "plan"
         self._shot_queue: List[str] = []
         self._current_shot_id = ""
@@ -985,6 +1189,27 @@ class PrevisDriver:
             "shot_repairs": self._repair_attempts,
             "budget": self.budget.summary,
             "loops": self.loop_detector.stats,
+            #: R2：粗排门回溯观测（计划级三态；无回溯时恒零/空，零形状差）
+            "coarse_attempts": self._coarse_attempts,
+            "coarse_best_score": self._coarse_best_score,
+            "coarse_best_plan_score": self._coarse_best_score,
+            "coarse_best_scene_score": (
+                ((self._coarse_best_decision or {}).get("payload") or {})
+                .get("best_score")
+                if isinstance(
+                    (self._coarse_best_decision or {}).get("payload"),
+                    Mapping)
+                else None),
+            "coarse_best_plan": self._coarse_best_plan_heading,
+            "coarse_best_restore": copy.deepcopy(
+                self._coarse_restore_result),
+            "coarse_no_gain": self._coarse_no_gain,
+            "coarse_dispositions": list(self._coarse_dispositions),
+            "coarse_decision": copy.deepcopy(self._coarse_decision),
+            "evidence_store": (
+                self.evidence_store.to_dict()
+                if self.evidence_store is not None else None),
+            "evidence_status": copy.deepcopy(self._evidence_status),
             "knowledge": (self.knowledge.describe()
                           if self.knowledge is not None else None),
             "degraded_reason": self.degraded_reason,
@@ -1032,11 +1257,26 @@ class PrevisDriver:
             #: checkpoint 落盘位置。没有配置 resume 路径时后两者为空/False。
             "terminal_shots": {str(k): str(v)
                                for k, v in self._shot_terminal.items()},
+            #: 缺陷 D / T8（U1）：单镜 fail 继续后，交付层要的失败清单
+            #: （镜号 / 最高分 / 无新高轮数 / 原因）。只收 failed 镜，
+            #: 无失败时恒为 ``[]``（零形状差）；由 snapshot 单一真源折出。
+            "failures": self._failures_payload(),
             "wall_clock_exhausted": self._wall_clock_exhausted,
             "resume_state_path": (str(self._resume_state_path)
                                   if self._resume_state_path else None),
             "error": self.error,
         }
+
+    def _failures_payload(self) -> Dict[str, Any]:
+        """把终态表折成交付失败清单（纯层、无 bpy，D3 不造假画面）。"""
+        from ..delivery.failures import build_failures_payload
+
+        return build_failures_payload(
+            terminal_shots={str(k): str(v)
+                            for k, v in self._shot_terminal.items()},
+            best_scores={str(k): dict(v) for k, v in self._react_best.items()},
+            no_gain={str(k): int(v)
+                     for k, v in self._react_no_gain.items()})
 
     def _ruler_observation_payload(self) -> Optional[Dict[str, Any]]:
         """把内存审计折成空间尺观测 v2 文档（Ticket 04-06，纯层、无 bpy）。
@@ -1085,9 +1325,10 @@ class PrevisDriver:
     def _spatial_design_payload(self) -> Optional[Dict[str, Any]]:
         """计划定稿后的前向设计快照（Ticket 02/08，纯层、确定性、无 bpy）。
 
-        角色站位源：``SceneSpec.from_plan``（默认站位 + ``brief.space`` 声明），
-        与构建器共用同一份计划意图——设计值**不读**实测场景（实测由观测快照
-        负责），保证"设计 vs 实测"是有意义的两侧对照。没有计划时返回 None。
+        角色站位与朝向源：``SceneSpec.from_plan``（默认站位 + ``brief.space``
+        声明），与构建器共用同一份计划意图——设计值**不读**实测场景（实测由
+        观测快照负责），保证"设计 vs 实测"是有意义的两侧对照。没有计划时返回
+        None。
         """
         if self.plan is None:
             return None
@@ -1098,9 +1339,13 @@ class PrevisDriver:
         cast_positions = {
             str(member.name): list(member.initial_location)
             for member in spec.cast}
+        cast_facings = {
+            str(member.name): list(member.initial_facing)
+            for member in spec.cast}
         return build_design_snapshot(
             brief=self.brief, plan=self.plan,
             cast_positions=cast_positions,
+            cast_facings=cast_facings,
             scene_id=self.plan.scene_heading or "scene")
 
     def _build_spatial_design(self) -> None:
@@ -1130,6 +1375,37 @@ class PrevisDriver:
             f"空间设计快照已生成（{design.get('schema_version')}）",
             **{key: value for key, value in event.items() if key != "kind"},
             payload=design)
+
+    def _sync_spatial_design_from_world(self) -> None:
+        """agent 改动后实时把 Blender 世界坐标回写设计 JSON。
+
+        ``runtime_world_state.json`` 已由工具层在每次成功改动后刷新；这里
+        把同一份实测载荷合并进 ``_spatial_design``，让导出/粗排重测不再拿
+        计划默认站位（2026-10-21 真跑：伊恩实测 -1.6、设计 JSON -0.3）。
+        无 bpy/无快照时诚实跳过，不制造坐标。
+        """
+        if self._spatial_design is None:
+            return
+        try:
+            from ..layer3_engine.scene_context import get_context
+            from ..layer3_engine.world_state import collect_world_state
+            from ..contracts.world_state import (
+                merge_observed_world_into_reference,
+            )
+            context = get_context()
+            if context is None:
+                return
+            observed = collect_world_state(context)
+            merged = merge_observed_world_into_reference(
+                self._spatial_design, observed)
+            self._spatial_design = merged
+            self.audit.log("spatial_world_sync",
+                           "agent 改动已实时回写空间设计 JSON",
+                           level="info", payload=merged)
+        except Exception as exc:  # noqa: BLE001 - 纯层/无 bpy 如实跳过
+            self.audit.log("spatial_world_sync",
+                           f"空间设计 JSON 回写跳过：{type(exc).__name__}: {exc}",
+                           level="warning")
 
     def _build_spatial_observation_and_diff(self) -> None:
         """收尾采样 -> 观测快照 -> 设计 vs 实测 diff（Ticket 03/04/08 接线）。
@@ -1231,7 +1507,8 @@ class PrevisDriver:
             denominator += 1
             score = scores.get(str(shot.shot_id))
             if score is not None and threshold is not None \
-                    and float(score) > float(threshold):
+                    and composition_decision(
+                        score, threshold=float(threshold))["status"] == "pass":
                 numerator += 1
                 rules.append(str(shot.shot_id))
         return {"numerator": numerator, "denominator": denominator,
@@ -1518,6 +1795,12 @@ class PrevisDriver:
 
     def _step_planning(self) -> None:
         if not self.budget.allow_llm_call("plan"):
+            #: R2：粗排回溯中预算耗尽——绝不带着未过粗排的计划降级收尾出片
+            #: （`_degrade_to_finish` 会直接进 FINISHING，绕过粗排门）。
+            if self._coarse_backtracking:
+                self._fail("预算耗尽且计划未通过粗排 gate，"
+                           "不得降级收尾出片")
+                return
             self._degrade_to_finish(self.budget.exhausted_reason()
                                     or "LLM 调用预算耗尽")
             return
@@ -1574,6 +1857,13 @@ class PrevisDriver:
         shots = [accepted[shot_id] if shot_id in accepted
                  else fallback_shots[shot_id] for shot_id in ordered_ids]
         filled = sum(1 for shot_id in ordered_ids if shot_id not in accepted)
+        #: ``0`` is not a successful deterministic adjustment.  Treating it as
+        #: one re-entered the coarse gate with the exact same plan after every
+        #: blocked evaluation (real r2), bypassing the normal
+        #: replan-or-fail decision.  The caller needs a fresh model attempt
+        #: after a semantic backtrack, or an honest ERROR if none remains.
+        if filled <= 0:
+            return None
         head = dict(getattr(self, "_plan_head", None) or {})
         payload = {
             "scene_heading": str(fallback.get("scene_heading") or ""),
@@ -1601,6 +1891,15 @@ class PrevisDriver:
                 return
             # 没有构建器就不会走 B1，注视关系在这里一次补齐。
             self._pin_brief_gaze()
+        #: R2-F1：headless 在 plan 落定、进入逐镜细排前跑粗排 gate。
+        #: **必须先于 human gate**——headless 的 AutoGate() 会立刻 SKIPPED
+        #: 并直接 resume 到目标态，若把它放在 human gate 之后，粗排 gate
+        #: 在真实执行链里永远不触发（实测 2026-10-19：审计无任何 coarse 事件，
+        #: 只有 gate_requested/gate_decided(skipped) → EDITING）。
+        #: blocked 时**不静默放行**：转失败并留审计（粗排诊断产物已由
+        #: 调用方落盘），与 UI 全管线的 `coarse_is_ready` 同一判定。
+        if not self._run_coarse_gate(target):
+            return
         if self._gate_enabled("human_gate_on_plan"):
             self._request_gate(
                 GateRequest(kind="plan", title="确认分镜计划",
@@ -1610,6 +1909,439 @@ class PrevisDriver:
                 resume=target)
             return
         self._transition(target)
+
+    def _restore_cached_coarse_decision(self) -> bool:
+        """Reuse a production coarse decision already frozen at a checkpoint.
+
+        Resume must not call the expensive coarse pipeline again: a new run can
+        legitimately score differently and overwrite the exact world best that
+        the saved evidence and baseline describe.  Legacy decisions without a
+        versioned production report are left to the historical gate path.
+        """
+        decision = self._coarse_decision
+        if not isinstance(decision, Mapping) or not decision.get("ready"):
+            return False
+        payload = decision.get("payload")
+        if (not isinstance(payload, Mapping)
+                or str(payload.get("schema_version") or "")
+                != "coarse-pipeline-report/v1"):
+            return False
+        if str(payload.get("coarse_status") or "") != "approved":
+            self._fail("断点中的粗排决策未标记 approved，拒绝恢复")
+            return True
+        evidence_error = self._attach_coarse_evidence(decision)
+        if evidence_error:
+            self.audit.log(
+                "coarse_evidence_invalid", evidence_error, level="error",
+                payload=payload)
+            self._fail(evidence_error)
+            return True
+        baseline = decision.get("baseline")
+        if (not isinstance(baseline, Mapping)
+                or str(baseline.get("schema_version") or "")
+                != "coarse-baseline/v1"
+                or str(baseline.get("state") or "") != "frozen"):
+            self._fail("断点中的粗排决策缺少已冻结的 coarse baseline")
+            return True
+        store = self.evidence_store
+        assert store is not None
+        best = store.summary()["best"]
+        if not best:
+            self._fail("断点中的粗排证据库没有 best 指针")
+            return True
+        first_shot, first_version = sorted(best.items())[0]
+        basis = store.get(first_shot, int(first_version)).basis_fingerprints
+        checks = (
+            ("manifest_fingerprint", basis.get("manifest_fingerprint")),
+            ("reference_fingerprint", basis.get("reference_fingerprint")),
+            ("report_fingerprint", basis.get("report_fingerprint")),
+        )
+        for key, expected in checks:
+            if str(baseline.get(key) or "") != str(expected or ""):
+                self._fail(
+                    f"断点中的 coarse baseline {key} 与证据 best 不一致")
+                return True
+        baseline_manifest = baseline.get("manifest")
+        baseline_reference = baseline.get("reference")
+        baseline_report = baseline.get("report")
+        if (not isinstance(baseline_manifest, Mapping)
+                or not isinstance(baseline_reference, Mapping)
+                or not isinstance(baseline_report, Mapping)):
+            self._fail("断点中的 coarse baseline 内容不完整")
+            return True
+        if manifest_fingerprint(baseline_manifest) != str(
+                basis.get("manifest_fingerprint") or ""):
+            self._fail("断点中的 coarse baseline manifest 内容被篡改")
+            return True
+        if coarse_reference_content_fingerprint(
+                baseline_reference) != str(
+                    basis.get("reference_fingerprint") or ""):
+            self._fail("断点中的 coarse baseline reference 内容被篡改")
+            return True
+        if canonical_fingerprint(baseline_report) != str(
+                basis.get("report_fingerprint") or ""):
+            self._fail("断点中的 coarse baseline report 内容被篡改")
+            return True
+        attach = getattr(self.builder, "attach_coarse_baseline", None)
+        if not callable(attach):
+            self._fail("断点中的 coarse baseline 无法接入当前构建器")
+            return True
+        try:
+            attached = int(attach(baseline) or 0)
+        except Exception as exc:  # noqa: BLE001 - bridge failure is fatal
+            reason = (
+                f"断点 coarse baseline 无法接入详细构建："
+                f"{type(exc).__name__}: {exc}")
+            self.audit.log(
+                "coarse_baseline_attach_failed", reason, level="error",
+                traceback=traceback.format_exc())
+            self._fail(reason)
+            return True
+        self.audit.log(
+            "coarse_gate_reused",
+            "断点复用已通过的粗排决策与冻结基准",
+            gates=decision.get("gates"),
+            best=dict(sorted(best.items())),
+            attached=attached)
+        self.audit.log(
+            "coarse_baseline_attached",
+            f"断点冻结粗排相机已接入详细构建（{attached} 镜）",
+            shots=attached,
+            baseline_schema=str(baseline.get("schema_version") or ""))
+        return True
+
+    def _run_coarse_gate(self, target: DriverState) -> bool:
+        """plan 落定后、进入逐镜细排前跑粗排 gate；返回是否放行。
+
+        - 未注入回调或目标态不需要细排（FINISHING）：直接放行（零差异）。
+        - blocked：**回溯重规划**（R2 计划级 U10 三态）——带回粗排反馈回
+          PLANNING 重来，高分保留、低分回溯、门过采用；重规划预算耗尽
+          仍不过则如实失败，不降级通过。
+        - pass：留审计，返回 True。
+        首跑（``_plan_accepted_continue``）与断点续跑（``_apply_resume_state``）
+        共用这一判定，保证 resume 不会绕过粗排 gate。
+        """
+        if (self.coarse_gate is None
+                or self.plan is None
+                or target is DriverState.FINISHING):
+            return True
+        #: R2 空计划漏洞（final5 实锤）：剧本【角色锚】声明米迦尔/伊恩/
+        #: 偷盗者，模型计划 characters=[] 时粗排门曾因"空镜豁免"零修正放行，
+        #: 细排构图 0.0。粗排 gate 前先做**计划完整性预检**（纯层、无 bpy）：
+        #: 声明角色非空而计划无主体/丢角色 -> error -> 强制 blocked 走既有
+        #: 回溯（高分保留、低分回溯、门过采用），不给空计划绕过验证的机会。
+        integrity = plan_integrity_findings(
+            self.plan, self.parsed_script, brief=self.brief)
+        if integrity:
+            decision = merge_integrity_decision(
+                {"ready": False, "blocked": True, "reason": "",
+                 "gates": {}, "artifacts": {}, "payload": {}},
+                integrity)
+        else:
+            bind_budget = getattr(self.coarse_gate, "bind_budget", None)
+            if callable(bind_budget):
+                bind_budget(self.budget)
+            try:
+                decision = dict(self.coarse_gate(self.plan,
+                                                 brief=self.brief) or {})
+            except TypeError:
+                decision = dict(self.coarse_gate(self.plan) or {})
+        self._coarse_decision = decision
+        if not decision.get("ready", False):
+            reason = str(decision.get("reason")
+                         or "粗排 gate 未通过，禁止进入细排/逐镜构建")
+            #: An exception in the coarse program is not evidence that the
+            #: plan is semantically wrong.  Re-planning cannot repair a bug
+            #: and previously spent another full model call on the identical
+            #: 11-shot plan (real r2).  Preserve the traceback and stop.
+            if decision.get("execution_error"):
+                self.audit.log(
+                    "coarse_execution_error", reason, level="error",
+                    error_type=str(decision.get("error_type") or ""),
+                    traceback=str(decision.get("traceback") or ""))
+                self._fail(reason)
+                return False
+            self.audit.log("coarse_gate_blocked", reason,
+                           level="error",
+                           payload=decision.get("payload"),
+                           gates=decision.get("gates"))
+            #: R2：粗排门回溯——按 U10 三态裁定，带回反馈重规划。
+            self._coarse_attempts += 1
+            score = _coarse_plan_score(decision.get("payload"))
+            bk = coarse_plan_backtrack(
+                score, best_score=self._coarse_best_score,
+                no_gain=self._coarse_no_gain, gate_ready=False)
+            self._coarse_best_score = bk.best_score
+            self._coarse_no_gain = bk.no_gain
+            self._coarse_dispositions.append(bk.disposition)
+            if bk.disposition == "new_high" and self.plan is not None:
+                self._coarse_best_plan = self.plan.to_dict()
+                self._coarse_best_plan_heading = str(
+                    getattr(self.plan, "scene_heading", "") or "")
+                self._coarse_best_decision = copy.deepcopy(decision)
+            if reason and reason not in self._coarse_feedback:
+                self._coarse_feedback.append(reason)
+            finding_lines = _coarse_finding_lines(decision.get("payload"))
+            for line in finding_lines:
+                if line not in self._coarse_feedback:
+                    self._coarse_feedback.append(line)
+            if self._coarse_attempts > int(self.limits.coarse_replan_attempts):
+                best_note = (f"；最优版本仍为 "
+                             f"{self._coarse_best_score:g} 分（未过线）"
+                             if self._coarse_best_score is not None else "")
+                restore_note = self._restore_coarse_best()
+                self._fail(f"粗排 gate 经 {self._coarse_attempts} 次评估"
+                           f"仍未通过，回溯预算耗尽{best_note}"
+                           f"{restore_note}：{reason}")
+                return False
+            self.audit.log(
+                "coarse_backtrack",
+                f"粗排门失败，按 {bk.disposition} 回溯（attempt="
+                f"{self._coarse_attempts}，score={score:g}，"
+                f"best={bk.best_score:g}）",
+                level="warning",
+                attempt=int(self._coarse_attempts), score=float(score),
+                disposition=bk.disposition, best_score=float(bk.best_score),
+                no_gain=int(bk.no_gain), reason=reason)
+            self._coarse_backtracking = True
+            #: A coarse failure is a semantic planning failure, not another
+            #: syntax retry for the already exhausted candidate.  Reopen the
+            #: per-plan attempt budget so the requested backtrack can actually
+            #: produce a new plan; the global LLM/wall budgets still bound it.
+            self._plan_failures = 0
+            self._restart_plan_accumulator()
+            self._transition(DriverState.PLANNING)
+            return False
+        evidence_error = self._attach_coarse_evidence(decision)
+        if evidence_error:
+            self.audit.log(
+                "coarse_evidence_invalid", evidence_error, level="error",
+                payload=decision.get("payload"))
+            self._fail(evidence_error)
+            return False
+        #: 过线采用：清掉回溯态（分数/反馈/最佳快照），正常进细排。
+        if self._coarse_attempts:
+            self.audit.log(
+                "coarse_adopted",
+                f"粗排 gate 通过，采用该计划（共评估 "
+                f"{self._coarse_attempts} 次，best="
+                f"{self._coarse_best_score}）",
+                level="info",
+                attempts=int(self._coarse_attempts),
+                dispositions=list(self._coarse_dispositions))
+        self._coarse_attempts = 0
+        self._coarse_best_score = None
+        self._coarse_no_gain = 0
+        self._coarse_best_plan = None
+        self._coarse_best_plan_heading = ""
+        self._coarse_best_decision = None
+        self._coarse_restore_result = {}
+        self._coarse_feedback = []
+        self._coarse_dispositions = []
+        self._coarse_backtracking = False
+        self._checkpoint_resume(stage="coarse_adopted")
+        self.audit.log(
+            "coarse_gate_passed", "粗排 gate 通过，进入细排/逐镜构建",
+            gates=decision.get("gates"))
+        baseline = decision.get("baseline")
+        attach = getattr(self.builder, "attach_coarse_baseline", None)
+        if baseline is not None and callable(attach):
+            try:
+                attached = int(attach(baseline) or 0)
+            except Exception as exc:  # noqa: BLE001 - bridge failure is fatal
+                reason = (f"粗排冻结基准无法接入详细构建："
+                          f"{type(exc).__name__}: {exc}")
+                self.audit.log(
+                    "coarse_baseline_attach_failed", reason, level="error",
+                    traceback=traceback.format_exc())
+                self._fail(reason)
+                return False
+            self.audit.log(
+                "coarse_baseline_attached",
+                f"冻结粗排相机已接入详细构建（{attached} 镜）",
+                shots=attached,
+                baseline_schema=str(baseline.get("schema_version") or ""))
+        return True
+
+    def _restore_coarse_best(self) -> str:
+        """Restore the highest-scoring plan and ask the scene seam to rebuild.
+
+        The returned text is appended to the terminal error so a failed physical
+        restore can never masquerade as a successful rollback.
+        """
+        if self._coarse_best_plan is None:
+            self._coarse_restore_result = {
+                "status": "unavailable",
+                "reason": "no retained coarse best plan",
+                "physical_restore": False,
+            }
+            return ""
+        try:
+            best_plan = Plan.from_dict(copy.deepcopy(self._coarse_best_plan))
+        except Exception as exc:  # noqa: BLE001 - corrupt best is explicit
+            reason = f"{type(exc).__name__}: {exc}"
+            self._coarse_restore_result = {
+                "status": "failed",
+                "reason": f"best plan deserialise failed: {reason}",
+                "physical_restore": False,
+            }
+            self.audit.log(
+                "coarse_best_restore_failed",
+                self._coarse_restore_result["reason"],
+                level="error",
+            )
+            return f"；best plan 无法恢复（{reason}）"
+
+        result: Dict[str, Any] = {}
+        physical_restore = False
+        error = ""
+        if self.coarse_restore is None:
+            error = "coarse_restore callback is not configured"
+        else:
+            try:
+                restored = self.coarse_restore(
+                    plan=best_plan,
+                    decision=copy.deepcopy(self._coarse_best_decision or {}),
+                )
+                if isinstance(restored, Mapping):
+                    result = copy.deepcopy(dict(restored))
+                physical_restore = bool(
+                    result.get("restored") is True
+                    or result.get("physical_restore") is True
+                )
+                if not physical_restore and not error:
+                    error = "restore callback did not return evidence"
+            except Exception as exc:  # noqa: BLE001 - terminal failure evidence
+                error = f"{type(exc).__name__}: {exc}"
+                self.audit.log(
+                    "coarse_best_restore_failed",
+                    f"physical restore failed: {error}",
+                    level="error",
+                    traceback=traceback.format_exc(),
+                )
+
+        #: Adopt the retained plan even if the scene callback failed.  The plan
+        #: account and physical account are then explicitly inconsistent rather
+        #: than silently pointing at the last losing candidate.
+        self.plan = best_plan
+        self._coarse_decision = copy.deepcopy(
+            self._coarse_best_decision or {})
+        self._coarse_decision["restored_best"] = True
+        self._coarse_restore_result = {
+            **result,
+            "status": (
+                "restored" if physical_restore else "plan_only"),
+            "physical_restore": physical_restore,
+            "error": error,
+            "plan_score": self._coarse_best_score,
+            "scene_score": (
+                ((self._coarse_best_decision or {}).get("payload") or {})
+                .get("best_score")
+                if isinstance(
+                    (self._coarse_best_decision or {}).get("payload"),
+                    Mapping)
+                else None),
+            "plan_heading": self._coarse_best_plan_heading,
+        }
+        self.audit.log(
+            "coarse_best_restored",
+            (f"已恢复粗排 best 计划：{self._coarse_best_plan_heading or '(未命名)'}"
+             f"；物理场景恢复={'yes' if physical_restore else 'no'}"),
+            level="info" if physical_restore else "warning",
+            **copy.deepcopy(self._coarse_restore_result),
+        )
+        if physical_restore:
+            return ""
+        return f"；best 计划已恢复，但物理场景未恢复（{error or 'unknown'}）"
+
+    def _attach_coarse_evidence(
+        self, decision: Mapping[str, Any],
+    ) -> str:
+        """Bind a passing coarse decision to its exact physical evidence."""
+        payload = decision.get("payload")
+        if not isinstance(payload, Mapping):
+            # Legacy callers/tests have no pipeline report; the historical
+            # contract remains valid.  A report that exists must be complete.
+            return ""
+        if (str(payload.get("schema_version") or "")
+                != "coarse-pipeline-report/v1"):
+            # Explicit legacy/fake callback seam.  Production reports carry
+            # the version above and are held to the evidence-store contract.
+            return ""
+        artifacts = payload.get("artifacts")
+        if not isinstance(artifacts, Mapping):
+            return "粗排 gate 通过但 pipeline report 缺 artifacts，无法核验证据库"
+        path = str(artifacts.get("evidence_store") or "")
+        if not path:
+            return "粗排 gate 通过但缺少 evidence_store 产物，禁止进入细排"
+        store = self.evidence_store
+        if store is None:
+            store, status = inspect_evidence_store(path)
+            self._evidence_status = copy.deepcopy(status)
+            if store is None:
+                label = (
+                    "已过期，只读展示，禁止用于当前门禁"
+                    if status.get("status") == "stale"
+                    else "不可用"
+                )
+                return (
+                    f"粗排证据库{label}：{path}: "
+                    f"{status.get('reason') or 'unknown'}")
+        else:
+            self._evidence_status = store.summary()
+        errors = store.validate()
+        if errors:
+            return "粗排证据库不一致：" + "；".join(errors)
+        report_run_id = str(payload.get("run_id") or "")
+        if report_run_id and store.run_id != report_run_id:
+            return (
+                f"粗排证据库 run_id={store.run_id!r} 与报告 "
+                f"{report_run_id!r} 不一致")
+        report_scene_id = str(payload.get("scene_id") or "")
+        if report_scene_id and store.scene_id != report_scene_id:
+            return (
+                f"粗排证据库 scene_id={store.scene_id!r} 与报告 "
+                f"{report_scene_id!r} 不一致")
+        expected = {
+            "report": str(payload.get("best_report_fingerprint") or ""),
+            "manifest": str(payload.get("best_manifest_fingerprint") or ""),
+            "world_state": str(
+                payload.get("best_world_state_fingerprint") or ""),
+        }
+        for shot_id, version in sorted(store.summary()["best"].items()):
+            record = store.get(shot_id, int(version))
+            basis = record.basis_fingerprints
+            try:
+                adopted = store.adopted_version(shot_id)
+            except KeyError:
+                return f"粗排证据 {shot_id}@{version} 未标记 adopted"
+            if adopted != int(version):
+                return (
+                    f"粗排证据 {shot_id} 的 adopted={adopted} "
+                    f"与 best={version} 不一致")
+            if record.gates.get("coarse_passed") is not True:
+                return f"粗排证据 {shot_id}@{version} 未通过粗排门"
+            for key, actual in (
+                ("report", basis.get("report_fingerprint")),
+                ("manifest", basis.get("manifest_fingerprint")),
+                ("world_state", basis.get("world_state_fingerprint")),
+            ):
+                if expected[key] and str(actual or "") != expected[key]:
+                    return (
+                        f"粗排证据 {shot_id}@{version} 的 {key} 指纹"
+                        "与发布给门禁的 best 不一致")
+            current_plan = getattr(self, "plan", None)
+            if current_plan is not None:
+                scene_plan = record.plan.get("scene")
+                drift = coarse_plan_identity_drift(
+                    scene_plan, current_plan)
+                if drift:
+                    return (
+                        f"粗排证据 {shot_id}@{version} 绑定的镜头身份/顺序"
+                        f"与当前恢复计划不一致：{', '.join(drift)}")
+        self.evidence_store = store
+        self._evidence_status = store.summary()
+        return ""
 
     def _step_calling_llm(self) -> None:
         try:
@@ -1717,6 +2449,20 @@ class PrevisDriver:
                 #: 精修收尾同向，无需改语义（见 `_step_checking` 的消费处）。
                 self._finish_react("模型调用 finish_shot")
                 return
+            #: R2-F2：只读轮计入 no_gain——一轮 ReAct 里**全部**工具都是只读
+            #: 查询（get_scene_state/check_*/search_knowledge）时，这一轮没有
+            #: 真正动手修改场景，记 repair_no_progress 并累计 no_gain；只要本轮
+            #: 存在任一修改类工具就豁免并把该镜 no_gain 清零（先查后改不惩罚）。
+            #: 工具集合与 loop_detector 的只读表同源（单一真源，禁止另抄）。
+            self._record_react_tool_progress(reply.tool_calls)
+            #: R2-F2 兜底（2026-10-21）：全只读轮说明模型在"看"却没动手。
+            #: 与其让它下一轮继续空转，不如用空间尺做一次**确定性**相机处方
+            #: （同一镜最多一次，可回溯），把场景真正改起来再回 CHECKING
+            #: 复测。这是"用程序为尺子 + 随机应变"，不是固定处方：reframe
+            #: 的量来自当前审计的 guard_warnings，改完立即复测。
+            if self._react_readonly_auto_reframe(self._react_shot):
+                self._finish_react("全只读轮已自动 reframe，回审核复测")
+                return
             if problem:
                 self.audit.log("react_invalid", problem, level="warning",
                                reason=problem,
@@ -1783,6 +2529,7 @@ class PrevisDriver:
         declared = list(getattr(self.parsed_script, "declared_shots", []) or [])
         if not declared:
             return
+        self._pin_declared_shot_types(declared)
         pinned = 0
         for index, shot in enumerate(self.plan.shots):
             if index >= len(declared):
@@ -1802,7 +2549,10 @@ class PrevisDriver:
             # v1.4 §3.3：声明时长与计划时长的差异要留痕（US-4/S4）。
             declared_seconds = getattr(declared[index], "declared_seconds", None)
             if declared_seconds is not None:
-                applied_s = round(int(shot.duration_frames) / 24.0, 3)
+                shot.declared_duration_frames = max(
+                    1, int(round(float(declared_seconds) * FPS)))
+                applied_s = round(
+                    int(shot.duration_frames) / float(FPS), 3)
                 if abs(applied_s - float(declared_seconds)) > 0.2:
                     self.timing_overrides.append({
                         "shot_number": int(declared[index].shot_number),
@@ -1854,6 +2604,35 @@ class PrevisDriver:
                            shots=len(self.plan.shots))
         self._pin_declared_camera(declared)
 
+    def _pin_declared_shot_types(self, declared) -> None:
+        """按剧本声明恢复景别；无理由的旧式 ``break`` 不构成豁免。
+
+        阶段 A schema 已拒绝无 ``reason`` 的破例，但旧断点绕过了那条入口。
+        因此正式计划收尾与 resume 恢复都必须走同一道守卫：只有
+        ``rule=R015``、``action=break`` 且 ``reason`` 非空的条目才能保留
+        模型给出的不同景别；其余情况一律回到声明值。
+        """
+        pinned = 0
+        for index, shot in enumerate(self.plan.shots):
+            if index >= len(declared):
+                break
+            declared_type = str(
+                getattr(declared[index], "shot_type", "") or "").upper()
+            has_break = any(
+                str(item.get("rule") or "") == "R015"
+                and str(item.get("action") or "").lower() == "break"
+                and str(item.get("reason") or "").strip()
+                for item in (shot.rule_justifications or []))
+            if (declared_type in SHOT_TYPES and not has_break
+                    and str(shot.shot_type) != declared_type):
+                shot.shot_type = ShotType(declared_type)
+                pinned += 1
+        if pinned:
+            self.audit.log(
+                "plan_declared_shot_type_pinned",
+                f"已按剧本声明恢复 {pinned} 个镜头的景别",
+                shots=len(self.plan.shots))
+
     def _pin_declared_camera(self, declared) -> None:
         """把分镜表的「拍摄手法」**落实**成运镜（v1.3 §3.6 ＋ v1.4 §八十五）。
 
@@ -1866,7 +2645,7 @@ class PrevisDriver:
         "固定镜头"，交付里 **40 镜**在这条声明之外自己动了相机（`movements[].source`
         只有 1 次归给 `declared`）。把那些未声明的运动去掉后重建、逐镜复评（零 LLM）：
 
-        | 工程 | 逐镜通过 | 构图门（≥70） | 构图分中位 |
+        | 工程 | 逐镜通过 | 旧构图通过数（历史 ≥70 口径） | 构图分中位 |
         |---|---|---|---|
         | long17 | 29 → **35** | 44 → **55** | 85.6 → **89.5** |
         | long15 | 27 → **29** | 35 → **39** | 71.4 → **77.4** |
@@ -1970,6 +2749,22 @@ class PrevisDriver:
             return
         # DEGRADE：同一份提示的命已用完，落回既有按阶段的恢复。
         if purpose == "repair":
+            if is_server_error(problem):
+                # R2-F3：瞬时 5xx（502/503/504）重试耗尽不是镜头质量问题。
+                # 按用户红线"拦截错误后回溯而不是停止生成"：保留最高分版本，
+                # 记该镜 failed 并**继续下一镜**，白模预演视频仍要生成；
+                # 不允许整条链 CANCELLED 停机（超时仍走下方 checkpoint 分支）。
+                self.audit.log(
+                    "repair_failed",
+                    f"{shot_id} 修复调用连续 5xx 失败，保留最高分并继续下一镜："
+                    f"{problem}",
+                    level="warning", shot=shot_id)
+                self._mark_terminal(str(shot_id), "failed")
+                self._emit("react_terminal_fail",
+                           f"{shot_id} 精修网络失败，标记 failed 并继续",
+                           shot=str(shot_id))
+                self._advance_shot()
+                return
             self.audit.log(
                 "repair_failed",
                 f"{shot_id} 修复调用连续失败（保留当前镜并暂停）：{problem}",
@@ -2622,6 +3417,7 @@ class PrevisDriver:
                        duration_s=round(duration, 3),
                        **scalars)
         self._emit("scene_built", "场景已构建", reason=reason, **scalars)
+        self._wire_world_state()
         #: v1.6 A7 / G2：全帧自检的余量此前只进 summary.warnings 字符串，
         #: 审计日志与交付 README 都拿不到结构化读数。这里把构建摘要转成
         #: ``label_overlap_report`` 事件（字段与 V16_EVENT_FIELDS 对拍）。
@@ -2683,6 +3479,7 @@ class PrevisDriver:
                        **scalars)
         self._emit("scene_built", "场景已构建（逐镜预演路径）",
                    reason=reason, **scalars)
+        self._wire_world_state()
         #: 逐镜路径下队列**不能从 auditor.shot_ids() 取**：方案 B 的场景此时
         #: 还没摆相机，而 `BpyShotAuditor.shot_ids()` 按
         #: ``shot_id in context.cameras`` 过滤——相机未建 ⇒ 返回空 ⇒ 队列空
@@ -2710,6 +3507,16 @@ class PrevisDriver:
             return
         shot_id = self._shot_queue[0]
         self._current_shot_id = shot_id
+        #: F13：per-shot 墙钟前瞻均摊——首轮进入该镜时记录墙钟起点，
+        #: 之后每轮迭代（rebuild 前）检查是否已超公平份额。单镜超份额且
+        #: 未过线时，保留 best（`_record_react_score` 已保证）、渲染最佳
+        #: 版本、如实记 failed 并推进下一镜；不再让单镜空转耗尽全局墙钟
+        #: 把整场打成 CANCELLED（final8/final9 实测）。这是资源公平分配，
+        #: 不是放宽 80 分门槛；F12 保证 failed 镜照常出 mp4。
+        if str(shot_id) not in self._shot_start_wall:
+            self._shot_start_wall[str(shot_id)] = self.budget.elapsed
+        if self._wall_share_exhausted(shot_id):
+            return
         resumed_status = self._shot_terminal.get(str(shot_id), "")
         if str(shot_id) in self._resume_terminal and resumed_status:
             self.audit.log(
@@ -2723,7 +3530,12 @@ class PrevisDriver:
         round_no = int(self._per_shot_iterations.get(str(shot_id), 0)) + 1
         self._per_shot_iterations[str(shot_id)] = round_no
         try:
-            regen = self.builder.rebuild_shot(shot_id, plan=self.plan) or {}
+            #: 逐镜迭代是"同镜增量调整"：保留 agent 工具/空间尺改过的相机
+            #: （reframe/setup_camera 的成果），否则每轮重建都按计划原值
+            #: 重摆相机，构图修复无法收敛（final6 实测：35→25.2mm 的
+            #: reframe 被下一轮重建打回，构图停在 20–43 上不了 80）。
+            regen = self.builder.rebuild_shot(
+                shot_id, plan=self.plan, preserve_camera_edits=True) or {}
         except Exception as exc:  # noqa: BLE001 - 逐镜重建失败要如实上报
             log.error("单镜重建失败：\n%s", traceback.format_exc())
             self.audit.log("build_failed", f"{type(exc).__name__}: {exc}",
@@ -2789,6 +3601,66 @@ class PrevisDriver:
             return
         self._mark_terminal(shot_id, "unverified")
         self._advance_shot()
+
+    def _wall_share_enabled(self) -> bool:
+        """F13：per-shot 墙钟前瞻均摊是否开启（默认开）。"""
+        if self.config is None:
+            return True
+        return bool(getattr(self.config.orchestration,
+                            "wall_share_enabled", True))
+
+    def _wall_share_min_seconds(self) -> float:
+        """F13：单镜时间地板（默认 60s）。"""
+        if self.config is None:
+            return 60.0
+        return float(getattr(self.config.orchestration,
+                             "wall_share_min_seconds", 60.0))
+
+    def _wall_share_exhausted(self, shot_id: str) -> bool:
+        """当前镜是否已超公平墙钟份额（触发收尾推进，不停止生成）。
+
+        逐镜路径下、全局墙钟有界、剩余镜 > 1 时：把剩余墙钟按剩余镜数
+        前瞻均摊（不低于 floor）。当前镜自首轮迭代起已用时间 > 份额且
+        尚未过线 -> 记 ``wall_share_exhausted``、如实终态 ``unfinished``、
+        推进下一镜。与 ``_wrap_up_wall_clock``（全局兜底）并存：本方法
+        管"镜级公平"，全局撞线仍由后者收尾。
+        """
+        if not self._wall_share_enabled():
+            return False
+        if self.budget is None:
+            return False
+        max_wall = self.budget.limits.max_wall_seconds
+        if not max_wall:
+            return False
+        remaining_shots = len(self._shot_queue)
+        if remaining_shots <= 1:
+            return False
+        elapsed_global = self.budget.elapsed
+        remaining_wall_s = float(max_wall) - elapsed_global
+        started = self._shot_start_wall.get(str(shot_id), elapsed_global)
+        elapsed_in_shot_s = elapsed_global - started
+        if not per_shot_wall_share(
+                remaining_wall_s=remaining_wall_s,
+                remaining_shots=remaining_shots,
+                elapsed_in_shot_s=elapsed_in_shot_s,
+                min_share_s=self._wall_share_min_seconds()):
+            return False
+        self.audit.log(
+            "wall_share_exhausted",
+            f"{shot_id} 已超公平墙钟份额（剩余 {remaining_wall_s:.0f}s / "
+            f"{remaining_shots} 镜，本镜已用 {elapsed_in_shot_s:.0f}s），"
+            "保留最佳版本并推进下一镜",
+            level="warning", shot=shot_id,
+            remaining_wall_s=round(remaining_wall_s, 1),
+            remaining_shots=remaining_shots,
+            elapsed_in_shot_s=round(elapsed_in_shot_s, 1),
+            best_score=(self._react_best.get(str(shot_id)) or
+                        {}).get("score"))
+        self._emit("wall_share_exhausted",
+                   f"{shot_id} 超均摊墙钟，推进下一镜", shot=shot_id)
+        self._mark_terminal(shot_id, "unfinished")
+        self._advance_shot()
+        return True
 
     def _after_build_state(self) -> DriverState:
         """建完场景后：有审核器就先逐镜校验（§7.1 B3），否则直接收尾。"""
@@ -2856,8 +3728,19 @@ class PrevisDriver:
         #: 不因回滚失效。旧 BUILDING 整场分支只留给无 prepare_scene 的假
         #: builder（兼容回退，不是降级）。
         if self._supports_prepare_scene():
+            #: F15（final10 实测）：旧回滚只恢复计划、不恢复场景——空间尺
+            #: reframe 的 lens 36mm 与工具改过的机位都是**场景级**状态，
+            #: rebuild 会把 79.5 分版本冲回计划原值 50mm/53 分，回滚形同
+            #: 虚设。回滚语义升级为"回到最高分版本"：先物理恢复 best 世界
+            #: 快照（restore_world_snapshot 会打 agent 标记），再带
+            #: ``preserve_camera_edits=True`` 重建当前镜，让高分版本在重建后
+            #: 依然在位。纯层/无 bpy 时 ``_revert_to_best`` 自动跳过
+            #: （revert_skipped），行为与旧回滚一致。
+            self._revert_to_best(shot_id)
             try:
-                self.builder.rebuild_shot(shot_id, plan=self.plan)
+                self.builder.rebuild_shot(
+                    shot_id, plan=self.plan,
+                    preserve_camera_edits=True)
             except Exception as exc:  # noqa: BLE001 - 回滚重建失败如实上报
                 log.error("回滚单镜重建失败：\n%s", traceback.format_exc())
                 self.audit.log("build_failed",
@@ -3267,6 +4150,23 @@ class PrevisDriver:
             self._mark_terminal(shot_id, "unverified")
             self._advance_shot()
             return
+        #: 缺陷 B / U10（T6）：每次审核先过回溯三态——分数轨迹留痕、
+        #: 新高更新 best 快照、低分自动回滚到 best（不停生成）。
+        #: F14（2026-10-20 final10 实测）：空间尺自动 reframe 的版本
+        #: （53→79.5）在普通 CHECKING/REPAIRING 路径下从未进入
+        #: ``_react_best``；下一轮 repair 里模型 setup_camera 一重摆，79.5
+        #: 版本就被覆盖回 53，而 ``_rollback_repair_if_worse`` 只回计划不回
+        #: 场景（lens 36mm 丢失），高分永久丢失。reframe 后的这次重审正是
+        #: 高分版本诞生的时刻：若该镜已做过空间尺 reframe 且尚未建立 best，
+        #: 先把它登记为基线（v1），此后低分审核自动 revert 回这份世界快照。
+        reframed_shots = set(getattr(self, "_ruler_reframed_shots", None)
+                             or ())
+        if (str(shot_id) in reframed_shots
+                and str(shot_id) not in self._react_best):
+            self._record_react_score(shot_id, result, baseline=True)
+            decision = None
+        else:
+            decision = self._record_react_score(shot_id, result)
         #: D1 对抗审查：**每次审核都出一版**（pass 也出），软尺偏差只记录、
         #: 不改判；越轴 escalate 由下方既有 gate 决断。事件与交付记录先于
         #: 路由，保证"这一版为什么这样走"永远有据可查。
@@ -3336,6 +4236,23 @@ class PrevisDriver:
                 self._pending_audit = result
                 self._transition(DriverState.REPAIRING)
                 return
+            #: U10「过分数采用」：本次审核已过线（score > PASS_SCORE 且规则
+            #: 层通过）→ 立即收尾，不让 Level 2 自我审核把已采用镜头重新
+            #: 打开。final9 实测 shot_002 v5=80.7 adopt 后仍被自我审核
+            #: reopen（"未表达意图"），随后 v6=79.5 revert、3 轮无新高被记
+            #: failed（best=80.7 却报"未达到 80 分门槛"）——违反 U10。
+            if decision is not None and decision.adopted:
+                self.audit.log(
+                    "react_adopted_terminal",
+                    f"{shot_id} 审核 {decision.best_score:g} 分过线采用，"
+                    f"立即记为通过并前进",
+                    shot=shot_id, score=decision.best_score)
+                self._emit("react_adopted_terminal",
+                           f"{shot_id} 过线采用", shot=shot_id,
+                           score=decision.best_score)
+                self._mark_terminal(shot_id, "passed")
+                self._advance_shot()
+                return
             if self._should_self_review(shot_id):
                 self._pending_review = shot_id
                 self._transition(DriverState.REVIEWING)
@@ -3350,6 +4267,58 @@ class PrevisDriver:
                 shot_id, result):
             self._pending_audit = None
             self._transition(DriverState.CHECKING)
+            return
+        #: 缺陷 D / T6：单镜连续 3 轮无新高 → 记 failed 并**继续下一镜**
+        #: （U6/U1：拦截错误后回溯而不是停止，白模预演视频一定要生成）。
+        #: R2-F11 追加：连续一整回合纯只读（≥ react_max_steps 个只读步）
+        #: = 该镜无实质进展，与"连续 3 轮无新高"同语义触发失败；计数留在
+        #: ``_react_readonly_rounds``（只读步），不改 score 侧 no_gain。
+        readonly_exhausted = (
+            shot_id in self._react_best
+            and self._react_readonly_rounds.get(shot_id, 0)
+            >= self._react_max_steps())
+        if (self._react_no_gain.get(shot_id, 0) >= 3
+                and shot_id in self._react_best) or readonly_exhausted:
+            self.audit.log(
+                "react_terminal_fail",
+                f"{shot_id} 连续 3 轮无新高"
+                f"{'或一整回合纯只读' if readonly_exhausted else ''}，"
+                f"记为失败并继续下一镜",
+                shot=shot_id,
+                no_gain=self._react_no_gain.get(shot_id, 0),
+                readonly_steps=self._react_readonly_rounds.get(shot_id, 0),
+                best_score=self._react_best[shot_id].get("score"))
+            self._emit("react_terminal_fail",
+                       f"{shot_id} 精修无解，标记失败并继续",
+                       shot=shot_id)
+            self._mark_terminal(shot_id, "failed")
+            self._advance_shot()
+            return
+        #: R2-F11：每镜 ReAct 总回合上限（默认 4，0=关）。真跑
+        #: 20261020-market-real-final8 里 shot_002 在 40.8–60.2 分间微涨
+        #: 震荡，连续无新高判据被 new_high 清零、永远到不了 3，墙钟被单镜
+        #: 耗尽。到达上限仍未过 80 分 → 记失败继续下一镜（不降 80 分门槛；
+        #: U6/U1：拦截错误后回溯而不是停止，白模预演视频一定要生成）。
+        max_rounds = self._react_max_rounds()
+        if (max_rounds > 0
+                and self._react_round_counts.get(shot_id, 0) >= max_rounds
+                and shot_id in self._react_best
+                and composition_decision(
+                    self._react_best[shot_id].get("score"))["status"] != "pass"):
+            self.audit.log(
+                "react_round_exhausted",
+                f"{shot_id} ReAct 总回合 {max_rounds} 用尽仍未过 "
+                f"{PASS_SCORE} 分（best="
+                f"{self._react_best[shot_id].get('score')}），记为失败继续下一镜",
+                shot=shot_id,
+                rounds=self._react_round_counts.get(shot_id, 0),
+                best_score=self._react_best[shot_id].get("score"))
+            self._emit("react_round_exhausted",
+                       f"{shot_id} 精修回合用尽，标记失败并继续",
+                       shot=shot_id,
+                       rounds=self._react_round_counts.get(shot_id, 0))
+            self._mark_terminal(shot_id, "failed")
+            self._advance_shot()
             return
         # 未通过的镜头绝不能因为固定修复次数而伪装成完成并前进。
         # B4 定向修复优先；已有至少一次修复仍未通过时，进入 ReAct 观察/调整回合。
@@ -3397,9 +4366,19 @@ class PrevisDriver:
         warnings = list(getattr(result, "guard_warnings", None) or [])
         kinds = {str(item.get("type") if isinstance(item, dict)
                      else getattr(item, "type", "")) for item in warnings}
+        #: R2 缺口 #3（2026-10-19）：headroom_off 也进入确定性 reframe。
+        #: 真跑 evidence 20261019-r2-market-coin-full 显示 shot_001 构图
+        #: 53 → 79.5 只靠 edge_clip/framing 自动 reframe，最后 0.5 分差在
+        #: headroom_off（头顶留白过多），但它不在触发集合里，只能等 LLM
+        #: 修复——真跑里修复请求 190s 未返回被 wall 掐断，分数停在 79.5。
+        #: headroom_off 是 warning 级且有确定动作（收紧景别/抬高机位），
+        #: 自动 reframe 属确定性修复，不是降级。thirds_deviation 保持不
+        #: 自动 reframe：它是 info 级，且模型可用 ACCEPT 声明刻意偏心构图，
+        #: 盲改会误伤导演意图。
         if not kinds.intersection({"subject_not_visible", "edge_clip",
                                    "framing_too_tight", "framing_too_loose",
-                                   "subject_out_of_frame", "occlusion"}):
+                                   "subject_out_of_frame", "occlusion",
+                                   "headroom_off"}):
             return False
         shot = next((s for s in (self.plan.shots if self.plan else [])
                      if str(s.shot_id) == str(shot_id)), None)
@@ -3407,16 +4386,33 @@ class PrevisDriver:
             return False
         camera = dict(getattr(shot, "camera", None) or {})
         old_lens = float(camera.get("lens") or 50.0)
+        for built in reversed(list(
+                (getattr(self, "build_summary", None) or {}).get("results")
+                or [])):
+            if not isinstance(built, dict):
+                continue
+            if str(built.get("shot_id") or "") != str(shot_id):
+                continue
+            live_lens = built.get("lens")
+            try:
+                candidate = float(live_lens)
+            except (TypeError, ValueError):
+                break
+            if math.isfinite(candidate) and candidate > 0.0:
+                old_lens = candidate
+            break
+        #: headroom_off 归收紧分支：留白过多 = 主体偏小，1.28 收紧景别
+        #: （与 framing_too_loose 同语义）；thirds_deviation 不在此触发。
         if kinds.intersection({"subject_not_visible", "edge_clip",
                                "framing_too_tight", "subject_out_of_frame",
                                "occlusion"}):
-            new_lens = max(18.0, old_lens * 0.72)
+            new_lens = round(max(18.0, old_lens * 0.72), 3)
         else:
-            new_lens = min(180.0, old_lens * 1.28)
+            new_lens = round(min(180.0, old_lens * 1.28), 3)
         try:
             outcome = self.registry.execute("reframe", {
                 "shot_id": str(shot_id), "shot_type": str(shot.shot_type),
-                "lens": round(new_lens, 3)})
+                "lens": new_lens, "preserve_pose": True})
         except Exception as exc:  # pragma: no cover - bpy boundary
             self.audit.log("spatial_ruler_reframe_failed",
                            f"{shot_id} 空间尺 reframe 失败：{exc}",
@@ -3447,7 +4443,9 @@ class PrevisDriver:
                     f"m_{shot_id}_{metric}"],
                 "postcondition_measurement_ids": [
                     f"m_{shot_id}_composition_score"],
-                "postcondition": "全镜 visible_ratio > 0 且 composition_score > 80",
+                "postcondition": (
+                    "全镜 visible_ratio > 0 且 composition_score > "
+                    f"{COMPOSITION_PASS_TEXT}"),
                 "applied": True, "applied_at": "runtime",
                 "waived": False, "waive_reason": "",
             }
@@ -3470,6 +4468,8 @@ class PrevisDriver:
             #: 留着只会让 64 镜的跑里堆 64 份计划副本。
             self._repair_baseline.pop(str(done), None)
             self._decision_trees.pop(str(done), None)
+            #: F13：该镜的墙钟起点随换镜清理（下一镜重新计份额）。
+            self._shot_start_wall.pop(str(done), None)
             #: 版本历史（_shot_versions）**保留**：可回溯是本插件的核心能力，
             #: 换镜不清理，只随 resume checkpoint 增长/恢复。
             self._finished_shots.append(done)
@@ -3481,13 +4481,24 @@ class PrevisDriver:
             self._current_shot_id = self._shot_queue[0]
             next_shot_id = self._current_shot_id
         if done:
+            terminal_status = str(
+                self._shot_terminal.get(str(done)) or "unknown")
+            if terminal_status == "passed":
+                outcome = "通过"
+            elif terminal_status == "finished":
+                outcome = "模型声明完成但审核未过，待复核"
+            else:
+                outcome = f"以 {terminal_status} 终态推进"
             event = {
                 "shot_id": str(done),
                 "next_shot_id": next_shot_id,
+                "terminal_status": terminal_status,
+                "quality_pass": terminal_status == "passed",
                 "decision_trees_evicted": True,
             }
             self.audit.log("shot_advanced",
-                           f"{done} 通过，移入下一镜（{next_shot_id or '无'}）",
+                           f"{done} {outcome}，移入下一镜"
+                           f"（{next_shot_id or '无'}）",
                            **event)
             self._emit("shot_advanced", f"{done} 已前进", **event)
         self._transition(self._resume_per_shot_or_checking())
@@ -3554,14 +4565,27 @@ class PrevisDriver:
 
     def _start_react(self, shot_id: str, result: AuditResult) -> None:
         """进入 B5：开一段有上限的工具对话，让模型自己边看边调。"""
+        self._react_round_counts[shot_id] = (
+            self._react_round_counts.get(shot_id, 0) + 1)
         #: G2 #8：ReAct 的收尾工具 finish_shot 必须在工具表里。默认注册表自带，
         #: 但调用方可以塞自定义注册表（测试/嵌入用法）：进入 B5 前补齐三个
         #: 控制工具（幂等），于是 build_react_payload 的"缺 finish_shot 就报错"
         #: 守卫只拦**直接误用**，驱动器自己永不发出缺收尾工具的载荷。
         register_control_tools(self.registry)
+        #: 缺陷 B / T6：精修阶段额外注册 revert_shot（回到最高分版本）；
+        #: 重复调用幂等，不进计划/修复阶段的工具表。
+        try:
+            from ..layer3_engine.tool_bindings import register_react_tools
+            register_react_tools(self.registry)
+        except Exception:  # noqa: BLE001 - 纯 pytest 无 bpy：零行为差
+            pass
         self._react_done.add(shot_id)          # 仅诊断"曾进入"，不再限制重入
         self._react_shot = shot_id
         self._react_steps = 0
+        #: 缺陷 B / U10：进入 B5 时把当前审核记成版本 1（best 基线），
+        #: 后续每一轮复核结果由 :meth:`_record_react_score` 三态裁定。
+        baseline = float(getattr(result, "score", 0.0) or 0.0)
+        self._record_react_score(shot_id, result, baseline=True)
         shot = next((item for item in (self.plan.shots if self.plan else [])
                      if item.shot_id == shot_id), None)
         memory = render_shot_memory(
@@ -3591,18 +4615,34 @@ class PrevisDriver:
         return max(1, int(getattr(self.config.orchestration,
                                   "react_max_steps", 6)))
 
+    def _react_max_rounds(self) -> int:
+        """每镜 ReAct 总回合上限；``0`` = 关（保持旧行为）。"""
+        if self.config is None:
+            return 4
+        return max(0, int(getattr(self.config.orchestration,
+                                  "react_max_rounds", 4)))
+
     def _start_react_turn(self) -> None:
         """把当前 ReAct 对话裁到上下文上限内，再发起下一轮。"""
-        limit = 32000
+        limit = DEFAULT_CONTEXT_WINDOW_TOKENS
         if self.config is not None:
             limit = int(getattr(self.config.orchestration,
-                                "context_window_tokens", 32000))
-        kept, dropped = trim_messages(self._react_messages, limit)
+                                "context_window_tokens",
+                                DEFAULT_CONTEXT_WINDOW_TOKENS))
+        #: 压缩摘要预算：留出固定 20% 窗口给"被裁旧对话的关键信息摘要"，
+        #: 剩余窗口才是保留对话的预算——保证注入摘要后总 token 仍 ≤ 窗口
+        #: （窗口纪律：压缩不是把窗口挤爆的借口）。
+        summary_budget = max(1, int(limit * 0.2))
+        kept, dropped = trim_messages(self._react_messages,
+                                      limit - summary_budget)
         if dropped:
+            compressed = self._inject_compressed(
+                kept, dropped, limit=limit, summary_budget=summary_budget)
             self.audit.log("context_trimmed",
-                           f"裁剪 {len(dropped)} 条旧观察",
+                           f"裁剪 {len(dropped)} 条旧观察"
+                           f"，压缩为 {len(compressed)} 条关键信息摘要",
                            level="warning", **budget_report(kept, limit))
-            self._react_messages = kept
+            self._react_messages = compressed
         payload = ChatPayload(messages=list(self._react_messages),
                               tools=self.registry.openai_schemas(),
                               #: G2 #8：实际发出去的每一轮 ReAct 请求都要求
@@ -3631,6 +4671,212 @@ class PrevisDriver:
         # React 结束只代表模型停止本轮工具对话，不代表镜头通过。
         # 返回审核；若仍不通过，_audit_and_route 会继续当前镜修复循环。
         self._transition(DriverState.CHECKING)
+
+    def _record_react_tool_progress(self, tool_calls) -> None:
+        """R2-F2：按一轮 ReAct 的工具集合记录只读空转（诊断）。
+
+        R2 ticket 05 原实现把"只读轮 +1 / 混合轮清零"与回溯"连续无新高"
+        写进同一个 ``_react_no_gain``——真跑中模型每轮先调 ``setup_camera``
+        （修改类）再得相同分数，score 侧累计被反复清零，"连续 3 轮无新高 →
+        react_terminal_fail"永远到不了 3，墙钟被单镜耗尽
+        （evidence/20261019-r2-market-coin-accept-32k-v2）。
+
+        现在：只读步只累积 ``_react_readonly_rounds``（``repair_no_progress``
+        事件照记，排障可见）；终态计数完全由 ``_record_react_score`` 的审核
+        裁定负责——只读轮以"场景未变"收场，审核必然 tie/revert，自然计入
+        "无新高"。修改步只打断只读连续（清只读计数），不碰 score 计数。
+
+        R2-F11 追加：final8 真跑里 shot_002 每轮 ReAct 都以"只读查询 + 零
+        修改"收场，但 ``_record_react_score`` 只在审核轮发生（每轮 6 步
+        之后才审一次），而模型在 6 步内反复查询同一个 check_composition
+        ——只读空转本身不触发任何终态。这里把连续只读**步**数留在
+        ``_react_readonly_rounds`` 里，终态路由单独判"连续一整回合纯只读
+        （≥ react_max_steps 步）= 无实质进展"；**绝不写进**
+        ``_react_no_gain``（score 侧计数只由审核裁定，避免双重计数）。
+        """
+        names = [str(call.function.name) for call in tool_calls or []]
+        if not names or not self._react_shot:
+            return
+        if all(name in DEFAULT_QUERY_TOOLS for name in names):
+            self._react_readonly_rounds[self._react_shot] = (
+                self._react_readonly_rounds.get(self._react_shot, 0) + 1)
+            count = self._react_readonly_rounds[self._react_shot]
+            self.audit.log("repair_no_progress",
+                           f"{self._react_shot} ReAct 轮全只读（{'/'.join(names)}），"
+                           f"无实质改动，累计无新高 {count} 轮",
+                           level="warning", shot=self._react_shot,
+                           tools=names, no_gain=count)
+            self._emit("repair_no_progress", f"{self._react_shot} 只读轮无进展",
+                       shot=self._react_shot, tools=names)
+        else:
+            self._react_readonly_rounds[self._react_shot] = 0
+
+    def _react_readonly_auto_reframe(self, shot_id: str) -> bool:
+        """R2-F2 兜底：全只读轮触发确定性相机处方。
+
+        模型在 ReAct 里反复"看"（get_scene_state/check_*/search_knowledge）
+        却没动手时，用空间尺做一次**确定性** reframe（同一镜最多一次，
+        可回溯），把场景真正改起来再回 CHECKING 复测——"用程序为尺子 +
+        随机应变"，不是固定处方：reframe 的量来自最近审计的 guard_warnings。
+        返回 True 表示已执行处方（调用方应结束本轮 ReAct 回审核复测）。
+        """
+        if not self._react_readonly_rounds.get(shot_id, 0):
+            return False
+        if not self._ruler_camera_repair_enabled():
+            return False
+        done = getattr(self, "_ruler_reframed_shots", None) or set()
+        if shot_id in done:
+            return False
+        last = None
+        for item in reversed(self.audit_results):
+            if str(getattr(item, "target", "")) == str(shot_id):
+                last = item
+                break
+        if last is None:
+            return False
+        if not self._auto_reframe_from_ruler(shot_id, last):
+            return False
+        self.audit.log(
+            "react_readonly_reframe",
+            f"{shot_id} 全只读轮触发空间尺自动 reframe，回 CHECKING 复测",
+            shot=shot_id, level="info")
+        return True
+
+    def _wire_world_state(self) -> None:
+        """R11：把 ``runtime_world_state.json`` 的落盘路径挂到当前场景上下文。
+
+        构建器先建 SceneContext 再刷新，但此时还没拿到运行目录——路径由
+        驱动器在构建成功后补登记（审计目录在 run 开始时就已知），并立即
+        刷新一次，从此 agent 工具改动/回滚都会实时重写同一份 JSON。
+        """
+        try:
+            from ..layer3_engine.scene_context import get_context
+            context = get_context()
+            if context is None:
+                return
+            target = world_state_target_path(self.audit.directory)
+            if target is None:
+                return
+            context.world_state_path = str(target)
+            from ..layer3_engine.world_state import refresh_world_state
+            refresh_world_state(context)
+        except Exception:  # noqa: BLE001 - 纯 pytest / 无 bpy：如实跳过
+            return
+
+    def _collect_world_state(self, shot_id: str):
+        """R11：采集当前场景状态作为 best 快照；无 bpy/无场景时返回 None。
+
+        快照也登记进 ``SceneContext.react_best_snapshot``（模型主动调
+        revert_shot 时同样能拿到它）。
+        """
+        shot_id = str(shot_id)
+        try:
+            from ..layer3_engine.scene_context import get_context
+            from ..layer3_engine.world_state import (
+                collect_world_state,
+                write_world_state,
+            )
+            context = get_context()
+            if context is None:
+                return None
+            payload = collect_world_state(context)
+            write_world_state(context, payload)
+            context.react_best_snapshot[shot_id] = payload
+            return payload
+        except Exception:  # noqa: BLE001 - 纯 pytest / 无 bpy：快照如实缺
+            return None
+
+    def _revert_to_best(self, shot_id: str) -> None:
+        """把场景物理回滚到最高分版本（D4：回滚后立即给下一轮，不停生成）。"""
+        shot_id = str(shot_id)
+        best = self._react_best.get(shot_id) or {}
+        payload = best.get("world_state")
+        if not payload:
+            self.audit.log(
+                "revert_skipped",
+                f"{shot_id} 无世界状态快照（纯层/无 bpy），物理回滚跳过",
+                level="warning", shot=shot_id, reason="no_world_snapshot")
+            return
+        try:
+            from ..layer3_engine.scene_context import get_context
+            from ..layer3_engine.tool_bindings import restore_world_snapshot
+            context = get_context()
+            notes = restore_world_snapshot(payload, context)
+            if context is not None:
+                context.react_best_snapshot[shot_id] = payload
+            self.audit.log(
+                "revert_applied",
+                f"{shot_id} 已回滚到最高分版本（{len(notes)} 类恢复），JSON 已刷新",
+                shot=shot_id, best_score=best.get("score"),
+                restored=notes)
+            self._emit("revert_applied", f"{shot_id} 已回滚到最高分版本",
+                       shot=shot_id, best_score=best.get("score"))
+        except Exception as exc:  # noqa: BLE001
+            self.audit.log(
+                "revert_failed", f"{shot_id} 物理回滚失败：{exc}",
+                level="warning", shot=shot_id,
+                error=f"{type(exc).__name__}: {exc}")
+
+    def _record_react_score(self, shot_id: str, result: AuditResult, *,
+                            baseline: bool = False):
+        """缺陷 B / U10：一版审核分数进回溯三态并留痕。
+
+        ``baseline=True``（进入 B5 时的当前分数）记成版本 1 / best 基线；
+        其余每轮复核按"过分数采用 / 新高保留 / 低分回溯"裁定。返回
+        ``BacktrackDecision`` 或 ``None``（分数缺失 / 未进入精修）。
+        """
+        from ..contracts.backtrack import backtrack_three_state
+
+        shot_id = str(shot_id)
+        score_raw = getattr(result, "score", None)
+        if score_raw is None:
+            return None
+        score = float(score_raw)
+        if baseline:
+            if shot_id in self._react_best:
+                return None
+            self._react_best[shot_id] = {
+                "score": score, "version": 1,
+                "world_state": self._collect_world_state(shot_id)}
+            self._react_no_gain[shot_id] = 0
+            self._react_scores[shot_id] = [{
+                "version": 1, "score": score, "disposition": "new_high",
+                "summary": "基线（进入精修）"}]
+            self.audit.log("react_score",
+                           f"{shot_id} v1 {score:.1f} → 基线（new_high）",
+                           shot=shot_id, version=1, score=score,
+                           disposition="new_high")
+            return None
+        if shot_id not in self._react_best:
+            return None
+        best = self._react_best[shot_id]
+        decision = backtrack_three_state(
+            score, best_score=best.get("score"),
+            no_gain=self._react_no_gain.get(shot_id, 0))
+        version = len(self._react_scores.get(shot_id, [])) + 1
+        self._react_scores.setdefault(shot_id, []).append({
+            "version": version, "score": score,
+            "disposition": decision.disposition,
+            "summary": f"best={decision.best_score:g}",
+        })
+        if decision.disposition in ("new_high", "adopt"):
+            self._react_best[shot_id] = {
+                "score": decision.best_score, "version": version,
+                "world_state": self._collect_world_state(shot_id)}
+            self._react_no_gain[shot_id] = 0
+        else:
+            if decision.should_revert:
+                self._revert_to_best(shot_id)
+            self._react_no_gain[shot_id] = decision.no_gain
+        self.audit.log(
+            "react_score",
+            f"{shot_id} v{version} {score:.1f} → {decision.disposition}"
+            f"（best={decision.best_score:g}，无新高 "
+            f"{self._react_no_gain.get(shot_id, 0)} 轮）",
+            shot=shot_id, version=version, score=score,
+            disposition=decision.disposition, best_score=decision.best_score,
+            no_gain=self._react_no_gain.get(shot_id, 0))
+        return decision
 
     # -------------------------------------------------- Level 2 自我审核（§11.1）
     def _should_self_review(self, shot_id: str) -> bool:
@@ -3784,6 +5030,24 @@ class PrevisDriver:
             if review_text:
                 system = payload.messages[0]
                 system.content = str(system.content) + "\n\n" + review_text
+        #: F14 辅助（final10 实测）：把该镜最高分版本注入修复提示，防止模型
+        #: 用 setup_camera 整位重摆覆盖高分版本（空间尺 reframe 的 79.5 分
+        #: 36mm 版本被 setup_camera 50mm 覆盖回 53）。只提示、不改任何门限；
+        #: 无 best 或 best 不高于本次时零形状差。
+        best = self._react_best.get(str(self._current_shot_id))
+        if best:
+            best_score = float(best.get("score") or 0.0)
+            audit_score = float(getattr(audit, "score", 0.0) or 0.0)
+            if best_score > audit_score:
+                system = payload.messages[0]
+                system.content = (
+                    str(system.content)
+                    + f"\n\n【高分保留】当前镜头已有最高分版本 "
+                      f"best={best_score:g}（本次 {audit_score:g}）。请在"
+                      f"最高分版本基础上微调：优先 move_camera / reframe 传"
+                      f"具体增量（距离/焦段/高度），不要用 setup_camera "
+                      f"整位重摆覆盖它——若确实需要重摆，先 revert_shot "
+                      f"回到 best 再基于它调整。")
         #: 工具集与对话都要留住：延续轮必须用**同一套**工具（含收窄），
         #: 并且把这一轮的工具观测带回模型。
         self._repair_tools = list(payload.tools)
@@ -3793,16 +5057,25 @@ class PrevisDriver:
             #: 判断的依据；丢掉它们等于让它重新踩一遍同一个坑。镜头换了
             #: （`_advance_shot`）才会清空。
             self.repair_messages.extend(payload.messages)
+            window = int(getattr(self.config.orchestration,
+                                 "context_window_tokens",
+                                 DEFAULT_CONTEXT_WINDOW_TOKENS)
+                         if self.config is not None
+                         else DEFAULT_CONTEXT_WINDOW_TOKENS)
+            summary_budget = max(1, int(window * 0.2))
             kept, dropped = trim_messages(
                 self.repair_messages,
-                int(getattr(self.config.orchestration,
-                            "context_window_tokens", 32000))
-                if self.config is not None else 32000)
+                window - summary_budget)
             if dropped:
+                compressed = self._inject_compressed(
+                    kept, dropped, limit=window, summary_budget=summary_budget)
                 self.audit.log("context_trimmed",
-                               f"修复对话裁剪 {len(dropped)} 条旧观察",
+                               f"修复对话裁剪 {len(dropped)} 条旧观察"
+                               f"，压缩为 {len(compressed)} 条关键信息摘要",
                                level="warning")
-            self.repair_messages = kept
+                self.repair_messages = compressed
+            else:
+                self.repair_messages = kept
         else:
             self.repair_messages = list(payload.messages)
         #: 发出去的必须是**累积**的那份对话（否则上面那段就是白写的）。
@@ -3839,6 +5112,39 @@ class PrevisDriver:
             return False
         return self.budget.allow_llm_call("repair")
 
+    def _compress_dropped(self, dropped: Sequence, *,
+                          max_tokens: Optional[int] = None) -> List[Message]:
+        """把被裁掉的旧对话压缩成一条关键信息摘要（用户裁决：生成关键
+        信息文档当缓存，压缩上下文；不直接把旧观察丢掉）。
+
+        ``dropped`` 是 ``trim_messages`` 裁掉的旧消息；压缩产物是单条
+        SYSTEM 摘要消息，注入到保留对话的最前面（system 之后），让模型
+        仍能看到"修这一镜还需要的关键要点"，但不再携带原文与重复调用 ID。
+        """
+        if not dropped:
+            return []
+        return compress_messages(dropped, max_tokens=max_tokens)
+
+    def _inject_compressed(self, kept: List[Message], dropped: Sequence, *,
+                           limit: int, summary_budget: int) -> List[Message]:
+        """把被裁旧对话的压缩摘要注入保留对话；装不下就不注入（守窗口纪律）。
+
+        ``kept`` 已经按 ``limit - summary_budget`` 裁好；这里尝试注入
+        ``compress_messages(dropped, max_tokens=summary_budget)`` 到 system
+        之后。若注入后总 token 仍超 ``limit``（极小窗口下 system 几乎占满，
+        摘要装不下），退回纯裁剪——压缩是"尽量保留关键信息"，不是把窗口挤爆
+        的借口。返回最终对话。
+        """
+        if not dropped:
+            return kept
+        compressed = self._compress_dropped(dropped, max_tokens=summary_budget)
+        if not compressed:
+            return kept
+        candidate = kept[:1] + compressed + kept[1:]
+        if count_tokens(candidate) <= limit:
+            return candidate
+        return kept
+
     def _continue_repair(self) -> None:
         """同一**次**修复尝试里的下一轮：把上一轮的工具观测真的发回给模型。
 
@@ -3847,16 +5153,24 @@ class PrevisDriver:
         `get_scene_state` / `check_composition` 拿到的观测全部丢掉，它只能
         凭审计原文猜，然后这一轮就结束了。
         """
-        limit = 32000
+        limit = DEFAULT_CONTEXT_WINDOW_TOKENS
         if self.config is not None:
             limit = int(getattr(self.config.orchestration,
-                                "context_window_tokens", 32000))
-        kept, dropped = trim_messages(self.repair_messages, limit)
+                                "context_window_tokens",
+                                DEFAULT_CONTEXT_WINDOW_TOKENS))
+        summary_budget = max(1, int(limit * 0.2))
+        kept, dropped = trim_messages(self.repair_messages,
+                                      limit - summary_budget)
         if dropped:
+            compressed = self._inject_compressed(
+                kept, dropped, limit=limit, summary_budget=summary_budget)
             self.audit.log("context_trimmed",
-                           f"修复对话裁剪 {len(dropped)} 条旧观察",
+                           f"修复对话裁剪 {len(dropped)} 条旧观察"
+                           f"，压缩为 {len(compressed)} 条关键信息摘要",
                            level="warning", **budget_report(kept, limit))
-        self.repair_messages = kept
+            self.repair_messages = compressed
+        else:
+            self.repair_messages = kept
         self.repair_messages.append(Message(role=MessageRole.SYSTEM,
                                             content=REPAIR_FOLLOWUP_NUDGE))
         #: 新一轮的计数器归零：`_can_continue_repair` 读的必须是**这一轮**的观测。
@@ -3981,6 +5295,18 @@ class PrevisDriver:
             reason=reason,
             version_histories={
                 str(k): v.to_dict() for k, v in self._shot_versions.items()},
+            #: R2-D3：逐镜回溯最高分与连续无新高轮数随断点落盘，resume 后
+            #: `_failures_payload()` 读持久化值（"高分保留"跨进程成立）。
+            react_best={str(k): dict(v)
+                        for k, v in self._react_best.items()},
+            react_no_gain={str(k): int(v)
+                           for k, v in self._react_no_gain.items()},
+            react_round_counts={
+                str(k): int(v) for k, v in self._react_round_counts.items()},
+            evidence_store=(
+                self.evidence_store.to_dict()
+                if self.evidence_store is not None else None),
+            coarse_decision=copy.deepcopy(self._coarse_decision),
         )
         try:
             save_resume_state(path, state)
@@ -4032,6 +5358,10 @@ class PrevisDriver:
             except Exception as exc:  # noqa: BLE001 - 坏计划必须报错，不猜
                 raise ResumeStateError(
                     f"resume_state.plan 无法解析：{exc}") from exc
+            declared = list(
+                getattr(self.parsed_script, "declared_shots", []) or [])
+            if declared:
+                self._pin_declared_shot_types(declared)
             self._apply_scene_budget(len(self.plan.shots))
         if state.brief is not None:
             try:
@@ -4050,6 +5380,15 @@ class PrevisDriver:
                                for k, v in state.drafts.items()}
         self._resume_delivered = {str(item)
                                   for item in state.delivered_shots}
+        #: R2-D3：把持久化的回溯最高分与无新高轮数种回内存，避免新进程
+        #: 用空内存重建 `failures.json` 把历史最高分清零（红线 U10）。
+        self._react_best = {str(k): dict(v)
+                            for k, v in state.react_best.items()}
+        self._react_no_gain = {str(k): int(v)
+                               for k, v in state.react_no_gain.items()}
+        #: R2-F11：每镜 ReAct 总回合计数随断点恢复，回合上限跨进程不重置。
+        self._react_round_counts = {
+            str(k): int(v) for k, v in state.react_round_counts.items()}
         if state.version_histories:
             try:
                 self._shot_versions = {
@@ -4095,6 +5434,15 @@ class PrevisDriver:
                   else (DriverState.PREPARE_SCENE
                         if self._supports_prepare_scene()
                         else DriverState.BUILDING))
+        #: R2-F1：断点续跑同样必须在进细排前过粗排 gate——resume 直接恢复
+        #: plan 并跳进 EDITING/PREPARE_SCENE，若这里不查，旧断点（首跑时
+        #: human gate 短路了粗排）会整体绕过粗排验证（实测同 2026-10-19）。
+        if self._restore_cached_coarse_decision():
+            if self.state not in TERMINAL_STATES:
+                self._transition(target)
+            return
+        if not self._run_coarse_gate(target):
+            return
         self._transition(target)
 
     # ------------------------------------------------------------ 内部
@@ -4172,7 +5520,7 @@ class PrevisDriver:
                 parsed=self.parsed_script, retriever=self.knowledge,
                 brief=self.brief, chunk=chunk, plan_chunks_total=len(chunks),
                 #: 上一次被拒的原因回灌给这一次——否则模型把同一个错误再犯一遍。
-                retry_note=self._plan_problem,
+                retry_note=self._plan_retry_note(),
                 #: 空间理解快照（Ticket 08）：已有设计快照（如续跑/重规划）时
                 #: 注入设计摘要；首跑计划未定，恒为 None ⇒ 提示零形状差。
                 design=self._spatial_design)
@@ -4195,6 +5543,19 @@ class PrevisDriver:
                                       f"{chunk['shot_numbers'][-1]}）"
                                       if chunk else "")))
 
+    def _plan_retry_note(self) -> str:
+        """plan 提示的"上一次失败原因"：粗排回溯反馈 + 计划生成问题。
+
+        粗排反馈存在 ``_coarse_feedback``（直到门过才清），计划生成问题
+        在 ``_plan_problem``（收段即清）——两者并集回灌，保序去重。
+        """
+        parts: List[str] = []
+        for item in list(self._coarse_feedback) + [self._plan_problem]:
+            text = str(item or "").strip()
+            if text and text not in parts:
+                parts.append(text)
+        return "\n".join(parts)
+
     def _plan_chunk_list(self) -> List[Dict[str, Any]]:
         """这一跑的计划分段（只算一次；没有分镜表声明时返回空表 = 不分块）。
 
@@ -4203,6 +5564,20 @@ class PrevisDriver:
         if self._plan_chunks is None:
             self._plan_chunks = plan_chunks(self.parsed_script)
         return self._plan_chunks
+
+    def _restart_plan_accumulator(self) -> None:
+        """从第一段重新收一份完整计划，留给上一条错误计划的状态全部清空。
+
+        粗排回溯是"再规划一条新路线"，不是"重试最后一段"。若只把
+        ``_plan_failures`` 清零而保留游标/已收镜头，分块长剧本会从最后
+        一段继续追加；64 镜计划会依次膨胀成 80/96/112 镜，重复 shot_id
+        还会在按 id 建索引的报告里静默折叠。
+        """
+        self._plan_chunk_index = 0
+        self._plan_shots = []
+        self._plan_head = {}
+        self._plan_problem = ""
+        self._plan_next_slim = False
 
     def _plan_needs_more_chunks(self) -> bool:
         """还有一段没收到？（不分块时恒 False ⇒ 与分块前的行为逐字一致。）"""
@@ -4401,7 +5776,32 @@ class PrevisDriver:
                                    **event_data)
                     self._emit(event_name, f"{call.function.name} 已投影",
                                **event_data)
-            result = self.registry.execute(call.function.name, args)
+            knowledge_stage = (
+                self._call_purpose
+                if self._call_purpose in {
+                    "plan", "editor", "coarse", "detail", "repair", "react",
+                }
+                else "direct"
+            )
+            knowledge_shot = (
+                str(self._react_shot or "")
+                if knowledge_stage == "react"
+                else str(self._current_shot_id or "")
+            )
+            knowledge_scope = (
+                "shot" if knowledge_shot
+                else "plan" if knowledge_stage == "plan"
+                else "tool"
+            )
+            result = self.registry.execute(
+                call.function.name,
+                args,
+                context={
+                    "stage": knowledge_stage,
+                    "scope": knowledge_scope,
+                    "shot_id": knowledge_shot,
+                },
+            )
             self._tool_calls += 1
             self.audit.count_tool_call()
             self.loop_detector.record(call.function.name, args)
@@ -4416,6 +5816,11 @@ class PrevisDriver:
                 # 实测（2026-10-03 的 64 镜真跑）模型只调 `get_scene_state` +
                 # `check_composition`，而 `repair_applied` 照写"已实施定向修复"。
                 self._repair_tools_ok += 1
+                #: 2026-10-21：agent 成功改动场景后实时把 Blender 实测坐标合并
+                #: 进空间设计 JSON（_sync_spatial_design_from_world），粗排/细排
+                #: 重测不再拿计划默认站位当"当前事实"。无 bpy/无快照时方法内部
+                #: 如实跳过并记审计，不影响纯测试路径。
+                self._sync_spatial_design_from_world()
             elif result.ok and call.function.name in READ_ONLY_TOOLS:
                 #: "这一轮**拿到了观测**"（只读查询成功）。它与"动手"是两件事：
                 #: 前者是模型判断的依据，后者才是修复本身。修复回合的**续轮**
@@ -4493,7 +5898,25 @@ class PrevisDriver:
                     except ValueError as exc:
                         errors.append(str(exc))
                     else:
-                        merged = merge_draft(self.plan, draft)
+                        #: R2 S2（精修身份冻结）：精修不得改写镜头身份。
+                        #: 冲突 → 记 E 类错误、草案作废、计划原值保留（绝不
+                        #: 静默改写）；无冲突才走合并（并显式冻结身份字段，
+                        #: 双保险）。
+                        conflicts = identity_conflicts(self.plan, draft)
+                        if conflicts:
+                            message = identity_finding(
+                                shot_id, conflicts)
+                            errors.append(message)
+                            self.audit.log(
+                                "draft_invalid", message, level="error",
+                                shot=shot_id, reason=message,
+                                category=classify_invalid(message))
+                            self._emit("draft_invalid",
+                                       f"{shot_id} 草案改写镜头身份被拒",
+                                       shot=shot_id)
+                            continue
+                        merged = merge_draft(self.plan, draft,
+                                             freeze_identity=True)
                         crossing = unseen_axis_crossing(
                             merged, self.brief, shot_id)
                         if crossing:
@@ -4612,3 +6035,103 @@ def _adversarial_review_text(review: Dict[str, Any]) -> str:
     if rationale:
         lines.append(f"审查结论：{rationale}")
     return "\n".join(lines)
+
+
+def _coarse_plan_score(payload: Any) -> float:
+    """把粗排 pipeline_report 折成回溯分数：越高越好。
+
+    口径（2026-10-21 真跑修复）：把**构图通过率**纳入分数——粗排 gate
+    现在是构图硬门（任一非空镜 ≤80 即 blocked），若回溯分数只看 error
+    findings，重规划模型永远以为"error 没变"而放弃。新口径：
+
+    * 分数 = 构图通过率×100 − error findings 数；
+    * 门过（composition 全 >80 且无 error）-> gate_ready=True -> adopt；
+    * 低分镜越多分数越低，让"站位/取景更合理"的重规划能被三态比较。
+
+    payload 缺失/异常形状按 0 分（诚实不猜）。
+    """
+    if not isinstance(payload, dict):
+        return 0.0
+    errors = len(payload.get("findings") or [])
+    for round_item in (payload.get("rounds") or []):
+        if isinstance(round_item, dict):
+            errors += int(round_item.get("findings") or 0)
+
+    #: 构图通过率：读 blockout_report（payload.artifacts 或 payload.report）。
+    #: 分母 = 有 composition check 的镜（非空镜）；空镜豁免不计。
+    report = None
+    if isinstance(payload.get("report"), dict):
+        report = payload["report"]
+    else:
+        artifacts = payload.get("artifacts")
+        if isinstance(artifacts, dict) and artifacts.get("blockout_report"):
+            try:
+                from pathlib import Path
+                report = json.loads(
+                    Path(str(artifacts["blockout_report"]))
+                    .read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001 - 证据缺失按 0 分
+                report = None
+    pass_count = 0
+    total_count = 0
+    if isinstance(report, dict):
+        for check in report.get("checks") or []:
+            if str(check.get("check_id") or "") != "composition":
+                continue
+            total_count += 1
+            actual = check.get("actual")
+            if composition_decision(actual)["status"] == "pass":
+                pass_count += 1
+    pass_rate = (pass_count / total_count if total_count else 0.0)
+    return round(pass_rate * 100.0 - float(errors), 4)
+
+
+def _coarse_finding_lines(payload: Any) -> List[str]:
+    """把 error finding 明细折成反馈行，供重规划模型看到具体失败项。
+
+    两个来源都支持：
+
+    * ``payload.findings``（计划完整性预检直接携带的 finding 列表，
+      不依赖落盘文件）；
+    * ``payload.artifacts.blockout_report``（粗排管线的完整报告路径），
+      文件缺失/不可读按空列表处理（反馈仍带 blocked reason，不因证据
+      缺失中断回溯）。
+
+    每行形如 ``- [error] shot_003 E_BLOCKOUT_EMPTY_WALL: <message>``。
+    """
+    if not isinstance(payload, dict):
+        return []
+
+    def _line(finding: Any) -> Optional[str]:
+        if not isinstance(finding, dict):
+            return None
+        if str(finding.get("severity") or "") != "error":
+            return None
+        shot_id = str(finding.get("shot_id") or "?")
+        check_id = str(finding.get("check_id") or "?")
+        message = str(finding.get("message") or "")
+        return f"- [error] {shot_id} {check_id}: {message}"
+
+    direct = payload.get("findings")
+    if isinstance(direct, list):
+        lines = [line for line in (_line(f) for f in direct) if line]
+        if lines:
+            return lines
+
+    artifacts = payload.get("artifacts")
+    if not isinstance(artifacts, dict):
+        return []
+    report_path = artifacts.get("blockout_report")
+    if not report_path:
+        return []
+    try:
+        from pathlib import Path
+        report = json.loads(Path(str(report_path)).read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001 - 证据缺失不阻断回溯
+        return []
+    lines: List[str] = []
+    for finding in report.get("findings") or []:
+        line = _line(finding)
+        if line:
+            lines.append(line)
+    return lines

@@ -21,7 +21,11 @@ from ..contracts.messages import (
     MessageRole,
     new_request_id,
 )
-from ..contracts.plan import Plan
+from ..contracts.plan import (
+    FRAMING_TARGET_KINDS,
+    FRAMING_TARGET_PARTS,
+    Plan,
+)
 from ..contracts.rhythm import PACING_PROFILES
 from ..contracts.tools import PLAN_TOOL
 from ..motion.model import ACTION_TYPES
@@ -51,6 +55,37 @@ PLAN_TOOL_NAME = PLAN_TOOL
 #: 缺省镜长档案（config.rhythm.pacing_profile 没给/没有 config 时）。
 DEFAULT_PACING_PROFILE = "standard"
 
+#: 阶段 A 也允许对**声明硬约束**提出显式破例。`break` 必须带 reason；
+#: `follow` 可以只说明规则。这里用判别式 ``anyOf``，与 B1 的
+#: ``validate_justifications`` 保持同一语义，而不是接受一份无理由的破例。
+_RULE_JUSTIFICATION_SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["rule", "action"],
+    "properties": {
+        "rule": {"type": "string"},
+        "action": {"type": "string", "enum": ["follow", "break"]},
+        "reason": {"type": "string"},
+        "precedent": {"type": "string"},
+    },
+    "anyOf": [
+        {
+            "type": "object",
+            "required": ["rule", "action"],
+            "properties": {
+                "action": {"const": "follow"},
+            },
+        },
+        {
+            "type": "object",
+            "required": ["rule", "action", "reason"],
+            "properties": {
+                "action": {"const": "break"},
+            },
+        },
+    ],
+}
+
 # emit_plan 的参数 schema：与 §7.2 的分镜计划结构一致。
 _SHOT_ITEM_SCHEMA: Dict[str, Any] = {
     "type": "object",
@@ -73,6 +108,12 @@ _SHOT_ITEM_SCHEMA: Dict[str, Any] = {
         "axis_note": {"type": "string"},
         "continuity_in": {"type": "string"},
         "prompt": {"type": "string"},
+        #: 声明硬约束的破例通道。``break`` 必须写明 reason；合法破例会
+        #: 在 compliance 中降为 WARNING，而不是被无条件抹成声明值。
+        "rule_justifications": {
+            "type": "array",
+            "items": _RULE_JUSTIFICATION_SCHEMA,
+        },
         #: v1.7 A6（TDD §14.1）：分工声明。可选键，**不进** ``required``；
         #: 执行语义是 J3 的活，本卡只落数据（prompt 文案也在 J3，这里不加字）。
         "responsibility": {
@@ -86,6 +127,23 @@ _SHOT_ITEM_SCHEMA: Dict[str, Any] = {
                 "ref_image": {"type": "array",
                               "items": {"type": "string"}},
                 "skip_white_model": {"type": "boolean"},
+            },
+        },
+        #: T3（iteration-fix）：这一镜拍谁（角色/局部部位/道具）。
+        #: kind/part 是闭集；ref 是角色 id 或道具 id。
+        "framing_target": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["kind", "ref", "part"],
+            "properties": {
+                "kind": {"type": "string",
+                         "enum": list(FRAMING_TARGET_KINDS)},
+                "ref": {"type": "string"},
+                "part": {"type": "string",
+                         "enum": list(FRAMING_TARGET_PARTS)},
+                "anchor_offset": {"type": "array", "minItems": 3,
+                                  "maxItems": 3,
+                                  "items": {"type": "number"}},
             },
         },
     },

@@ -119,19 +119,24 @@ def t_move_character_walks():
     _plan, registry = built(with_actions=False)
     character = get_context().characters["char_001"]
     before_frames = frames_with_keys(character)
-    before_x = float(character.root.location.x)
+    before_x = float(character.root.matrix_world.translation.x)
     result = registry.execute("move_character", {
         "character_id": "char_001", "target_position": [2.0, 0.0, 0.0],
         "start_frame": 10, "end_frame": 40})
     after = frames_with_keys(character)
+    # 走位是否真实生效要在**走位结束帧**上求值后读（世界坐标刷新后 raw
+    # location 反映的是当前帧的真实姿态；在帧 1 读只会拿到起点 -0.9）。
+    bpy.context.scene.frame_set(40)
+    bpy.context.view_layer.update()
+    moved_x = float(character.root.matrix_world.translation.x)
     # 走位的收尾会带 6 帧混合窗口（§9.7），因此关键帧到 46 为止
     return {"ok": (result.ok and before_frames == set()
                    and after == set(range(10, 47))
-                   and character.root.location.x > before_x),
+                   and moved_x > before_x),
             "content": result.content,
             "frames": [min(after, default=0), max(after, default=0)],
             "count": len(after),
-            "root_x": [round(before_x, 3), round(float(character.root.location.x), 3)]}
+            "root_x": [round(before_x, 3), round(moved_x, 3)]}
 
 
 # --------------------------------------------------------------------------- #

@@ -21,6 +21,7 @@ from .replay import (
     audit_candidates,
     audit_path,
     extract_plan,
+    extract_evidence_store,
     iter_tool_calls,
     read_audit_log,
     replay,
@@ -31,4 +32,5 @@ __all__ = ["PROJECT_FILENAME", "LoadedProject", "save_project",
            "validation_report", "findings_report",
            "AUDIT_FILENAME", "CONTROL_TOOLS", "ReplayError", "ReplayReport",
            "ReplayStep", "audit_candidates", "audit_path", "extract_plan",
-           "iter_tool_calls", "read_audit_log", "replay"]
+           "extract_evidence_store", "iter_tool_calls", "read_audit_log",
+           "replay"]

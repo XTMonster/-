@@ -7,12 +7,19 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from ..contracts.audit import AuditError
+from ..contracts.evidence import (
+    EvidenceError,
+    EvidenceStore,
+    StaleEvidenceStore,
+    inspect_evidence_store_payload,
+)
 from ..contracts.sdl import SDLProject
 from ..layer2_sdl.sdl_migrate import migrate_sdl
 from ..layer2_sdl.sdl_validator import validate_sdl
@@ -30,6 +37,9 @@ class LoadedProject:
     path: Path
     notes: List[str] = field(default_factory=list)
     findings: List[AuditError] = field(default_factory=list)
+    evidence_store: Optional[EvidenceStore] = None
+    evidence_status: Dict[str, Any] = field(default_factory=dict)
+    evidence_stale: Optional[StaleEvidenceStore] = None
 
     @property
     def ok(self) -> bool:
@@ -46,7 +56,8 @@ class LoadedProject:
                 "errors": [item.to_dict() for item in self.findings
                            if item.is_error],
                 "warnings": [item.to_dict() for item in self.findings
-                             if not item.is_error]}
+                             if not item.is_error],
+                "evidence": dict(self.evidence_status)}
 
 
 def project_file(directory: Union[str, Path]) -> Path:
@@ -104,7 +115,8 @@ def findings_report(findings, *, path: str = "",
 
 
 def save_project(directory: Union[str, Path], sdl: SDLProject, *,
-                 extra: Optional[Dict[str, Any]] = None) -> Path:
+                 extra: Optional[Dict[str, Any]] = None,
+                 evidence_store: Optional[EvidenceStore] = None) -> Path:
     """把 SDL 写入 ``project.bdproj``，返回文件路径。"""
     target_dir = Path(directory)
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -113,9 +125,17 @@ def save_project(directory: Union[str, Path], sdl: SDLProject, *,
         timespec="seconds")
     if extra:
         payload.update(extra)
+    if evidence_store is not None:
+        errors = evidence_store.validate()
+        if errors:
+            raise EvidenceError(
+                "evidence store is not authoritative: " + "; ".join(errors))
+        payload["evidence_store"] = evidence_store.to_dict()
     path = project_file(target_dir)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2),
-                    encoding="utf-8")
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2),
+                         encoding="utf-8")
+    os.replace(temporary, path)
     return path
 
 
@@ -133,7 +153,34 @@ def load_project(directory: Union[str, Path], *,
         # ProjectError，而不是把底层异常原样抛给调用方。
         raise ProjectError(f"项目文件无法读取或不是合法 JSON：{exc}") from exc
 
+    evidence_payload = raw.get("evidence_store")
     payload, notes = migrate_sdl(raw)
     sdl = SDLProject.from_dict(payload)
     findings = validate_sdl(sdl) if validate else []
-    return LoadedProject(sdl=sdl, path=path, notes=notes, findings=findings)
+    evidence_store = None
+    evidence_stale = None
+    if evidence_payload is None:
+        evidence_status = {
+            "status": "missing",
+            "schema_version": "",
+            "reason": "project predates the authoritative evidence store",
+        }
+    else:
+        evidence_store, evidence_status = inspect_evidence_store_payload(
+            evidence_payload)
+        if evidence_store is None:
+            evidence_stale = StaleEvidenceStore(
+                payload=(evidence_payload
+                         if isinstance(evidence_payload, dict) else {}),
+                status=str(evidence_status.get("status") or "invalid"),
+                reason=str(evidence_status.get("reason") or ""),
+            )
+    return LoadedProject(
+        sdl=sdl,
+        path=path,
+        notes=notes,
+        findings=findings,
+        evidence_store=evidence_store,
+        evidence_status=evidence_status,
+        evidence_stale=evidence_stale,
+    )

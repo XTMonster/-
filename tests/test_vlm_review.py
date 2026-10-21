@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import pathlib
 import sys
@@ -37,6 +38,7 @@ from block_director.contracts.vlm_review import (  # noqa: E402
     REVIEW_SCHEMA_VERSION,
     VlmReviewError,
     build_review_payload,
+    disposition,
     frame_data_uri,
     frame_indices,
     parse_review_reply,
@@ -79,6 +81,7 @@ def test_vlm_review_is_off_by_default():
     cfg = AppConfig()
     assert isinstance(cfg.vlm_review, VlmReviewConfig)
     assert cfg.vlm_review.enabled is False
+    assert cfg.vlm_review.required is False
     assert cfg.errors() == []
 
 
@@ -211,6 +214,69 @@ def test_review_succeeds_on_the_first_try():
     assert len(transport.calls) == 1
 
 
+def test_review_binds_exact_frames_prompt_model_provider_and_raw_reply(tmp_path):
+    """The evidence must identify the images and model exchange that happened."""
+    paths = []
+    frame_records = []
+    frames = []
+    for frame, phase in ((1, "first"), (12, "middle"), (24, "last")):
+        path = tmp_path / f"shot_001_{phase}.png"
+        path.write_bytes(_PNG_BYTES)
+        paths.append(path)
+        record = {
+            "shot_id": "shot_001",
+            "frame": frame,
+            "phase": phase,
+            "path": str(path),
+            "file_sha256": hashlib.sha256(_PNG_BYTES).hexdigest(),
+            "pixel_sha256": f"pixel-{phase}",
+            "readable": True,
+        }
+        frame_records.append(record)
+        frames.append((phase, frame_data_uri(path)))
+    raw = '{"score": 4, "reason": "stable", "issues": []}'
+    transport = MockTransport([ChatReply(content=raw, model="judge-v1")])
+    transport.provider = "test-provider"
+    transport.model = "configured-judge"
+
+    record = review_shot(
+        transport,
+        shot_id="shot_001",
+        frames=frames,
+        subjects=(),
+        tools=(),
+        frame_records=frame_records,
+    )
+
+    assert record["status"] == "ok"
+    assert record["outcome"] == "reviewed_pass"
+    assert record["raw_response"] == raw
+    assert record["model"] == "judge-v1"
+    assert record["provider"] == "test-provider"
+    assert record["transport_class"] == "MockTransport"
+    assert [
+        (item["label"], item["frame"], item["path"])
+        for item in record["frame_order"]
+    ] == [
+        ("first", 1, str(paths[0])),
+        ("middle", 12, str(paths[1])),
+        ("last", 24, str(paths[2])),
+    ]
+    assert all(
+        item["file_sha256"] == hashlib.sha256(_PNG_BYTES).hexdigest()
+        for item in record["frame_order"]
+    )
+    prompt = json.dumps(
+        transport.calls[0].to_dict(),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    assert record["prompt_sha256"] == hashlib.sha256(
+        prompt.encode("utf-8")
+    ).hexdigest()
+
+
 def test_review_retries_once_after_a_transport_error():
     transport = MockTransport([
         TransportError(ErrorCode.LLM_001, "连接失败: 524"),
@@ -229,6 +295,7 @@ def test_review_gives_up_after_the_retry_and_records_the_skip():
     ])
     record = review_shot(transport, shot_id="shot_003", frames=_frames())
     assert record["status"] == "skipped"
+    assert record["outcome"] == "unavailable"
     assert record["attempts"] == 2
     assert "score" not in record, "跳过不许写成 0 分（那是静默降级）"
     assert "429" in record["error"]
@@ -239,6 +306,7 @@ def test_review_without_frames_skips_without_calling_the_judge():
     transport = MockTransport([_reply('{"score": 5, "reason": "不该被调用"}')])
     record = review_shot(transport, shot_id="shot_004", frames=[])
     assert record["status"] == "skipped" and record["attempts"] == 0
+    assert record["outcome"] == "missing_frame"
     assert transport.calls == []
 
 
@@ -247,6 +315,8 @@ def test_a_judge_that_only_chats_json_at_us_is_retried_then_skipped():
     transport = MockTransport([_reply("这一镜整体还行，给 4 分吧")])
     record = review_shot(transport, shot_id="shot_005", frames=_frames())
     assert record["status"] == "skipped"
+    assert record["outcome"] == "malformed"
+    assert record["raw_response"] == "这一镜整体还行，给 4 分吧"
     assert len(transport.calls) == 2
 
 
@@ -263,6 +333,30 @@ def test_summary_separates_scored_shots_from_skips():
     assert summary["skipped_shots"] == ["shot_003"]
     assert summary["mean_score"] == 3.0
     assert summarise_reviews({})["mean_score"] is None
+
+
+def test_the_same_issue_in_three_reviews_escalates_instead_of_looping():
+    issue = {
+        "kind": "occluded",
+        "subject": "char_001",
+        "frame": 12,
+        "suggested_tool": "move_camera",
+    }
+    history = [
+        {
+            "status": "ok",
+            "issues": [dict(issue)],
+        }
+        for _ in range(3)
+    ]
+
+    result = disposition(history)
+
+    assert result["status"] == "escalate_human"
+    assert result["escalated_keys"] == ["occluded|char_001"]
+    assert {
+        item["key"]: item["status"] for item in result["issues"]
+    } == {"occluded|char_001": "persisting"}
 
 
 def test_rubric_covers_every_level_of_the_five_point_scale():

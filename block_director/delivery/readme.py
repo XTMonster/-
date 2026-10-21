@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 from .depth import depth_range_note
+from .failures import (
+    render_failures_markdown,
+    render_pending_review_markdown,
+)
 from ..layer5_orchestrator.rhythm_reading import rhythm_readings
 
 #: 张力 1–5 的 ASCII 弧线字形（由低到高）。
@@ -72,7 +76,10 @@ def render_readme(manifest: Dict[str, Any], *, out_dir: Path,
                   warnings: Sequence[str] = (),
                   rhythm_reading: Optional[Dict[str, Any]] = None,
                   label_overlap_report: Optional[Dict[str, Any]] = None,
-                  ruler_observation: bool = False) -> str:
+                  ruler_observation: bool = False,
+                  failures: Optional[Sequence[Mapping[str, Any]]] = None,
+                  pending_review: Optional[Sequence[Mapping[str, Any]]] = None
+                  ) -> str:
     """按真实 manifest 与已生成文件渲染交付说明，不读引擎状态。"""
     folder = Path(out_dir)
     width, height = manifest["resolution"]
@@ -150,6 +157,15 @@ def render_readme(manifest: Dict[str, Any], *, out_dir: Path,
             "供审查与重放对拍。",
             "",
         ])
+    #: 缺陷 D / T8（U1）：失败清单段。空清单渲染空串——缺省 None ⇒ README
+    #: 与升级前逐字节一致（零形状差）；有失败镜时才出现该段。
+    pending_text = render_pending_review_markdown(
+        list(pending_review or []))
+    if pending_text:
+        lines.extend(["", pending_text])
+    failures_text = render_failures_markdown(list(failures or []))
+    if failures_text:
+        lines.extend(["", failures_text])
     if warnings:
         lines.extend(["## 告警", ""])
         lines.extend(f"- {warning}" for warning in warnings)

@@ -45,6 +45,7 @@ ACTION_TOOLS: Tuple[str, ...] = (
     "look_at", "face_character", "interact_with", "setup_camera",
     "move_camera", "reframe",
 )
+REVERT_SHOT = "revert_shot"
 KNOWLEDGE_TOOL_NAMES: Tuple[str, ...] = ("search_knowledge",)
 
 #: **只读**：调了它们什么都不会变，因此**不算"已实施修复"**。
@@ -57,4 +58,5 @@ READ_ONLY_TOOLS: frozenset = frozenset(
     {*QUERY_TOOLS, *KNOWLEDGE_TOOL_NAMES})
 
 #: **会改动场景或计划**：只有它们能让"修复"名实相符。
-MUTATING_TOOLS: frozenset = frozenset({*ACTION_TOOLS, SHOT_DRAFT_TOOL})
+MUTATING_TOOLS: frozenset = frozenset(
+    {*ACTION_TOOLS, SHOT_DRAFT_TOOL, REVERT_SHOT})

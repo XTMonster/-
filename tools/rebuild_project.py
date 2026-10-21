@@ -33,12 +33,15 @@ def rebuild_verdict(loaded) -> dict:
     纯函数（``loaded`` 是 :class:`LoadedProject`），因此策略本身可以被
     pytest 直接钉住，而不必启动 Blender。
     """
+    from block_director.contracts.evidence import evidence_status_text
     from block_director.layer9_persistence import validation_report
 
     report = validation_report(loaded)
     return {"proceed": True,
             "blocked_reason": "",
-            "validation": report}
+            "validation": report,
+            "evidence": dict(loaded.evidence_status),
+            "evidence_text": evidence_status_text(loaded.evidence_status)}
 
 
 def parse_args(argv):
@@ -93,7 +96,9 @@ def main() -> int:
                "total_frames": summary["total_frames"],
                "characters": summary["characters"],
                "warnings": summary["warnings"],
-               "validation": report}
+               "validation": report,
+               "evidence": verdict["evidence"],
+               "evidence_text": verdict["evidence_text"]}
 
     if args.export:
         from block_director.layer8_delivery import export_project

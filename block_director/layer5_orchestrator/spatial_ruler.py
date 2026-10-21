@@ -17,6 +17,7 @@ from ..contracts.audit import AuditError
 from ..contracts.enums import Severity
 from ..contracts.plan import Plan
 from .compliance import _finding
+from .dialogue_budget import shot_dialogue_budget
 
 
 RULE_CAST = "SR001"
@@ -165,14 +166,41 @@ def _plan_measurement(shot_id: str, metric: str, value: Any, unit: str,
     }
 
 
-def _dialogue_latest_end(shot) -> int:
-    """这一镜对白的最晚结束帧；没有对白返回 0。"""
-    latest = 0
-    for item in getattr(shot, "dialogues", None) or []:
-        if not isinstance(item, dict):
-            continue
-        latest = max(latest, int(item.get("end_frame") or 0))
-    return latest
+def _dialogue_capacity(shot, *, fps: int) -> Tuple[int, int, str]:
+    """返回 ``(最晚结束帧, 含余量所需帧数, 时间来源)``。
+
+    阶段 A 可以只给出台词文本，真正排 ``start_frame`` / ``end_frame`` 是后续
+    阶段的职责。因此“有台词但时间轴仍为 0”不能解释成空镜：这时用
+    :func:`shot_dialogue_budget` 的同一套单调估算保守判断容量。只有每一句都
+    已有合法且可比较的排帧时，才采信模型排出的最晚结束帧。
+    """
+    dialogues = [
+        item for item in (getattr(shot, "dialogues", None) or [])
+        if isinstance(item, dict) and str(item.get("text") or "").strip()
+    ]
+    if not dialogues:
+        return 0, 0, "no_dialogue"
+
+    scheduled_ends: List[int] = []
+    all_scheduled = True
+    for item in dialogues:
+        try:
+            start = int(item.get("start_frame") or 0)
+            end = int(item.get("end_frame") or 0)
+        except (TypeError, ValueError):
+            all_scheduled = False
+            break
+        if start <= 0 or end < start:
+            all_scheduled = False
+            break
+        scheduled_ends.append(end)
+    if all_scheduled:
+        latest = max(scheduled_ends, default=0)
+        return (latest, latest + DIALOGUE_TAIL_FRAMES, "scheduled")
+
+    required = int(shot_dialogue_budget(shot, fps=fps).required_frames)
+    latest = max(required - DIALOGUE_TAIL_FRAMES, 0)
+    return latest, required, "estimated_from_text"
 
 
 def apply_plan_prescriptions(
@@ -242,8 +270,9 @@ def apply_plan_prescriptions(
                     round(planned_before_s, 3), "seconds", "plan_intent"))
                 continue
             new_frames = max(1, int(round(declared_s * fps)))
-            latest = _dialogue_latest_end(shot)
-            fits = latest + DIALOGUE_TAIL_FRAMES <= new_frames
+            latest, required_frames, timing_source = _dialogue_capacity(
+                shot, fps=fps)
+            fits = required_frames <= new_frames
             applied = bool(fits)
             if applied:
                 shot.duration_frames = new_frames
@@ -261,6 +290,9 @@ def apply_plan_prescriptions(
                     "dialogue_policy": {
                         "tail_frames": DIALOGUE_TAIL_FRAMES,
                         "latest_dialogue_end": latest,
+                        "required_frames": required_frames,
+                        "estimated_required_frames": required_frames,
+                        "timing_source": timing_source,
                     },
                 },
                 "precondition_measurement_ids": [
@@ -272,8 +304,9 @@ def apply_plan_prescriptions(
                 "applied_at": "",
                 "waived": not applied,
                 "waive_reason": ("" if applied else
-                                 f"对白到第 {latest} 帧 + {DIALOGUE_TAIL_FRAMES} 帧"
-                                 f"余量超出声明时长 {declared_s:g}s，未改帧"),
+                                 f"对白所需 {required_frames} 帧"
+                                 f"（时间来源：{timing_source}）超出声明时长 "
+                                 f"{declared_s:g}s，未改帧"),
             })
             if not applied:
                 #: Ticket 03 验收第二层：漂移**没被自动修复**时，残留的

@@ -183,6 +183,30 @@ def test_walk_faces_a_diagonal_target():
     assert math.cos(theta) == pytest.approx(math.sqrt(0.5), abs=1e-6)
 
 
+def test_walk_faces_target_from_a_nonzero_initial_facing():
+    """走位终点是绝对运动朝向，不是“初始朝向 + 运动朝向”。"""
+    initial_yaw = -math.pi / 2  # local +Y rotated -90 deg => world +X
+    trace = compose(
+        [walk(1, 48, (0.0, 2.0, 0.0))],
+        base_pose={CH_ROOT_LOC: (0.0, 0.0, 0.0),
+                   CH_ROOT_ROT_Z: initial_yaw},
+    )
+    theta = trace[48][CH_ROOT_ROT_Z]
+    assert -math.sin(theta) == pytest.approx(0.0, abs=1e-6)
+    assert math.cos(theta) == pytest.approx(1.0, abs=1e-6)
+
+
+def test_consecutive_walks_each_end_facing_their_own_direction():
+    """第二段走位不能继承第一段的朝向误差或重复叠加。"""
+    trace = compose([
+        walk(1, 24, (2.0, 0.0, 0.0)),
+        walk(25, 48, (2.0, 2.0, 0.0)),
+    ])
+    theta = trace[48][CH_ROOT_ROT_Z]
+    assert -math.sin(theta) == pytest.approx(math.sqrt(0.5), abs=1e-6)
+    assert math.cos(theta) == pytest.approx(math.sqrt(0.5), abs=1e-6)
+
+
 def test_leg_swing_is_antisymmetric():
     trace = compose([walk(1, 48)])
     for frame in (12, 24, 36):
@@ -432,3 +456,13 @@ def test_tail_blend_window_keeps_pose_after_end():
     trace = compose([ActionRequest("turn_body", 1, 24, {"angle_deg": 90.0})])
     assert max(trace) == 24 + BLEND_FRAMES
     assert trace[24 + BLEND_FRAMES][CH_ROOT_ROT_Z] == pytest.approx(math.radians(90.0))
+
+
+def test_compose_can_clamp_tail_to_shot_boundary():
+    """单镜重建可关闭跨镜尾巴，避免重写下一镜自己的关键帧。"""
+    trace = compose(
+        [ActionRequest("turn_body", 1, 24, {"angle_deg": 90.0})],
+        trace_end=24,
+    )
+    assert max(trace) == 24
+    assert trace[24][CH_ROOT_ROT_Z] == pytest.approx(math.radians(90.0))

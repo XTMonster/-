@@ -134,14 +134,16 @@ def test_editor_payload_uses_the_retriever_when_given():
         def __init__(self):
             self.seen = []
             self.analogies = []
+            self.stages = []
 
         def block_for_shot(self, shot_type, intent="", action_types=(), limit=800,
-                           shot_id="", analogy=""):
+                           shot_id="", analogy="", *, stage=""):
             self.seen.append(shot_id)
             #: §2.3b 的两条通道：案例层吃的是**散文类比查询**（这一镜的提示词）。
             #: 编辑器必须把它传下来——漏传就等于案例栏永远空着（而"拿约束串
             #: 去查案例"那种补救是不许的：实测 E1 = 0/24）。
             self.analogies.append(analogy)
+            self.stages.append(stage)
             return f"知识：{shot_type}/{intent}"
 
     retriever = FakeRetriever()
@@ -152,6 +154,7 @@ def test_editor_payload_uses_the_retriever_when_given():
     assert retriever.seen == ["shot_002"]
     shot = plan().shots[1]
     assert retriever.analogies == [str(shot.prompt or shot.intent or "")]
+    assert retriever.stages == ["editor"]
 
 
 def test_editor_payload_says_when_knowledge_is_off():
@@ -254,6 +257,13 @@ def test_empty_fields_do_not_erase_plan_values():
         {"shot_id": "shot_001", "actions": []}))
     assert str(merged.shots[0].shot_type) == "MLS"
     assert merged.shots[0].prompt == "雨夜客厅"
+
+
+def test_draft_cannot_replace_a_planned_shot_type():
+    """声明/理解确定的景别优先于 B1 草案，草案只能补缺失值。"""
+    merged = merge_draft(
+        plan(), ShotDraft.from_dict(draft(shot_type="MCU")))
+    assert str(merged.shots[0].shot_type) == "MLS"
 
 
 # --------------------------------------------------------------------------- #

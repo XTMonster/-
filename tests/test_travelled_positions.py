@@ -82,6 +82,27 @@ def test_non_walking_actions_do_not_move_the_handover():
     assert places["shot_002"]["char_001"] == (-0.9, 0.0, 0.0)
 
 
+def test_enter_and_exit_actions_also_hand_over_positions():
+    """语义级入场/出场同样是位移，不能让下一镜回到更早的位置。"""
+    plan = _plan(
+        _shot("shot_001", [{
+            "character_id": "char_001", "action_type": "enter_from",
+            "start_frame": 1, "end_frame": 24,
+            "params": {"from": [-5.0, 0.0, 0.0],
+                       "to": [0.0, 2.0, 0.0]},
+        }], 1),
+        _shot("shot_002", [{
+            "character_id": "char_001", "action_type": "exit_frame",
+            "start_frame": 1, "end_frame": 24,
+            "params": {"to": [5.0, 2.0, 0.0]},
+        }], 2),
+        _shot("shot_003", [], 3),
+    )
+    places = travelled_positions(plan, INITIAL)
+    assert places["shot_002"]["char_001"] == (0.0, 2.0, 0.0)
+    assert places["shot_003"]["char_001"] == (5.0, 2.0, 0.0)
+
+
 def test_a_walk_without_a_destination_is_ignored():
     """缺目的地的行走（解析期会被拒）不该把接力点改坏。"""
     plan = _plan(

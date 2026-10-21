@@ -67,13 +67,13 @@ def _sdl_14_payload() -> dict:
     }
 
 
-def test_sdl_version_is_17():
-    assert SDL_VERSION == "1.7"
+def test_sdl_version_is_18():
+    assert SDL_VERSION == "1.8"
 
 
 def test_known_versions_is_append_only():
     assert KNOWN_VERSIONS == ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5",
-                              "1.6", "1.7")
+                              "1.6", "1.7", "1.8")
 
 
 def test_migrate_14_to_15_only_fills_defaults():

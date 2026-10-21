@@ -22,6 +22,10 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import bpy
 
 from ..contracts.cast import CastMember, SceneSpec
+from ..contracts.edit_policy import (
+    AGENT_EDITED_KEY,
+    readback_candidates,
+)
 from ..contracts.plan import Plan
 from ..utils.geometry import rotation_z_to_facing
 from ..utils.logger import get_logger
@@ -32,6 +36,9 @@ log = get_logger("scene-sync")
 
 SYNC_ID_KEY = "bd_sdl_id"
 USER_ANIMATED_KEY = "bd_user_animated"
+#: agent 编辑标记键的单一真源在 contracts/edit_policy.py（缺陷 C）；
+#: 这里只引用，不许再抄一份键名。
+AGENT_EDITED_KEY = AGENT_EDITED_KEY
 
 
 @dataclass(frozen=True)
@@ -84,6 +91,16 @@ def mark_user_animated(obj: Any, flag: bool = True) -> None:
 def is_user_animated(obj: Any) -> bool:
     getter = getattr(obj, "get", None)
     return bool(getter(USER_ANIMATED_KEY) if getter else False)
+
+
+def mark_agent_edited(obj: Any, flag: bool = True) -> None:
+    """标记对象为"agent 工具写入"；回读时必须排除（缺陷 C）。"""
+    obj[AGENT_EDITED_KEY] = bool(flag)
+
+
+def is_agent_edited(obj: Any) -> bool:
+    getter = getattr(obj, "get", None)
+    return bool(getter(AGENT_EDITED_KEY) if getter else False)
 
 
 class SceneSynchronizer:
@@ -158,11 +175,18 @@ class SceneSynchronizer:
         self._touched.clear()
 
     def dirty_ids(self) -> List[str]:
-        """与插件基线不同的**逻辑 id**（用户改过），按 id 排序。"""
+        """与插件基线不同的**逻辑 id**（用户改过），按 id 排序。
+
+        缺陷 C：agent 工具改过的对象（``bd_agent_edited``）不算"用户改动"，
+        不进 dirty 名单——否则单镜 rebuild 前回读会把模型挪过的位置固化进
+        ``initial_location``，旧位置不可回退（2026-10-19 kimi 真跑实证）。
+        """
         dirty: set = set()
         for obj, sdl_id in tagged_objects():
             record = self._baseline.get(obj.name)
             if record is None:
+                continue
+            if is_agent_edited(obj):
                 continue
             current = _record_for(obj, sdl_id)
             if (current.location != record.location
@@ -195,8 +219,15 @@ class SceneSynchronizer:
 
         回读对象是"角色根"，因为那才是 ``bd_sdl_id`` 的落点；朝向取 Z 轴偏航，
         与世界坐标约定（角色面朝 +Y）一致。
+
+        缺陷 C：回读候选先用纯层契约过滤——agent 工具写入的对象（
+        ``bd_agent_edited``）即使与基线不同也不算"用户改动"，不回读。
         """
-        dirty = set(self.dirty_ids())
+        agent_edited_ids = {
+            sdl_id for obj, sdl_id in tagged_objects()
+            if is_agent_edited(obj)
+        }
+        dirty = set(readback_candidates(self.dirty_ids(), agent_edited_ids))
         if not dirty:
             return plan, spec
 

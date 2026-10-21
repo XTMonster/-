@@ -20,7 +20,7 @@ from block_director.cinema.pipeline_gates import (
 )
 
 
-def _report(findings=(), verdict=None):
+def _report(findings=(), verdict=None, checks=None):
     return {
         "schema_version": "blockout-report/v1",
         "manifest_fingerprint": "abc",
@@ -28,7 +28,10 @@ def _report(findings=(), verdict=None):
         else ("fail" if any(f.get("severity") == "error"
                             for f in findings) else "pass"),
         "findings": [dict(f) for f in findings],
-        "checks": [],
+        "checks": ([{
+            "check_id": "composition", "shot_id": "shot_001",
+            "actual": 82.0, "threshold": 80.0, "verdict": "pass",
+        }] if checks is None else [dict(c) for c in checks]),
         "notes": [],
     }
 
@@ -108,6 +111,16 @@ def test_coarse_gate_passes_only_without_error_findings():
     }]))
     assert bad["passed"] is False
     assert any("error" in r for r in bad["reasons"])
+
+
+def test_coarse_gate_rejects_report_level_pass_without_shot_evidence():
+    decision = coarse_gate(_report(checks=[]))
+
+    assert decision["passed"] is False
+    assert decision["quality"]["gate_ready"] is False
+    assert decision["quality"]["blocked_reasons"] == [
+        "composition_unresolved"
+    ]
 
 
 def test_coarse_gate_allows_no_warning_failures():
@@ -194,3 +207,27 @@ def test_final_gate_fails_when_detail_or_sequence_missing():
                     sequence_verdict="fail")
     assert r4["passed"] is False
     assert any("序列" in x for x in r4["reasons"])
+
+
+def test_final_gate_rejects_an_empty_detail_result_set():
+    result = final_gate(
+        coarse_pass=True,
+        baseline_frozen=True,
+        detail_results={},
+        sequence_verdict="pass",
+    )
+
+    assert result["passed"] is False
+    assert any("细排" in reason for reason in result["reasons"])
+
+
+def test_final_gate_accepts_only_explicit_true_detail_verdicts():
+    result = final_gate(
+        coarse_pass=True,
+        baseline_frozen=True,
+        detail_results={"shot_001": {"ok": True}},
+        sequence_verdict="pass",
+    )
+
+    assert result["passed"] is False
+    assert any("细排" in reason for reason in result["reasons"])

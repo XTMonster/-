@@ -50,6 +50,7 @@ class RulePackStats:
     injected: int = 0
     count_dropped: List[str] = field(default_factory=list)
     token_dropped: List[str] = field(default_factory=list)
+    injected_edge_ids: List[str] = field(default_factory=list)
     conflict_pairs: int = 0
     conflict_edge_ids: List[str] = field(default_factory=list)
     tokens: int = 0
@@ -64,6 +65,7 @@ class RulePackStats:
                 "soft": int(self.soft), "injected": int(self.injected),
                 "count_dropped": list(self.count_dropped),
                 "token_dropped": list(self.token_dropped),
+                "injected_edge_ids": list(self.injected_edge_ids),
                 "conflict_pairs": int(self.conflict_pairs),
                 "conflict_edge_ids": list(self.conflict_edge_ids),
                 "tokens": int(self.tokens),
@@ -263,6 +265,7 @@ def render_rule_pack(edges: Sequence[HyperEdge],
             + [edge for edge in kept if edge.edge_id not in exempt])
 
     lines: List[str] = []
+    injected_ids: List[str] = []
     used = 0
     for edge in kept:
         line = rule_line(edge, node_map)
@@ -273,6 +276,7 @@ def render_rule_pack(edges: Sequence[HyperEdge],
                 stats.quality_fail = True
             continue
         lines.append(line)
+        injected_ids.append(edge.edge_id)
         used += cost
 
     # ---- 冲突并陈（冲突对不受预算截断，附在正文之后） ----
@@ -282,11 +286,18 @@ def render_rule_pack(edges: Sequence[HyperEdge],
         cost = render_tokens(line)
         if cost > token_limit:
             stats.quality_fail = True
+            for edge in (first, second):
+                if edge.edge_id not in injected_ids:
+                    stats.token_dropped.append(edge.edge_id)
             continue
         lines.append(line)
+        for edge in (first, second):
+            if edge.edge_id not in injected_ids:
+                injected_ids.append(edge.edge_id)
         used += cost
 
     stats.injected = len(lines)
+    stats.injected_edge_ids = list(dict.fromkeys(injected_ids))
     stats.tokens = used
     return "\n".join(lines), stats.dropped, stats
 

@@ -407,7 +407,8 @@ def solve_framing(subject_pos: Sequence[float],
                   aim_offset_x: float = 0.0,
                   aim_offset_y: float = 0.0,
                   bands=None,
-                  subject_box=None) -> FramingResult:
+                  subject_box=None,
+                  distance_override: Optional[float] = None) -> FramingResult:
     """解算机位与对准点。
 
     ``room`` 形如 ``(min_x, max_x, min_y, max_y)``；给出时机位会被夹在房间内。
@@ -435,6 +436,10 @@ def solve_framing(subject_pos: Sequence[float],
     ``subject_box`` 是**已投影**的主体盒（NDC）。给了且景别是 CU/ECU 时，
     求解后同尺回读（:func:`readback_shot_size`）；回读不在区间就**调距离档**
     （:func:`readback_adjusted_distance`），景别不变、不降级。
+
+    ``distance_override`` 是局部主体（手/脸/道具）的明确距离。局部主体的
+    物理高度远小于整身，不能继续用整身景别表推距离；调用方按局部框的
+    实际高度和期望占画高反解后传入。它只覆盖距离，不改变景别或焦距。
     """
     warnings: List[str] = []
     key = str(shot_type).upper()
@@ -478,6 +483,12 @@ def solve_framing(subject_pos: Sequence[float],
                 distance = adjusted
                 frame_height = 2.0 * distance * math.tan(
                     vertical_fov(effective_lens, sensor_width, aspect) / 2.0)
+    if distance_override is not None:
+        distance = float(distance_override)
+        if distance <= 0.0:
+            raise ValueError(f"局部主体距离必须大于 0，实际 {distance}")
+        frame_height = 2.0 * distance * math.tan(
+            vertical_fov(effective_lens, sensor_width, aspect) / 2.0)
     if direction is not None:
         dx, dy = float(direction[0]), float(direction[1])
         norm = math.hypot(dx, dy)

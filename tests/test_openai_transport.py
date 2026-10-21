@@ -26,6 +26,7 @@ from block_director.contracts.messages import (
 from block_director.contracts.transport import (
     LLMTransport,
     OpenAICompatibleTransport,
+    apply_direct_provider_body,
     build_chat_body,
     parse_chat_response,
 )
@@ -96,6 +97,55 @@ def test_tools_and_max_tokens_can_be_omitted():
 
 
 # --------------------------------------------------------------------------- #
+# 直连 provider 适配（DeepSeek 思考模式）
+# --------------------------------------------------------------------------- #
+def _deepseek_body() -> dict:
+    return {"model": "deepseek-flash", "messages": [],
+            "tools": [{"type": "function",
+                       "function": {"name": "emit_plan"}}],
+            "tool_choice": "required"}
+
+
+def test_deepseek_thinking_max_injects_reasoning_effort():
+    body, trace = apply_direct_provider_body(
+        _deepseek_body(), provider="deepseek", thinking_level="max")
+    assert body["reasoning_effort"] == "max"
+    assert trace.get("reasoning_effort_injected") == "max"
+
+
+def test_deepseek_thinking_downgrades_required_tool_choice():
+    body, trace = apply_direct_provider_body(
+        _deepseek_body(), provider="deepseek", thinking_level="max")
+    assert body["tool_choice"] == "auto"
+    assert trace.get("tool_choice_downgraded") is True
+
+
+def test_deepseek_thinking_downgrades_function_object_tool_choice():
+    body = {"tool_choice": {"type": "function", "function": {"name": "x"}},
+            "messages": []}
+    adapted, trace = apply_direct_provider_body(
+        body, provider="deepseek", thinking_level="high")
+    assert adapted["tool_choice"] == "auto"
+    assert trace.get("tool_choice_downgraded") is True
+
+
+def test_non_deepseek_provider_is_passthrough():
+    original = {"model": "gpt-4o", "tool_choice": "required", "messages": []}
+    import copy
+    body, trace = apply_direct_provider_body(
+        copy.deepcopy(original), provider="openai", thinking_level="off")
+    assert body == original
+    assert trace == {}
+
+
+def test_deepseek_off_level_does_not_inject_reasoning_effort():
+    body, trace = apply_direct_provider_body(
+        _deepseek_body(), provider="deepseek", thinking_level="off")
+    assert "reasoning_effort" not in body
+    assert "reasoning_effort_injected" not in trace
+
+
+# --------------------------------------------------------------------------- #
 # 响应解析
 # --------------------------------------------------------------------------- #
 def test_parse_reply_with_tool_calls():
@@ -118,6 +168,16 @@ def test_missing_choices_is_reported(bad):
 def test_parse_reply_without_usage_or_content():
     reply = parse_chat_response({"choices": [{"message": {"content": "ok"}}]})
     assert reply.content == "ok" and reply.usage is None
+
+
+def test_parse_reply_reads_deepseek_reasoning_content():
+    # DeepSeek 思考模型的思维字段是 message.reasoning_content（不是 reasoning）。
+    reply = parse_chat_response({
+        "choices": [{"message": {"content": "",
+                                 "reasoning_content": "先想一下…"},
+                     "finish_reason": "tool_calls"}],
+    })
+    assert reply.reasoning == "先想一下…"
     assert reply.tool_calls == []
 
 

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
-from .axis import SIDE_NEGATIVE, SIDE_POSITIVE, SIDE_UNKNOWN, camera_side_of
+from .axis import E_BLOCKOUT_AXIS_FLIP, camera_direction_findings
 
 #: 序列审查报告版本（契约演进时逐代升）。
 BLOCKOUT_SEQUENCE_REVIEW_SCHEMA = "blockout-sequence-review/v1"
@@ -31,7 +31,6 @@ DIMENSIONS = (
 #: finding check_id 闭集（审查发现的问题，可归因到分镜与帧）。
 E_BLOCKOUT_MISSING_CAST_BLOCK = "E_BLOCKOUT_MISSING_CAST_BLOCK"
 E_BLOCKOUT_ENTER_EXIT_MISMATCH = "E_BLOCKOUT_ENTER_EXIT_MISMATCH"
-E_BLOCKOUT_AXIS_FLIP = "E_BLOCKOUT_AXIS_FLIP"
 E_BLOCKOUT_TRANSITION_GAP = "E_BLOCKOUT_TRANSITION_GAP"
 
 
@@ -45,6 +44,81 @@ def _shot_table(manifest: Mapping[str, Any]) -> List[Dict[str, Any]]:
 
 def _primitives(manifest: Mapping[str, Any]) -> List[Dict[str, Any]]:
     return [dict(c) for c in (manifest.get("primitives") or [])]
+
+
+def blockout_isolation_primitive_ids(
+    manifest: Mapping[str, Any],
+    shot_table_row: Mapping[str, Any],
+) -> List[str]:
+    """返回本镜预演时应隔离（临时隐藏）的体块 primitive id。
+
+    粗排是逐镜 staging 验证：其它镜头的角色/持有道具仍留在同一 blockout
+    场景里，会成为真实遮挡体（final7 的 shot_003 中，上一镜的米迦尔挡住
+    伊恩，处方只改相机距离永远消不掉）。本镜声明的角色/道具保留参与
+    staging 验证；场景级道具（owner 为空、进 ``scene_prop_ids`` 的摊位等
+    环境体块）与锚点是环境连续性，不隐藏——隔离它们会把真实的环境遮挡
+    误判成"可以无视"。只隔离"出现在其它镜头、不在本镜"的角色与持有道具。
+
+    纯层、确定性：同一 manifest + 同一分镜行两次调用逐位一致；不依赖 bpy。
+    """
+    active = {str(value) for value in
+              ((shot_table_row.get("character_ids") or [])
+               + (shot_table_row.get("prop_ids") or []))}
+    #: 持有道具 = 出现在任一镜头 prop_ids 的道具（与 owner 语义同源）；
+    #: 场景级道具（无 owner）永不进 prop_ids，按环境体块保留。
+    owned_prop_ids = {
+        str(value)
+        for row in (manifest.get("shot_table") or [])
+        for value in (row.get("prop_ids") or [])
+    }
+    isolated: List[str] = []
+    for primitive in manifest.get("primitives") or []:
+        kind = primitive.get("kind")
+        source = primitive.get("source") or {}
+        source_id = str(source.get("id") or "")
+        if not source_id:
+            continue
+        if kind == "character" and source_id not in active:
+            isolated.append(str(primitive.get("id") or ""))
+        elif kind == "prop" and source_id in owned_prop_ids \
+                and source_id not in active:
+            isolated.append(str(primitive.get("id") or ""))
+        #: anchor / 其它：环境连续性，不隔离
+    return [pid for pid in isolated if pid]
+
+
+#: 前景遮挡候选：主体体块对象名前缀（角色 BD_Blockout_char_*，道具
+#: BD_Blockout_prop_*）。与 ``blockout_preview._subject_blocks`` 的
+#: ``BD_Blockout_{primitive.id}`` 同源。
+CHARACTER_BLOCK_PREFIX = "BD_Blockout_char_"
+PROP_BLOCK_PREFIX = "BD_Blockout_prop_"
+
+
+def blockout_occluder_candidate_names(
+    subject_block_names: Sequence[str],
+    self_block_name: str,
+) -> set:
+    """前景遮挡候选体块名：同镜主体中"会对被检主体形成非主体遮挡"的体块。
+
+    判定语义（F11，实测 final16 ``E_FOREGROUND_OCCLUSION`` 死循环根因）：
+    同镜剧情道具（``BD_Blockout_prop_*``）与被检主体同属一个语义单元——
+    银币特写镜里银币就是主体本身，偷盗者捧金镜里金子在主体眼前是取景
+    内容，不是"非主体前景遮挡体"。若把道具也放进遮挡候选，银币与偷盗者
+    会互相被记成 occluder（``occluders=["银币","偷盗者"]``），strafe 处方
+    50 轮把相机越绕越远仍不收敛。因此：
+
+    - 剔除被检主体自己（自身不算遮挡）；
+    - 剔除全部道具体块（剧情道具不是非主体前景遮挡）；
+    - 保留其他角色体块（角色互挡是真实站位问题，交给几何处方修）。
+
+    纯层、确定性：同一输入两次调用逐位一致；不依赖 bpy。
+    """
+    excluded = {str(self_block_name)}
+    return {
+        str(name) for name in subject_block_names
+        if str(name) not in excluded
+        and not str(name).startswith(PROP_BLOCK_PREFIX)
+    }
 
 
 def _character_positions(
@@ -62,18 +136,6 @@ def _character_positions(
             continue
         out[name] = (float(position["x"]), float(position["y"]))
     return out
-
-
-def _camera_side(
-    camera: Mapping[str, Any],
-    a: Sequence[float],
-    b: Sequence[float],
-) -> int:
-    """相机相对双人轴线 A→B 的侧别（复用 axis.camera_side_of 同一约定）。"""
-    position = camera.get("position")
-    if not position:
-        return SIDE_UNKNOWN
-    return camera_side_of(a, b, position)
 
 
 def _transition_check(rows: Sequence[Mapping[str, Any]]) -> List[Dict[str, Any]]:
@@ -185,54 +247,6 @@ def _enter_exit_check(
     return findings
 
 
-def _camera_direction_check(
-    rows: Sequence[Mapping[str, Any]],
-    cameras: Sequence[Mapping[str, Any]],
-    character_positions: Mapping[str, Tuple[float, float]],
-) -> List[Dict[str, Any]]:
-    """相机方向：同一对轴角色的相邻同框镜之间 180° 侧别不得静默翻转。
-
-    多人/单人镜（正反打桥接）是合法镜头语言：单人镜不比较、配对不同不
-    比较（避免正反打或换轴被误判为越轴）。只有**同一对轴角色**连续两次
-    同框且侧别翻转时才报 E_BLOCKOUT_AXIS_FLIP（可归因到分镜与帧）。
-    """
-    findings: List[Dict[str, Any]] = []
-    by_shot = {str(c.get("shot_id") or ""): c for c in cameras}
-    ordered = sorted(rows, key=lambda row: int(row.get("order") or 0))
-    previous_pair: Optional[Tuple[str, str]] = None
-    previous_side: Optional[int] = None
-    for row in ordered:
-        shot_id = str(row.get("shot_id") or "")
-        camera = by_shot.get(shot_id)
-        if camera is None:
-            continue
-        characters = [str(name) for name in (row.get("character_ids") or [])]
-        #: 轴线用本镜前两个有体块的角色（与 axis_for_speakers 同口径）
-        pairs = [(name, character_positions[name]) for name in characters
-                 if name in character_positions][:2]
-        if len(pairs) < 2:
-            continue
-        (a_label, a_pos), (b_label, b_pos) = pairs
-        pair_names = (a_label, b_label)
-        side = _camera_side(camera, a_pos, b_pos)
-        if side == SIDE_UNKNOWN:
-            continue
-        if (previous_side is not None and previous_pair == pair_names
-                and side != previous_side):
-            findings.append({
-                "check_id": E_BLOCKOUT_AXIS_FLIP,
-                "shot_id": shot_id,
-                "frame": int(row.get("start_frame") or 0),
-                "severity": "error",
-                "message": (
-                    f"相机跨轴线：{a_label}↔{b_label} 侧别由 "
-                    f"{previous_side} 变 {side}，无中性镜桥接"),
-            })
-        previous_pair = pair_names
-        previous_side = side
-    return findings
-
-
 def build_blockout_sequence_review(
     *,
     manifest: Mapping[str, Any],
@@ -278,7 +292,7 @@ def build_blockout_sequence_review(
     })
 
     #: 3. 相机方向：180° 轴线侧别一致性
-    axis = _camera_direction_check(rows, cameras, positions)
+    axis = camera_direction_findings(rows, cameras, positions)
     findings.extend(axis)
     checks.append({
         "dimension": "camera_direction",

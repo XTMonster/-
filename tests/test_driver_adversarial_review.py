@@ -225,7 +225,8 @@ def test_review_survives_result_replacement_on_rebuild():
             super().__init__()
             self._calls = 0
 
-        def rebuild_shot(self, shot_id, *, plan=None, brief=None):
+        def rebuild_shot(self, shot_id, *, plan=None, brief=None,
+                         preserve_camera_edits=False):
             base = super().rebuild_shot(shot_id, plan=plan, brief=brief)
             self._calls += 1
             if self._calls == 2:

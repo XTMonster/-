@@ -48,7 +48,7 @@ def test_v16_file_loads_zero_errors():
     assert errors == []
     assert all(shot.responsibility is None for shot in sdl.shots)
     assert any("responsibility" in note for note in notes)
-    assert payload["version"] == "1.7"
+    assert payload["version"] == "1.8"
 
 
 def test_roundtrip():

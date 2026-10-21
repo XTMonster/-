@@ -36,6 +36,10 @@ from .serde import to_plain as _to_plain
 CONFIG_VERSION = "1.4.0"
 CONFIG_ENV_VAR = "BLOCKDIRECTOR_CONFIG"
 
+#: 上下文窗口默认值（用户 2026-10-21 裁决：调整到 128k）。单一真源，
+#: driver 的裁剪/压缩 fallback 也从这里取，避免再次出现 32000 的漂移副本。
+DEFAULT_CONTEXT_WINDOW_TOKENS = 128000
+
 #: 空间尺六层（主 SPEC §5.1）。字面量，避免与 cinema.metric_registry 顶层
 #: 循环依赖；tests/test_ruler_registry_sync.py 逐键对拍 LAYER_WEIGHTS_DEFAULT。
 _RULER_LAYERS: Tuple[str, ...] = (
@@ -87,6 +91,8 @@ class LLMConfig:
     trace_prompts: bool = True        # §11.3：trace 记录完整 prompt/response
     trace_max_chars: int = 8000       # 单条记录的字段上限（§14.1 的"可配置上限"）
     #: v1.7 A2（TDD §4.1）：思考强度，∈ {off, low, medium, high}。
+    #: 2026-10-20 用户裁决：DeepSeek 思考强度拉到 max（直连按
+    #: reasoning_effort=max 注入，实测官方 deepseek-flash 接受）。
     #: 非法值只产生 CFG_170 warning（validate 不改值）；未知值的**消费侧**
     #: 回落（按 off 处理）归 sidecar 的 ``_apply_thinking``（卡 B5）。
     thinking_level: str = "off"
@@ -132,7 +138,20 @@ class RagConfig:
 class OrchestrationConfig:
     mode: OrchestrationMode = OrchestrationMode.PLAN_STRUCTURED
     max_repair_attempts: int = 2
+    #: R2：粗排门失败后的**重规划回溯次数**（计划级 U10 三态）。
+    #: ``0`` = 关（保持旧行为：粗排 blocked 直接终止）；``N`` = 首次失败后
+    #: 最多再重规划 N 次，共 N+1 次粗排评估；全程高分保留、低分回溯、
+    #: 门过即采用，耗尽仍未过如实失败（不降级通过）。
+    coarse_replan_attempts: int = 3
     react_max_steps: int = 6
+    #: R2-F11：每镜 ReAct **总回合上限**（一次 `react_started` 到
+    #: `react_finished` 为一回合）。真跑 20261020-market-real-final8 里
+    #: shot_002 在 40.8–60.2 分之间反复微涨（new_high 清零 no_gain），
+    #: 永远到不了"连续 3 轮无新高"，墙钟被单镜耗尽。到达上限构图分仍未
+    #: 严格高于 80 → 记 ``react_round_exhausted`` 失败并继续下一镜（U6：拦截
+    #: 错误后回溯而不是停止，白模预演视频一定要生成）。``0`` = 关
+    #: （保持旧行为：只有预算/墙钟/取消做安全停止）。
+    react_max_rounds: int = 4
     #: 一次**定向修复**里允许几轮 LLM（v1.4 §7.1 B4）。``1`` = 老行为：
     #: 模型回一次就收尾。多轮的理由是实测出来的——2026-10-04 的 64 镜真跑
     #: (`long17`) 里 104 个修复回合有 **72 个**恰好是 `search_knowledge` ＋
@@ -141,7 +160,10 @@ class OrchestrationConfig:
     #: 默认 10（2026-10-11 由 3 提到 10，用户裁决）：续轮只发生在"看了却没动"时，
     #: 轮数上限高不等于每镜都跑满，真正的节流仍是 LLM/工具/墙上时间预算。
     repair_max_turns: int = 10
-    context_window_tokens: int = 32000
+    #: 上下文窗口上限。128k（用户 2026-10-21 裁决）：先裁旧观察再注入
+    #: 关键信息摘要（compress_messages），不是纯丢弃，窗口扩大后长剧本
+    #: 单镜修复也能保留更多证据。
+    context_window_tokens: int = DEFAULT_CONTEXT_WINDOW_TOKENS
     #: v1.4 §2.4：单次运行的镜数上限。``0`` = 不限（**省略 ``maxItems`` 键**，
     #: 不是写 0——``tool_schema.py`` 会真的执行 ``maxItems``）。
     max_shots: int = 0
@@ -153,6 +175,16 @@ class OrchestrationConfig:
     #: 规则评分只做 **rerank 不作过滤**——低分候选进 ``shots.json`` 的
     #: ``alternates[]``，不丢。默认关。
     draft_candidates: int = 1
+    #: F13：per-shot 墙钟前瞻均摊。真跑（final8/final9）实测全局墙钟是唯一
+    #: 时间护栏，单镜 ReAct/修复空转（一次 LLM 调用可达 190s+）可耗尽整场
+    #: 墙钟 -> CANCELLED，后续镜没有生成机会。开启后每镜进入迭代前按
+    #: ``剩余墙钟 / 剩余镜数`` 前瞻均摊：超份额且未过线 -> 保留 best、
+    #: 渲染最佳版本、如实记 failed 并推进下一镜（等价 F11
+    #: ``react_round_exhausted`` 的时间维度版；不修改任何分数门槛/判据）。
+    #: ``False`` = 关（保持旧行为：只有全局墙钟做安全停止）。
+    wall_share_enabled: bool = True
+    #: F13：单镜时间地板（秒），防止剩余镜数很多时份额过小导致过激收尾。
+    wall_share_min_seconds: float = 60.0
 
 
 @dataclass
@@ -176,6 +208,10 @@ class VlmReviewConfig:
 
     enabled: bool = False
     max_shots: int = 0
+    #: When true, an ok review is a required quality gate.  Skips and
+    #: malformed/unavailable responses retain their own outcome but can never
+    #: authorize a final delivery.
+    required: bool = False
 
 
 @dataclass
@@ -573,9 +609,9 @@ class AppConfig:
                 f"LLM 超时时间必须为正数（当前 {self.llm.timeout_s}）")
         #: v1.7 A2（TDD §4.1）：新键校验——只告警、不改值（现有 CFG_218 同款
         #: 纪律）。未知 thinking_level 的消费侧回落归 B5 的 ``_apply_thinking``。
-        if str(self.llm.thinking_level) not in ("off", "low", "medium", "high"):
+        if str(self.llm.thinking_level) not in ("off", "low", "medium", "high", "max"):
             err("CFG_170", "llm.thinking_level",
-                f"未知思考强度 {self.llm.thinking_level!r}；合法值 off/low/medium/high",
+                f"未知思考强度 {self.llm.thinking_level!r}；合法值 off/low/medium/high/max",
                 severity=Severity.WARNING)
         for item in self.audit.rules_disabled:
             if not re.fullmatch(r"R\d{3}", str(item)):
@@ -689,6 +725,11 @@ class AppConfig:
             err("CFG_008", "orchestration.max_repair_attempts", "修复次数不能为负")
         if self.orchestration.react_max_steps < 0:
             err("CFG_009", "orchestration.react_max_steps", "ReAct 步数不能为负")
+        if self.orchestration.react_max_rounds < 0:
+            err("CFG_010", "orchestration.react_max_rounds", "ReAct 回合数不能为负")
+        if self.orchestration.wall_share_min_seconds < 0:
+            err("CFG_010", "orchestration.wall_share_min_seconds",
+                "单镜墙钟地板不能为负")
         # --- 决策 3（§7.1）：v1.2 的编排范式是四段式；react_only 是 v1.0 的
         # 旧范式，驱动器并未实现它。与其静默忽略这个配置项，不如明确报错。
         if self.orchestration.mode is OrchestrationMode.REACT_ONLY:
@@ -708,6 +749,10 @@ class AppConfig:
             err("CFG_016", "orchestration.max_shots",
                 f"镜数上限不能为负（当前 {self.orchestration.max_shots}）；"
                 f"0 表示不限")
+        if int(self.orchestration.coarse_replan_attempts) < 0:
+            err("CFG_024", "orchestration.coarse_replan_attempts",
+                f"粗排重规划次数不能为负（当前 "
+                f"{self.orchestration.coarse_replan_attempts}）")
         if int(self.rag.plan_prefetch_tokens) <= 0:
             err("CFG_017", "rag.plan_prefetch_tokens",
                 f"整场预取预算必须为正数（当前 "

@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from ..cinema.frustum_metrics import DeclaredShot, guard_config_from, shot_warnings
 from ..cinema.spatial_digest import COLLISION_MARGIN, scene_digest
-from ..cinema.composition import PASS_SCORE
+from ..contracts.quality import COMPOSITION_PASS_SCORE as PASS_SCORE
 from ..contracts.audit import AuditError, AuditResult
 from ..contracts.beats import (
     front_occlusion_declared_from_justifications,
@@ -34,6 +34,7 @@ from ..contracts.beats import (
 from ..contracts.enums import AuditLevel, Severity
 from ..contracts.guard import Severity as GuardSeverity
 from ..contracts.guard import merge_occlusion_evidence
+from ..contracts.observation import describe_frame_record
 from ..contracts.tools import ACTION_TOOLS, SHOT_DRAFT_TOOL
 from ..contracts.vlm_capability import classify_capability
 from ..contracts.vlm_review import (
@@ -422,11 +423,12 @@ class BpyShotAuditor:
             return (self._skipped_record(
                 f"已达 vlm_review.max_rounds_per_shot={max_rounds} 上限"), "")
 
-        frames = self._render_review_frames(shot_id, span)
-        if isinstance(frames, dict):          # 渲染失败：原样带回原因
-            record = dict(frames)
+        rendered = self._render_review_frames(shot_id, span)
+        if isinstance(rendered, dict):        # 渲染失败：原样带回原因
+            record = dict(rendered)
             record["schema"] = VLM_REVIEW_SCHEMA_V2
             return (record, "")
+        frames, frame_records = rendered
         #: 卡 V3：评审一律走 v2——主体 id 与视锥采样同口径，工具是动作工具
         #: + 重提草案；本镜无主体 ⇒ 空元组（仍是 v2）。
         subjects = tuple(_subject_id(subject)
@@ -456,7 +458,9 @@ class BpyShotAuditor:
                              timeout=self.vlm_timeout,
                              max_tokens=vlm_max_tokens if vlm_max_tokens > 0 else None,
                              subjects=subjects, tools=tools,
-                             guard_summary=guard_summary)
+                             guard_summary=guard_summary,
+                             frame_records=frame_records,
+                             measurements=self._review_measurements(result))
         record["frames"] = [label for label, _ in frames]
         raw = ((wrapper.last_content or "")
                if record.get("status") == "ok" else "")
@@ -475,7 +479,7 @@ class BpyShotAuditor:
         return (record, raw)
 
     def _render_review_frames(self, shot_id: str, span):
-        """渲染首/中/末三帧并编码成 data URI；失败返回**跳过记录**。"""
+        """Render the exact grid images sent to the judge with their evidence."""
         import bpy
 
         from ..layer8_delivery.renderer import render_first_frame
@@ -496,6 +500,7 @@ class BpyShotAuditor:
         previous_path = scene.render.filepath
         grid_frames = bool(getattr(self.vlm_review, "grid_frames", True))
         frames = []
+        frame_records = []
         try:
             scene.camera = camera
             for label, frame in frame_indices(int(span[0]), int(span[1])):
@@ -512,11 +517,38 @@ class BpyShotAuditor:
 
                     path = Path(grid_frame_file(str(path)))
                 frames.append((label, frame_data_uri(path)))
+                frame_records.append(describe_frame_record({
+                    "shot_id": str(shot_id),
+                    "frame": int(frame),
+                    "phase": str(label),
+                    "path": str(path),
+                }))
         finally:
             scene.camera = previous_camera
             scene.frame_set(previous_frame)
             scene.render.filepath = previous_path
-        return frames
+        return frames, frame_records
+
+    @staticmethod
+    def _review_measurements(result: AuditResult) -> Dict[str, Any]:
+        """Program facts shown beside the VLM opinion in immutable evidence."""
+        warnings = []
+        for warning in (result.guard_warnings or []):
+            if hasattr(warning, "to_dict"):
+                warnings.append(copy.deepcopy(warning.to_dict()))
+            elif isinstance(warning, dict):
+                warnings.append(copy.deepcopy(warning))
+        return {
+            "program_passed": bool(result.passed),
+            "program_score": result.score,
+            "ruler_measurements": copy.deepcopy(
+                result.ruler_measurements or []),
+            "scene_digest": copy.deepcopy(result.scene_digest or {}),
+            "guard_warnings": warnings,
+            "guard_frames_sampled": int(result.guard_frames_sampled or 0),
+            "guard_sampling_error": copy.deepcopy(
+                result.guard_sampling_error or {}),
+        }
 
     def _mesh_visibility_block(self, shot_id: str, span
                                ) -> Tuple[str, Dict[str, Dict[str, Any]]]:

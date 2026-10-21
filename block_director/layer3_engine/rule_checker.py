@@ -38,7 +38,8 @@ from ..cinema.axis import (
 )
 from ..cinema.framing import SHOT_FRAME, required_distance
 from ..cinema.spatial_digest import COLLISION_MARGIN
-from ..cinema.composition import PASS_SCORE
+from ..contracts.quality import COMPOSITION_PASS_SCORE as PASS_SCORE
+from ..contracts.quality import composition_decision
 from ..layer1_input.dialogue_timing import DIALOGUE_TAIL_FRAMES
 from ..contracts.audit import AuditError, AuditResult, SkippedFinding
 from ..contracts.enums import Severity
@@ -987,37 +988,25 @@ def _obstacles() -> Dict[str, AABB]:
 
 def _action_ranges(context) -> Dict[str, List[Tuple[int, int, str]]]:
     """逐角色的全局动作区间：``{character_id: [(start, end, label)]}``。"""
-    ranges: Dict[str, List[Tuple[int, int, str]]] = {}
-    if context is None or context.plan is None:
-        return ranges
-    for shot in context.plan.shots:
-        start, end = context.schedule.get(shot.shot_id, (1, shot.duration_frames))
-        for index, raw in enumerate(shot.actions or [], start=1):
-            if not isinstance(raw, dict):
-                continue
-            character_id = str(raw.get("character_id") or "")
-            if not character_id:
-                continue
-            #: 与构建器**同一个**折帧函数（单一真源）：动作被夹进它自己那一镜，
-            #: 否则这里会报出场景里并不存在的"跨镜重叠"（实测 run8：64/64 镜、
-            #: 487 条 R003，样例是 shot_055 的动作"溢出"到 shot_056）。
-            from ..cinema.schedule import action_frame_window
+    #: 纯逻辑收在 ``cinema/schedule.action_ranges_from_plan``（单一真源）：
+    #: 与构建器问同一个 ``action_frame_window``，缺省镜按计划级绝对帧回退。
+    #: 逐镜预演时 schedule 只含已构建镜，未构建镜不再被当成第 1 帧开始
+    #: （final6 实测的 6 条跨镜 R003 假重叠——旧实现用
+    #: ``context.schedule.get(shot_id, (1, duration))`` 缺省，shot_002 的
+    #: 动作被折到 1..16，与 shot_001 的 1..32 假重叠）。
+    from ..cinema.schedule import action_ranges_from_plan
 
-            absolute_start, absolute_end = action_frame_window(
-                start, int(shot.duration_frames), int(raw.get("start_frame") or 1),
-                int(raw.get("end_frame") or shot.duration_frames))
-            label = f"{shot.shot_id}#{index} {raw.get('action_type')}"
-            ranges.setdefault(character_id, []).append(
-                (absolute_start, absolute_end, label))
-    return ranges
+    if context is None:
+        return {}
+    return action_ranges_from_plan(
+        context.plan, getattr(context, "schedule", None))
 
 
 def _overlapping_pairs(items: List[Tuple[int, int, str]]):
-    ordered = sorted(items)
-    for index, (start_a, end_a, label_a) in enumerate(ordered):
-        for start_b, end_b, label_b in ordered[index + 1:]:
-            if start_b < end_a and start_b <= end_b:
-                yield label_a, label_b
+    """薄封装：纯逻辑收在 ``cinema/schedule.overlapping_action_pairs``。"""
+    from ..cinema.schedule import overlapping_action_pairs
+
+    return overlapping_action_pairs(items)
 
 
 @main_thread_only("check_shot")
@@ -1494,7 +1483,12 @@ def check_shot(shot_id: str, *, context=None,
 
     # 构图质量门（§7.1 B3 把构图列为通过条件） -----------------------------
     composition = None
-    if characters:
+    shot_for_composition = context.shot(shot_id)
+    framing_target = getattr(shot_for_composition, "framing_target", None)
+    has_prop_target = (framing_target is not None
+                       and str(getattr(framing_target, "kind", "") or "")
+                       == "prop")
+    if characters or has_prop_target:
         # v1.3：取首 / 中 / 尾三帧的**最小值**。只看首帧，运镜后段把主体
         # 挤出画面的镜头照样能通过——那正是"运动"最容易出事的地方。
         if frame_start != frame_end:
@@ -1505,13 +1499,15 @@ def check_shot(shot_id: str, *, context=None,
             scene.frame_set(sample)
             bpy.context.view_layer.update()
             report = evaluate_camera_composition(camera, characters,
-                                                 shot_type=shot_type)
+                                                 shot_type=shot_type,
+                                                 framing_target=framing_target)
             if worst is None or report.score < worst.score:
                 worst = report
         composition = worst
         #: 用户 2026-10-18 裁决：构图分必须**严格高于**阈值，
         #: score == composition_threshold 仍判失败（截至阈值）。
-        if composition is not None and composition.score <= composition_threshold:
+        if composition is not None and composition_decision(
+                composition.score, threshold=composition_threshold)["status"] != "pass":
             detail = "；".join(composition.suggestions[:2]) or "请调整构图"
             findings.append(_error(
                 "COMPOSITION", "E_CAM_001",

@@ -59,6 +59,24 @@ def test_unknown_field_rejected_when_additional_properties_false():
     assert any("不允许出现字段" in p for p in problems)
 
 
+def test_plan_accepts_an_explicit_rule_break_with_reason():
+    payload = _plan(rule_justifications=[{
+        "rule": "R015",
+        "action": "break",
+        "reason": "导演要求用特写交代关键道具",
+    }])
+    assert validate_args(EMIT_PLAN_TOOL_PARAMETERS, payload) == []
+
+
+def test_plan_rejects_a_rule_break_without_reason():
+    payload = _plan(rule_justifications=[{
+        "rule": "R015",
+        "action": "break",
+    }])
+    problems = validate_args(EMIT_PLAN_TOOL_PARAMETERS, payload)
+    assert any("reason" in problem for problem in problems)
+
+
 def test_union_type_allows_null():
     schema = {"type": "object",
               "properties": {"note": {"type": ["string", "null"]}}}

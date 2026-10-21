@@ -6,6 +6,9 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
 
+RETRIEVAL_EVENT_SCHEMA_VERSION = "knowledge-retrieval-event/v1"
+
+
 @dataclass
 class Card:
     """一条 Light RAG 知识卡。字段与 §6.3 的 JSON 结构一一对应。"""
@@ -178,3 +181,84 @@ class Case:
             source_ref=dict(data.get("source_ref", {})),
             score=float(data.get("score", 0.0)),
         )
+
+
+@dataclass(frozen=True)
+class RetrievalEvent:
+    """One logical retrieval decision that produced an injected prompt block.
+
+    ``retrieval_calls`` remains the compatibility count for network requests.
+    A process-local BM25/hypergraph/case lookup therefore has an event with
+    ``network_call=False`` and does not consume that budget.
+    """
+
+    retrieval_event_id: str
+    stage: str
+    scope: str
+    shot_id: str
+    query: str
+    analogy_query: str
+    top_k: int
+    token_budget: int
+    requested_backend: str
+    actual_backend: str
+    capability: str
+    degraded: bool
+    degradation_reason: str
+    network_call: bool
+    hit_card_ids: List[str] = field(default_factory=list)
+    hit_edge_ids: List[str] = field(default_factory=list)
+    hit_case_ids: List[str] = field(default_factory=list)
+    injected_card_ids: List[str] = field(default_factory=list)
+    injected_edge_ids: List[str] = field(default_factory=list)
+    injected_case_ids: List[str] = field(default_factory=list)
+    drops: List[Dict[str, str]] = field(default_factory=list)
+    actual_injected_tokens: int = 0
+    injected: bool = False
+    injected_sha256: str = ""
+    schema_version: str = RETRIEVAL_EVENT_SCHEMA_VERSION
+
+    def to_dict(self) -> Dict[str, Any]:
+        hit_ids = [
+            *self.hit_card_ids,
+            *self.hit_edge_ids,
+            *self.hit_case_ids,
+        ]
+        injected_ids = [
+            *self.injected_card_ids,
+            *self.injected_edge_ids,
+            *self.injected_case_ids,
+        ]
+        return {
+            "schema_version": self.schema_version,
+            "retrieval_event_id": self.retrieval_event_id,
+            "stage": self.stage,
+            "scope": self.scope,
+            "shot_id": self.shot_id,
+            "query": self.query,
+            "analogy_query": self.analogy_query,
+            "top_k": int(self.top_k),
+            "token_budget": int(self.token_budget),
+            "requested_backend": self.requested_backend,
+            "actual_backend": self.actual_backend,
+            "capability": self.capability,
+            "degraded": bool(self.degraded),
+            "degradation_reason": self.degradation_reason,
+            "network_call": bool(self.network_call),
+            "cards": len(self.hit_card_ids),
+            "edges": len(self.hit_edge_ids),
+            "cases": len(self.hit_case_ids),
+            "hit_ids": hit_ids,
+            "hit_card_ids": list(self.hit_card_ids),
+            "hit_edge_ids": list(self.hit_edge_ids),
+            "hit_case_ids": list(self.hit_case_ids),
+            "injected_ids": injected_ids,
+            "injected_card_ids": list(self.injected_card_ids),
+            "injected_edge_ids": list(self.injected_edge_ids),
+            "injected_case_ids": list(self.injected_case_ids),
+            "dropped_ids": [str(item.get("id") or "") for item in self.drops],
+            "drops": [dict(item) for item in self.drops],
+            "actual_injected_tokens": int(self.actual_injected_tokens),
+            "injected": bool(self.injected),
+            "injected_sha256": self.injected_sha256,
+        }

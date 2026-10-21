@@ -48,6 +48,20 @@ def is_timeout(problem: str) -> bool:
         "timed out", "timeout", "time out", "read operation timed", "超时"))
 
 
+def is_server_error(problem: str) -> bool:
+    """传输错误文本是不是瞬时 5xx（网关/服务端错误，与重试阶梯对齐）。
+
+    502/503/504 等瞬时 5xx 与超时同属可重试类：第一次走 ``retry_same``，
+    重试耗尽后按"网络不可用"记失败继续，而不是终止整条链。4xx 是请求
+    错误，不在此列（由 E_LLM_002 路由处理）。
+    """
+    text = str(problem or "").lower()
+    return any(token in text for token in (
+        "502", "503", "504", "bad gateway", "service unavailable",
+        "gateway timeout", "5xx", "http 50", "模型端点返回 5",
+        "sidecar 返回 5"))
+
+
 def next_step(history: Sequence[CallOutcome], policy: RetryPolicy) -> str:
     """根据**失败**历史决定下一步：``retry_same`` / ``retry_slim`` / ``degrade``。
 

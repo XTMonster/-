@@ -245,6 +245,22 @@ def test_unknown_terminal_status_is_reported(tmp_path):
         load_resume_state(path)
 
 
+def test_unfinished_terminal_status_round_trips(tmp_path):
+    """墙钟均摊写出的 ``unfinished`` 必须能恢复，不能成为未知终态。"""
+    state = ResumeState(
+        run_id="wall-share",
+        plan=FOUR_SHOT_PLAN,
+        terminal_shots={"shot_001": "unfinished"},
+        reason="单镜均摊墙钟耗尽")
+    path = tmp_path / RESUME_STATE_FILENAME
+
+    save_resume_state(path, state)
+    loaded = load_resume_state(path)
+
+    assert loaded.terminal_shots == {"shot_001": "unfinished"}
+    assert loaded.to_dict() == state.to_dict()
+
+
 def test_missing_file_is_reported(tmp_path):
     with pytest.raises(ResumeStateError, match="找不到"):
         load_resume_state(tmp_path / "no_such_dir" / RESUME_STATE_FILENAME)
@@ -385,7 +401,8 @@ def test_resume_with_per_shot_builder_enters_prepare_then_resumes_per_shot():
             self.prepared += 1
             return {"characters": 2, "cameras": 0, "results": []}
 
-        def rebuild_shot(self, shot_id, *, plan=None, brief=None):
+        def rebuild_shot(self, shot_id, *, plan=None, brief=None,
+                         preserve_camera_edits=False):
             self.rebuilt.append(str(shot_id))
             return {"shot_id": str(shot_id), "camera": f"BD_Cam_{shot_id}",
                     "keyframes": 1, "warnings": [], "protected": []}

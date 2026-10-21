@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import json
 import pathlib
 import sys
 
@@ -82,6 +83,28 @@ def test_a_clean_project_reports_ok(tmp_path):
     report = validation_report(load_project(tmp_path))
     assert report["ok"] is True
     assert report["errors"] == []
+
+
+def test_rebuild_verdict_surfaces_stale_evidence_without_blocking(tmp_path):
+    save_project(tmp_path, _overflowing_project())
+    path = tmp_path / "project.bdproj"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["evidence_store"] = {
+        "schema_version": "evidence-store/v0",
+        "run_id": "run-old",
+        "scene_id": "scene-old",
+        "histories": {},
+        "best": {},
+        "adopted": {},
+    }
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    verdict = rebuild_project.rebuild_verdict(load_project(tmp_path))
+
+    assert verdict["proceed"] is True
+    assert verdict["evidence"]["status"] == "stale"
+    assert "不可用于验收" in verdict["evidence_text"]
 
 
 def test_unreadable_project_still_fails_loudly(tmp_path):

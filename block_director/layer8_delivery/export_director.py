@@ -23,7 +23,14 @@ from ..contracts.enums import ErrorCode, resolution_for
 from ..contracts.errors import user_message
 from ..contracts.plan import FPS, Plan, unknown_cast_ids
 from ..delivery.depth import depth_range_note
+from ..delivery.concat_inputs import concat_inputs
+from ..delivery.failures import (
+    delivered_shot_ids,
+    passed_shot_ids,
+    pending_review_shot_ids,
+)
 from ..delivery.manifest import build_manifest
+from ..delivery.mask_check import empty_mask_warning
 from ..delivery.prompts import (
     DEFAULT_STYLE,
     render_prompt_sheet,
@@ -90,6 +97,9 @@ class DeliveryReport:
             "full_video": self.full_video,
             "total_frames_concat": self.total_frames_concat,
             "missing_clips": list(self.missing_clips),
+            "delivered_shots": delivered_shot_ids(self.shots),
+            "passed_shots": passed_shot_ids(self.shots),
+            "pending_review_shots": pending_review_shot_ids(self.shots),
         }
 
 
@@ -117,11 +127,15 @@ def _shot_ranges(plan: Plan,
 
 def _readme(manifest: Dict[str, Any], report: DeliveryReport,
             label_overlap_report: Optional[Dict[str, Any]] = None,
-            ruler_observation: bool = False) -> str:
+            ruler_observation: bool = False,
+            failures: Optional[Dict[str, Any]] = None) -> str:
     return render_readme(manifest, out_dir=Path(report.out_dir),
                          warnings=report.warnings,
                          label_overlap_report=label_overlap_report,
-                         ruler_observation=ruler_observation)
+                         ruler_observation=ruler_observation,
+                         failures=(failures or {}).get("failures"),
+                         pending_review=(failures or {}).get(
+                             "pending_review"))
 
 
 def _ruler_manifest_summary(ruler_evidence, ruler_shot_measurements):
@@ -203,6 +217,8 @@ def export_project(plan: Plan, *,
                    spatial_design: Optional[Dict[str, Any]] = None,
                    spatial_observation: Optional[Dict[str, Any]] = None,
                    spatial_diff: Optional[Dict[str, Any]] = None,
+                   failures: Optional[Dict[str, Any]] = None,
+                   concat_plan: Optional[Plan] = None,
                    ) -> DeliveryReport:
     """导出完整交付包。画面审计不通过则中止。"""
     started = time.perf_counter()
@@ -216,6 +232,18 @@ def export_project(plan: Plan, *,
     frames_dir.mkdir(parents=True, exist_ok=True)
 
     report = DeliveryReport(out_dir=str(export_dir))
+    #: 缺陷 D / T8（D3）：fail 镜照常产出最佳版本，渲染后标 ``failed``；
+    #: shots.json / prompts.md / README 与失败清单保留真实身份，不伪装通过。
+    failure_ids = {str(item.get("shot_id"))
+                   for item in (failures or {}).get("failures") or []}
+    pending_review_ids = {
+        str(item.get("shot_id"))
+        for item in (failures or {}).get("pending_review") or []
+    }
+    if pending_review_ids:
+        report.warnings.append(
+            "以下镜头由模型声明完成但审核未通过，已出片并标为待复核："
+            + "、".join(sorted(pending_review_ids)))
 
     leaks = audit_renderable_objects()
     if leaks:
@@ -304,7 +332,10 @@ def export_project(plan: Plan, *,
     registry = _element_registry(plan)
     prompt_text = render_prompt_sheet(plan, style=style,
                                       resolution=(width, height),
-                                      project=project, registry=registry)
+                                      project=project, registry=registry,
+                                      failures=(failures or {}).get("failures"),
+                                      pending_review=(failures or {}).get(
+                                          "pending_review"))
     unknown = unknown_prompt_names(prompt_text, registry)
     if unknown:
         report.aborted = True
@@ -327,6 +358,14 @@ def export_project(plan: Plan, *,
 
         for shot in ranges:
             shot_id = shot["shot_id"]
+            #: 缺陷 D / T8（D3）修正：fail 镜**照常产出最佳版本参考视频**
+            #: （U6/U1：白模预演视频一定要生成），但 report 里标 ``failed``、
+            #: 失败清单照旧保留——出片≠伪装通过，成片含尽力而为片段。
+            shot_failed = shot_id in failure_ids
+            shot_pending_review = shot_id in pending_review_ids
+            if shot_failed:
+                log.info("镜头 %s 未达门槛，记入失败清单，照常渲染最佳版本",
+                         shot_id)
             #: v1.7 J3（镜头级 skip）：skip_white_model 的镜头**照常入 shots.json**
             #: （只写元数据、标 ``skip_white_model: true``），但跳过 mp4/首帧/
             #: depth/路径采样——没有白模视频，也就不进成片与拼接。相机已由构建
@@ -334,23 +373,30 @@ def export_project(plan: Plan, *,
             responsibility = shot.get("responsibility")
             skip_shot = bool(getattr(responsibility, "skip_white_model", False))
             if skip_shot:
-                report.shots.append({
+                entry = {
                     "shot_id": shot_id,
                     "start_frame": int(shot["start_frame"]),
                     "end_frame": int(shot["end_frame"]),
                     "video": None,
                     "skip_white_model": True,
-                })
+                }
+                if shot_failed:
+                    entry["failed"] = True
+                if shot_pending_review:
+                    entry["pending_review"] = True
+                report.shots.append(entry)
                 log.info("镜头 %s 声明 skip_white_model，跳过渲染", shot_id)
                 continue
             video_base = str(export_dir / f"blockout_{shot_id}.mp4")
             shot_frames = int(shot["end_frame"]) - int(shot["start_frame"]) + 1
+            video_name: Optional[str] = None
             if config.per_shot_clips:
                 # 参考视频**带**角色标签（v1.3 诉求 4）
                 path, frames = render_shot_video(
                     scene, shot["start_frame"], shot["end_frame"], video_base,
                     codec=str(config.video_codec), crf=str(config.crf))
                 if os.path.exists(path):
+                    video_name = Path(path).name
                     report.files.append(path)
                 else:
                     report.warnings.append(f"{shot_id}: 视频未生成（{path}）")
@@ -370,11 +416,15 @@ def export_project(plan: Plan, *,
                     report.warnings.append(f"{shot_id}: 首帧未生成")
                     report.missing_clips.append(frame_path)
 
-                report.shots.append({"shot_id": shot_id,
-                                     "start_frame": shot["start_frame"],
-                                     "end_frame": shot["end_frame"],
-                                     "video": f"blockout_{shot_id}.mp4"
-                                              if config.per_shot_clips else None})
+                entry = {"shot_id": shot_id,
+                         "start_frame": shot["start_frame"],
+                         "end_frame": shot["end_frame"],
+                         "video": video_name}
+                if shot_failed:
+                    entry["failed"] = True
+                if shot_pending_review:
+                    entry["pending_review"] = True
+                report.shots.append(entry)
                 if config.export_depth:
                     try:
                         depth = render_depth_sequence(scene, shot["start_frame"],
@@ -441,6 +491,12 @@ def export_project(plan: Plan, *,
             try:
                 mask_results = render_mask_pass(
                     scene, registry, shot_ranges(plan), str(export_dir))
+                for item in mask_results:
+                    warning = empty_mask_warning(
+                        str(item["shot_id"]),
+                        [Path(p) for p in item.get("files") or []])
+                    if warning is not None:
+                        report.warnings.append(warning)
                 report.mask_shots.extend(
                     {"shot_id": str(item["shot_id"]),
                      "dir": str(Path(item["dir"]).relative_to(export_dir)),
@@ -452,10 +508,12 @@ def export_project(plan: Plan, *,
                 report.warnings.append(f"mask 导出跳过（{exc}）")
 
         if config.full_concat and config.per_shot_clips:
-            clips = [str(export_dir / f"blockout_{shot['shot_id']}.mp4")
-                     for shot in ranges]
-            clip_frames = [int(shot["end_frame"]) - int(shot["start_frame"]) + 1
-                           for shot in ranges]
+            #: R2-D1：concat 输入来自**完整计划**（resume 场景传 concat_plan），
+            #: 缺失 mp4（fail/skip 镜）由 concat_shot_clips 过滤并 warning，
+            #: 前段已过镜不再被子集 plan 丢掉。
+            clips, clip_frames = concat_inputs(
+                plan, export_dir,
+                build_summary=build_summary, concat_plan=concat_plan)
             try:
                 concat = concat_shot_clips(
                     scene, clips, full_output_path(export_dir),
@@ -498,7 +556,8 @@ def export_project(plan: Plan, *,
                                   review_requests=review_requests,
                                   registry=registry,
                                   rhythm_arc=rhythm_arc,
-                                  ruler_observation=ruler_manifest_summary)
+                                  ruler_observation=ruler_manifest_summary,
+                                  failures=failures)
 
         #: 空间尺观测 JSON（Ticket 06）：优先写完整观测文档
         #: （``ruler_observation``，build_observation 产物）；否则由计划级
@@ -603,6 +662,16 @@ def export_project(plan: Plan, *,
     prompt_path.write_text(prompt_text, encoding="utf-8")
     report.files.append(str(prompt_path))
 
+    #: 缺陷 D / T8（U1）：失败清单单独落盘，README/prompts.md 与它同源。
+    if failures is not None and (
+            (failures.get("failures") or [])
+            or (failures.get("pending_review") or [])):
+        failures_path = export_dir / "failures.json"
+        failures_path.write_text(
+            json.dumps(failures, ensure_ascii=False, indent=2),
+            encoding="utf-8")
+        report.files.append(str(failures_path))
+
     if config.export_camera_traj:
         trajectory = camera_trajectory(scene, ranges)
         trajectory_path = export_dir / "camera_traj.json"
@@ -666,7 +735,8 @@ def export_project(plan: Plan, *,
 
     readme_text = _readme(manifest, report,
                           label_overlap_report=label_overlap_report,
-                          ruler_observation=obs_written)
+                          ruler_observation=obs_written,
+                          failures=failures)
     readme_path = export_dir / "README.md"
     readme_path.write_text(readme_text, encoding="utf-8")
     report.files.append(str(readme_path))

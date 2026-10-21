@@ -55,6 +55,15 @@ def main():
     from block_director.layer5_orchestrator.detail_pipeline import (
         run_detail_pipeline,
     )
+    from block_director.layer3_engine.detail_session import (
+        DetailSceneSession,
+    )
+
+    def session_factory(**kwargs):
+        values = dict(kwargs)
+        values.pop("transport", None)
+        values.pop("knowledge", None)
+        return DetailSceneSession(**values)
 
     coarse = run_coarse_pipeline(
         plan=plan_dict(),
@@ -73,6 +82,7 @@ def main():
         baseline=baseline, plan=plan_dict(),
         out_dir=out / "detail",
         render_video=True,
+        session_factory=session_factory,
     )
     (out / "detail_pipeline_report.json").write_text(
         json.dumps(detail, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -88,6 +98,8 @@ def main():
     )
     print("BD_TEST_RESULT " + json.dumps({
         "ok": ok, "out": str(out),
+        "passed": 1 if ok else 0, "failed": 0 if ok else 1,
+        "checks": detail["gates"],
         "gates": detail["gates"],
         "final": detail["final"],
         "final_video": str(final_path),

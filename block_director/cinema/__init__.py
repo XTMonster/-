@@ -54,6 +54,7 @@ from .composition import (
     CompositionItem,
     CompositionReport,
     SubjectBox,
+    composition_passed,
     evaluate_composition,
 )
 
@@ -74,5 +75,5 @@ __all__ = [
     "SubjectFrame", "subject_frame", "camera_direction", "right_of",
     "GROUP_SHOT_TYPES",
     "evaluate_composition", "CompositionReport", "CompositionItem",
-    "SubjectBox", "WEIGHTS", "PASS_SCORE",
+    "SubjectBox", "WEIGHTS", "PASS_SCORE", "composition_passed",
 ]

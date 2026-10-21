@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Mapping, Optional, Sequence
 
 from ..contracts.elements import ElementRegistry, shot_element_ids
 from ..contracts.plan import Plan
@@ -114,12 +114,20 @@ def unknown_prompt_names(text: str, registry: ElementRegistry) -> List[str]:
 def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
                         fps: int = 24, resolution: Sequence[int] = (1280, 720),
                         project: str = "BlockDirector",
-                        registry: Optional[ElementRegistry] = None) -> str:
+                        registry: Optional[ElementRegistry] = None,
+                        failures: Optional[Sequence[Mapping[str, Any]]] = None,
+                        pending_review: Optional[
+                            Sequence[Mapping[str, Any]]] = None,
+                        ) -> str:
     """生成 prompts.md 全文。
 
     传 ``registry``（v1.6 E1 / FR-A4）：头部渲染"元素表"，逐镜补一行
     "元素"（该镜的道具 + 环境件，按登记表显示名引用）。不传时与旧输出
     **逐字节一致**（旧调用方不受影响）。
+
+    传 ``failures``（缺陷 D / T8，U1）：文末追加失败清单段——失败镜没有
+    参考视频可投，必须如实标注而不是假装有产物。不传/空清单与旧输出
+    **逐字节一致**（零行为差）。
     """
     width, height = (list(resolution) + [1280, 720])[:2]
     lines: List[str] = [f"# {project} — 分镜 Prompt 表", ""]
@@ -136,6 +144,16 @@ def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
         lines += [render_element_table(registry), ""]
 
     element_by_id = registry.by_id() if registry is not None else {}
+    failed_by_id = {
+        str(item.get("shot_id") or ""): item
+        for item in (failures or [])
+        if isinstance(item, Mapping)
+    }
+    pending_by_id = {
+        str(item.get("shot_id") or ""): item
+        for item in (pending_review or [])
+        if isinstance(item, Mapping)
+    }
     cursor = 1
     for shot in plan.shots:
         end = cursor + shot.duration_frames - 1
@@ -152,6 +170,12 @@ def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
         movements = movement_labels(shot)
         if movements:
             lines.append(f"**运镜**：{movements}")
+        if shot.shot_id in failed_by_id:
+            lines.append("**审核状态**：未通过（尽力版本）")
+        elif shot.shot_id in pending_by_id:
+            status = str(
+                pending_by_id[shot.shot_id].get("status") or "unknown")
+            lines.append(f"**审核状态**：待复核（{status}）")
         lines.append(f"**参考视频**：export/blockout_{shot.shot_id}.mp4")
         lines.append(f"**首帧**：export/first_frames/{shot.shot_id}.png")
         lines.append("")
@@ -175,4 +199,21 @@ def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
             lines.append(f"**镜头意图**：{shot.intent}")
         lines.append("")
         cursor = end + 1
+    failure_items = list(failures or [])
+    if failure_items:
+        from .failures import render_failures_markdown
+
+        lines += ["## 失败清单", "",
+                  "> 以下镜头未达到构图门槛；若已生成本镜 mp4，"
+                  "该片只是最佳尽力版本，不是通过镜。"
+                  "失败原因见交付包 `failures.json`：", ""]
+        lines.append(render_failures_markdown(failure_items).rstrip())
+        lines.append("")
+    pending_items = list(pending_review or [])
+    if pending_items:
+        from .failures import render_pending_review_markdown
+
+        lines.append(
+            render_pending_review_markdown(pending_items).rstrip())
+        lines.append("")
     return "\n".join(lines).rstrip() + "\n"

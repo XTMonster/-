@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import inspect
 from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Dict, List, Optional
 
@@ -121,7 +122,8 @@ class ToolRegistry:
         return name in self._tools
 
     # ------------------------------------------------------------- 执行
-    def execute(self, name: str, args: Any, *, wrap: bool = True) -> ToolResult:
+    def execute(self, name: str, args: Any, *, wrap: bool = True,
+                context: Optional[Dict[str, Any]] = None) -> ToolResult:
         """执行工具；任何失败都转成可回灌的观察文本，不抛异常。
 
         handler 可以返回字符串（视为成功），也可以返回 :class:`ToolResult`
@@ -149,7 +151,11 @@ class ToolRegistry:
                               error="invalid_args")
 
         try:
-            output = spec.handler(**args)
+            call_args = dict(args)
+            if context is not None and "_context" in inspect.signature(
+                    spec.handler).parameters:
+                call_args["_context"] = context
+            output = spec.handler(**call_args)
         except Exception as exc:  # noqa: BLE001 - §16.2：工具不抛异常
             return ToolResult(False, wrap_text(
                 f"执行失败: {type(exc).__name__}: {exc}。建议检查参数或简化该步操作。"),

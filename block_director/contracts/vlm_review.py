@@ -27,6 +27,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -187,6 +188,65 @@ def build_review_payload(*, shot_id: str, frames: Sequence[Tuple[str, str]],
         purpose=Purpose.REVIEW,
         max_tokens=int(max_tokens),
     )
+
+
+def _prompt_fingerprint(payload: ChatPayload) -> str:
+    """Stable digest of the exact model request, excluding no fields."""
+    serialized = json.dumps(
+        payload.to_dict(),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def _review_frame_order(
+    frame_records: Optional[Sequence[Mapping[str, Any]]],
+) -> List[Dict[str, Any]]:
+    """Normalise the exact rendered images presented to the judge."""
+    result: List[Dict[str, Any]] = []
+    for raw in frame_records or ():
+        if not isinstance(raw, Mapping):
+            continue
+        label = str(raw.get("label") or raw.get("phase") or "")
+        path = str(raw.get("path") or raw.get("png") or "")
+        file_sha256 = str(raw.get("file_sha256") or "")
+        if not file_sha256 and path:
+            target = Path(path)
+            if target.is_file():
+                file_sha256 = hashlib.sha256(target.read_bytes()).hexdigest()
+        result.append({
+            "label": label,
+            "shot_id": str(raw.get("shot_id") or ""),
+            "frame": raw.get("frame"),
+            "phase": str(raw.get("phase") or label),
+            "path": path,
+            "file_sha256": file_sha256,
+            "pixel_sha256": str(raw.get("pixel_sha256") or ""),
+            "readable": raw.get("readable") is not False,
+        })
+    return result
+
+
+def _model_metadata(transport: Any, reply: Any) -> Dict[str, Any]:
+    usage = getattr(reply, "usage", None) if reply is not None else None
+    return {
+        "model": str(getattr(reply, "model", "") or ""),
+        "configured_model": str(getattr(transport, "model", "") or ""),
+        "provider": str(
+            getattr(transport, "provider", "")
+            or getattr(transport, "backend", "")
+            or ""
+        ),
+        "transport_class": type(transport).__name__,
+        "request_id": str(
+            getattr(reply, "request_id", "") or "") if reply is not None else "",
+        "finish_reason": str(
+            getattr(reply, "finish_reason", "") or ""
+        ) if reply is not None else "",
+        "usage": usage.to_dict() if usage is not None else None,
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -367,7 +427,9 @@ def review_shot(transport, *, shot_id: str,
                 max_tokens: Optional[int] = None,
                 subjects: Optional[Sequence[str]] = None,
                 tools: Optional[Sequence[str]] = None,
-                guard_summary: str = "") -> Dict[str, Any]:
+                guard_summary: str = "",
+                frame_records: Optional[Sequence[Mapping[str, Any]]] = None,
+                measurements: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
     """评一镜，返回一条**总是可记**的记录。
 
     成功 → ``{"status": "ok", "score", "reason", "attempts", "schema"}``；
@@ -390,9 +452,21 @@ def review_shot(transport, *, shot_id: str,
             "guard_summary 只在 v2 评审（subjects 与 tools 都提供）时生效")
     v2 = subjects is not None
     schema = VLM_REVIEW_SCHEMA_V2 if v2 else REVIEW_SCHEMA_VERSION
+    provenance = {
+        "shot_id": str(shot_id),
+        "frame_order": _review_frame_order(frame_records),
+        "measurements": dict(measurements or {}),
+    }
     if not frames:
-        return {"status": "skipped", "reason": "没有可评审的帧",
-                "error": "frames 为空", "attempts": 0, "schema": schema}
+        return {
+            "status": "skipped",
+            "outcome": "missing_frame",
+            "reason": "没有可评审的帧",
+            "error": "frames 为空",
+            "attempts": 0,
+            "schema": schema,
+            **provenance,
+        }
     resolved_tokens = (max_tokens if max_tokens is not None
                        else (512 if v2 else 256))
     payload = build_review_payload(shot_id=shot_id, frames=frames, intent=intent,
@@ -401,26 +475,54 @@ def review_shot(transport, *, shot_id: str,
                                    subjects=subjects, tools=tools,
                                    guard_summary=guard_summary)
     last_error = ""
+    last_outcome = "unavailable"
+    last_reply = None
+    last_raw = ""
     tries = max(1, int(attempts))
     for attempt in range(1, tries + 1):
         try:
             reply = transport.chat(payload, timeout=timeout)
+            last_reply = reply
+            raw = getattr(reply, "content", None)
+            last_raw = raw if isinstance(raw, str) else ""
+            last_outcome = "malformed"
             parsed = (parse_review_reply_v2(reply, subjects=subjects,
                                             tools=tools) if v2
                       else parse_review_reply(reply))
         except Exception as exc:  # noqa: BLE001 - 评委不可用＝跳过并记录（§5.5）
             last_error = f"{type(exc).__name__}: {exc}"
+            if not isinstance(exc, VlmReviewError):
+                last_outcome = "unavailable"
             continue
-        record = {"status": "ok", "score": parsed["score"],
-                  "reason": parsed["reason"], "attempts": attempt,
-                  "schema": schema}
+        issue_count = len(parsed.get("issues") or [])
+        record = {
+            "status": "ok",
+            "outcome": "reviewed_open" if issue_count else "reviewed_pass",
+            "score": parsed["score"],
+            "reason": parsed["reason"],
+            "attempts": attempt,
+            "schema": schema,
+            "prompt_sha256": _prompt_fingerprint(payload),
+            "raw_response": last_raw,
+            **_model_metadata(transport, reply),
+            **provenance,
+        }
         if v2:
             record["issues"] = parsed["issues"]
             record["dropped_issues"] = parsed["dropped_issues"]
         return record
-    return {"status": "skipped", "reason": "评委不可用（重试一次后放弃）",
-            "error": last_error or "未知错误",
-            "attempts": tries, "schema": schema}
+    return {
+        "status": "skipped",
+        "outcome": last_outcome,
+        "reason": "评委不可用（重试一次后放弃）",
+        "error": last_error or "未知错误",
+        "attempts": tries,
+        "schema": schema,
+        "prompt_sha256": _prompt_fingerprint(payload),
+        "raw_response": last_raw,
+        **_model_metadata(transport, last_reply),
+        **provenance,
+    }
 
 
 def summarise_reviews(reviews: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:

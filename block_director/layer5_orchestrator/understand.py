@@ -134,6 +134,9 @@ BRIEF_SYSTEM_PROMPT = """\
 
 硬性要求：
 - **没有依据就留空或写进 notes**，绝不编造角色、关系或道具；
+- 剧本出现"特写/大特写/手掌/银币/某部位"这类**拍点对象**声明时，在
+  notes 里写明"镜号 N 的拍点对象是 <角色id/部位/道具>"，供阶段 A 据此
+ 填写 framing_target（构图评分以它为主锚，没有它特写镜会被整身口径误判）；
 - 不要猜代词指的是谁——"他/她/那家伙"没有明确先行词时写进 notes；
 - listener / from / to 只能填角色表里出现的名字；
 - environment 的 direction/distance/size 只能写闭集词（front/back/left/right/above/ground；
@@ -180,6 +183,7 @@ def build_brief_payload(script: str, *, parsed=None,
                         max_tokens: Optional[int] = None,
                         request_id: Optional[str] = None) -> ChatPayload:
     """构造阶段 S 的请求（§3.2 的提示词约束）。"""
+    brief = SceneBrief(source=SOURCE_DETERMINISTIC)
     roster = [str(name) for name in (characters or [])]
     context = render_brief_context(parsed, roster)
     system_text = (BRIEF_SYSTEM_PROMPT
@@ -235,6 +239,17 @@ def deterministic_brief(parsed=None, characters: Optional[List[str]] = None
     """
     roster = [str(name) for name in (characters or [])]
     brief = SceneBrief(source=SOURCE_DETERMINISTIC)
+    #: R2 空计划漏洞：Stage S 超时降级时，角色锚声明必须跟着 brief 走，
+    #: 否则计划提示里看不到"剧本声明了米迦尔/伊恩/偷盗者"，模型容易
+    #: 产出 characters=[] 的空计划。确定性抽取只把**明确声明**写进 notes，
+    #: 不编造注视/方位（其余照旧留空）。
+    if parsed is not None:
+        for name in (getattr(parsed, "character_names", None) or []):
+            if name and name not in roster:
+                roster.append(str(name))
+    if roster:
+        brief.notes.append(
+            "剧本角色表（【角色锚】声明）：" + "、".join(roster))
     if parsed is None:
         brief.notes.append("没有可用的解析结果，SceneBrief 为空")
         brief.notes.append(ENVIRONMENT_EMPTY_NOTE)

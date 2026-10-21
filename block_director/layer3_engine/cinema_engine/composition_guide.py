@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
@@ -19,6 +19,11 @@ from ...cinema.composition import (
     SubjectBox,
     evaluate_composition,
 )
+from ...cinema.anchor import (
+    DEFAULT_PROFILE as _PROFILE,
+    HAND_BOX_SIZE,
+    hand_offset,
+)
 from ...cinema.framing import ASPECT_16_9, SHOT_FRAME, SUBJECT_HEIGHT
 from ...utils.logger import get_logger
 from ...utils.threading_guard import main_thread_only
@@ -27,6 +32,12 @@ from ..collection_router import GUIDES_COLLECTION
 log = get_logger("composition")
 
 MAX_RAY_STEPS = 8
+
+#: 局部主体框的预设尺寸（裁决 D1=A：无手部子网格时锚点＋预设偏移）。
+#: 白模角色没有手臂网格（v1.5 §4.4 注记），手部按"胸口前方一拳"的代理锚点
+#: 加一个约 22 cm 的立方测量窗；来源记 ``provenance=anchored``，不冒充实测。
+HAND_BOX_SIZE = HAND_BOX_SIZE  #: 单一真源：cinema.anchor（裁决 D1=A 测量窗）
+PROP_NAME_PREFIX = "BD_Prop_"
 
 
 def _in_guides(obj: Object) -> bool:
@@ -112,6 +123,55 @@ def _world_bounds(character, depsgraph) -> Optional[Tuple[Vector, Vector]]:
     if not found:
         return None
     return Vector(low), Vector(high)
+
+
+def _object_bounds(obj, depsgraph) -> Optional[Tuple[Vector, Vector]]:
+    """任意渲染对象的世界 AABB（道具/角色子网格共用）。"""
+    evaluated = obj.evaluated_get(depsgraph)
+    matrix = evaluated.matrix_world
+    low = [float("inf")] * 3
+    high = [float("-inf")] * 3
+    found = False
+    for corner in evaluated.bound_box:
+        point = matrix @ Vector(corner)
+        found = True
+        for index in range(3):
+            low[index] = min(low[index], point[index])
+            high[index] = max(high[index], point[index])
+    if not found:
+        return None
+    return Vector(low), Vector(high)
+
+
+def _anchored_hand_box(character, depsgraph) -> Optional[Tuple[Vector, Vector]]:
+    """无手部子网格时的锚点＋预设偏移测量窗（裁决 D1=A，来源 anchored）。
+
+    锚点取 ``body_pivot.matrix_world @ hand_offset(DEFAULT_PROFILE, side=1.0)``
+    ——与 ``scene_executor.ensure_hand_proxy`` 用的是同一份偏移，不另写数字。
+    测量对象仍是"手部"（胸口前方一拳），只是来源如实标注为近似锚定。
+    """
+    pivot = getattr(character, "body_pivot", None)
+    if pivot is None:
+        return None
+    center = pivot.matrix_world @ Vector(hand_offset(_PROFILE, side=1.0))
+    half = HAND_BOX_SIZE / 2.0
+    return (center + Vector((-half, -half, -half)),
+            center + Vector((half, half, half)))
+
+
+def _find_prop(framing_target, scene) -> Optional[Object]:
+    """按 framing_target.ref 找道具对象（bd_sdl_id 或对象名/BD_Prop_ 前缀）。"""
+    ref = str(getattr(framing_target, "ref", "") or "")
+    if not ref:
+        return None
+    for obj in scene.objects:
+        if str(obj.get("bd_element_type", "") or "") != "prop":
+            continue
+        if str(obj.get("bd_sdl_id", "") or "") == ref:
+            return obj
+        if obj.name == ref or obj.name == f"{PROP_NAME_PREFIX}{ref}":
+            return obj
+    return None
 
 
 def intended_window(shot_type: str) -> Optional[Tuple[float, float]]:
@@ -210,9 +270,121 @@ def _screen_facing(character, scene, camera) -> float:
     return 1.0 if horizontal > 0 else -1.0
 
 
+def _local_subject_box(framing_target, characters, depsgraph, scene, camera,
+                       shot_type: str
+                       ) -> Optional[Tuple[SubjectBox, Optional[Vector],
+                                           Any]]:
+    """按剧本声明的拍摄对象造局部主体框（缺陷 A / T5）。
+
+    返回 ``(box, world_center, is_self)``：``world_center`` 供遮挡射线用，
+    ``is_self(obj)`` 判定"命中对象是否属于被摄主体本身"（道具或其子级 /
+    角色自身），避免把主体自己判成遮挡。
+
+    * ``kind=prop``：道具对象包围盒投影（``provenance=measured``）；
+    * ``kind=character + part=hand``：优先子网格（现无），否则锚点＋预设偏移
+      （``provenance=anchored``，裁决 D1=A）；``part=face`` 用头球网格；
+      ``part=none`` 退回整身框但显式作为主锚。
+    """
+    if framing_target is None:
+        return None
+    kind = str(getattr(framing_target, "kind", "") or "character")
+    ref = str(getattr(framing_target, "ref", "") or "")
+    part = str(getattr(framing_target, "part", "") or "none")
+    lookup = {str(getattr(c, "id", "")): c for c in (characters or ())}
+
+    bounds: Optional[Tuple[Vector, Vector]] = None
+    provenance = "measured"
+    name = ""
+    is_self = None
+    if kind == "prop":
+        prop = _find_prop(framing_target, scene)
+        if prop is None:
+            return None
+        bounds = _object_bounds(prop, depsgraph)
+        if bounds is not None:
+            #: 扁平道具（银币这类薄片）的 AABB 高度远小于直径，按原盒投影
+            #: 永远填不满特写画幅（实测 0.03 m 高 → 占比 0.18，ECU 修不过）。
+            #: 白模口径：测量对象仍是道具，但投影框取"主体体块"的支配维度
+            #: （max(长,宽,高) 立方），来源仍是 measured。
+            low, high = bounds
+            extent = high - low
+            if (extent.z < 0.5 * max(extent.x, extent.y)
+                    and max(extent.x, extent.y) > 0.0):
+                dominant = max(extent.x, extent.y)
+                center = (low + high) / 2.0
+                half = dominant / 2.0
+                bounds = (center + Vector((-half, -half, -half)),
+                          center + Vector((half, half, half)))
+        name = ref or prop.name
+        #: 持币角色（本镜在场角色）不是道具的"前景遮挡"——银币在角色手里，
+        #: 角色身体在银币**后面**；射线先命中银币（self 跳过）后打到身体，
+        #: 不能把"被摄主体的持有者"误判成遮挡。
+        is_self = (lambda obj: _is_or_child_of(obj, prop)
+                   or any(_belongs_to(obj, c) for c in (characters or ())))
+    elif kind == "character":
+        character = lookup.get(ref)
+        if character is None:
+            return None
+        if part == "hand":
+            hand = None
+            for key, obj in getattr(character, "parts", {}).items():
+                if "hand" in str(key).lower():
+                    hand = obj
+                    break
+            if hand is not None:
+                bounds = _object_bounds(hand, depsgraph)
+            else:
+                bounds = _anchored_hand_box(character, depsgraph)
+                provenance = "anchored"
+            name = f"{ref}:hand"
+            is_self = lambda obj: _belongs_to(obj, character)
+        elif part == "face":
+            head = getattr(character, "parts", {}).get("head")
+            bounds = _object_bounds(head, depsgraph) if head is not None else None
+            name = f"{ref}:face"
+            is_self = lambda obj: _belongs_to(obj, character)
+        else:
+            # part=none：整身框即被摄对象，显式作为主锚（与旧行为一致）。
+            box = _screen_box(character, depsgraph, scene, camera, shot_type)
+            if box is not None:
+                box.provenance = "measured"
+                whole = _world_bounds(character, depsgraph)
+                center = ((whole[0] + whole[1]) / 2.0 if whole is not None
+                          else None)
+                return box, center, (lambda obj: _belongs_to(obj, character))
+            return None
+    if bounds is None:
+        return None
+    box = _project_bounds(bounds[0], bounds[1], _named(name), scene, camera)
+    box.provenance = provenance
+    center = (bounds[0] + bounds[1]) / 2.0
+    return box, center, is_self
+
+
+def _named(name: str):
+    """给 ``_project_bounds`` 一个带 name 的轻量对象（只读 name 字段）。"""
+    from types import SimpleNamespace
+    return SimpleNamespace(name=name)
+
+
+def _is_or_child_of(obj, ancestor) -> bool:
+    node: Optional[Object] = obj
+    while node is not None:
+        if node is ancestor:
+            return True
+        node = node.parent
+    return False
+
+
 def _blocking_object(scene, depsgraph, camera_pos: Vector,
-                     target: Vector, character) -> Optional[str]:
-    """从相机向目标投射，返回第一个真正的遮挡物名字。"""
+                     target: Vector, character,
+                     *, is_self: Optional[Callable[[Object], bool]] = None
+                     ) -> Optional[str]:
+    """从相机向目标投射，返回第一个真正的遮挡物名字。
+
+    ``is_self`` 覆盖默认的"属于该角色"判定：局部主体（道具/部位）的射线
+    必须跳过主体对象本身（道具网格、持道具的手），否则第一跳永远命中自己。
+    """
     direction = target - camera_pos
     distance = direction.length
     if distance < 1e-6:
@@ -225,7 +397,10 @@ def _blocking_object(scene, depsgraph, camera_pos: Vector,
             distance=max(distance - travelled, 1e-4))
         if not hit or obj is None:
             return None
-        if _belongs_to(obj, character):
+        if is_self is not None:
+            if is_self(obj):
+                return None                  # 先打到目标自己：不算遮挡
+        elif _belongs_to(obj, character):
             return None                      # 先打到目标自己：不算遮挡
         if obj.hide_render or _in_guides(obj):
             travelled = (location - camera_pos).length + 1e-3   # 跳过辅助物
@@ -240,7 +415,8 @@ def _blocking_object(scene, depsgraph, camera_pos: Vector,
 def evaluate_camera_composition(camera: Object,
                                 characters: Sequence,
                                 shot_type: str = "MS",
-                                check_occlusion: bool = True
+                                check_occlusion: bool = True,
+                                framing_target=None,
                                 ) -> CompositionReport:
     """对当前机位做构图评分。"""
     scene = bpy.context.scene
@@ -251,6 +427,22 @@ def evaluate_camera_composition(camera: Object,
     occluded: Dict[str, bool] = {}
     camera_pos = camera.matrix_world.translation.copy()
     frame = SHOT_FRAME.get(str(shot_type).upper())
+
+    #: 缺陷 A / T5：剧本点名的局部主体（手部/道具）优先做主锚；整身框继续
+    #: 参与 balance/occlusion 输入。局部框出画时硬闸对它也成立（≤20）。
+    primary: Optional[str] = None
+    local = _local_subject_box(framing_target, characters, depsgraph,
+                               scene, camera, shot_type)
+    if local is not None:
+        local_box, local_center, local_is_self = local
+        primary = local_box.name
+        boxes.append(local_box)
+        if check_occlusion and local_center is not None:
+            blocker = _blocking_object(scene, depsgraph, camera_pos,
+                                       local_center, None,
+                                       is_self=local_is_self)
+            occluded[local_box.name] = blocker is not None
+
     for character in characters:
         # 构图分项只看"这个景别该看到的那一段"；遮挡仍看整身。
         box = _screen_box(character, depsgraph, scene, camera, shot_type)
@@ -277,7 +469,8 @@ def evaluate_camera_composition(camera: Object,
 
     report = evaluate_composition(boxes, occluded=occluded or None,
                                   expected_height=expected_height,
-                                  headroom_applies=headroom_applies)
+                                  headroom_applies=headroom_applies,
+                                  primary=primary)
     log.info("构图评分：%.1f（%s）", report.score,
              "通过" if report.passed else "需调整")
     return report

@@ -25,9 +25,18 @@ Vector3 = Tuple[float, float, float]
 #: 关系里没写距离时的缺省距离（TDD §4.3：``behind X`` 的 2.0 m）。
 DEFAULT_ANCHOR_DISTANCE = 2.0
 
-#: 支持的四种关系（TDD §4.3 的原话：``behind`` / ``between`` / ``left_of`` /
-#: ``right_of``，带距离的写法如 ``left_of 甲 2m``）。其余关系一律记为未解析。
-ANCHOR_RELATIONS: Tuple[str, ...] = ("behind", "between", "left_of", "right_of")
+#: ``ahead``（深处=背景纵深）缺省距离：画面深处的纵深距离大于普通关系
+#: 缺省，取 3× ``DEFAULT_ANCHOR_DISTANCE``（确定性、无相机时可重建）。
+AHEAD_ANCHOR_DISTANCE = 3.0 * DEFAULT_ANCHOR_DISTANCE
+
+#: 支持的关系（TDD §4.3：``behind`` / ``between`` / ``left_of`` /
+#: ``right_of``；R2 06/S1 增补剧本真实写法的 ``beside``（旁）、
+#: ``front_of``（前方/朝向）、``ahead``（深处=背景纵深）、``opposite``
+#: （对面）。带距离的写法如 ``left_of 甲 2m``。其余关系一律记为未解析。
+ANCHOR_RELATIONS: Tuple[str, ...] = (
+    "behind", "between", "left_of", "right_of",
+    "beside", "front_of", "ahead", "opposite",
+)
 
 #: 中英两套关系词。命中即取；**第一个命中的**决定 kind（长词优先，见
 #: :func:`_detect_kind`）。中文侧是按剧本里真实写法收的（"甲背后"/"在甲和乙之间"）。
@@ -39,6 +48,11 @@ _RELATION_PATTERNS: Tuple[Tuple[str, str], ...] = (
     ("left_of", "left"), ("left_of", "左"),
     ("right_of", "右侧"), ("right_of", "右边"), ("right_of", "右方"),
     ("right_of", "right"), ("right_of", "右"),
+    ("beside", "旁边"), ("beside", "旁"),
+    ("front_of", "前方"), ("front_of", "前面"), ("front_of", "朝向"),
+    ("front_of", "front"),
+    ("ahead", "深处"), ("ahead", "纵深"),
+    ("opposite", "对面"), ("opposite", "opposite"),
 )
 
 #: 连接词/虚词：解析目标名时先去掉，避免 "and 甲 的 桌子" 这类噪声变成候选名。
@@ -46,10 +60,46 @@ _STOPWORDS: Tuple[str, ...] = (
     "and", "of", "the", "at", "from", "side", "left", "right", "behind",
     "between", "前方", "背后", "身后", "后面", "后方", "之间", "中间",
     "左侧", "左边", "左方", "右侧", "右边", "右方", "的", "在", "与", "和",
-    "旁", "边", "处",
+    "旁边", "前面", "朝向", "深处", "纵深", "对面", "旁", "边", "处",
 )
 
 _DISTANCE_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(?:m|M|米|公尺)")
+
+#: 环境锚自由文本（无角色参照）的方位词：``(规范方向, 中文词)``。
+#: 剧本/LLM 的真实写法学自 20261019-r2-market-coin-full 的
+#: ``plan.environment.anchors[].relation``：*场地右侧近处*、*左侧近处*、
+#: *右侧中部*、*画面深处远处海面*、*远处背景人群*。这些锚点没有角色参照，
+#: 语义是"相对场景中心"（与 ``spatial_design._anchor_from_environment`` 的
+#: direction/distance 闭集同一语义），按同一数值表（2/6/12 m）落位，
+#: 保证设计快照与场景世界 JSON 坐标一致。
+SCENE_CENTER_DIRECTION_WORDS: Tuple[Tuple[str, str], ...] = (
+    ("right", "右侧"), ("right", "右边"), ("right", "右方"), ("right", "右"),
+    ("left", "左侧"), ("left", "左边"), ("left", "左方"), ("left", "左"),
+    ("front", "前方"), ("front", "前面"), ("front", "正面"), ("front", "前"),
+    ("back", "深处"), ("back", "远处"), ("back", "背景"), ("back", "后方"),
+    ("back", "后面"), ("back", "后"),
+)
+
+#: 环境锚自由文本的距离档词：``(规范档位, 中文词)``。档位词与显式米数
+#: 二选一；两者都出现时显式米数优先（与角色关系解析同一规则）。
+SCENE_CENTER_DISTANCE_WORDS: Tuple[Tuple[str, str], ...] = (
+    ("near", "近处"), ("near", "近"),
+    ("mid", "中部"), ("mid", "中间"), ("mid", "中"),
+    ("far", "远处"), ("far", "深处"), ("far", "远"),
+)
+
+#: 档位 -> 米（与 ``spatial_design.DISTANCE_METERS`` 同值：near=2/mid=6/far=12）。
+SCENE_CENTER_DISTANCE_METERS: Dict[str, float] = {
+    "near": 2.0, "mid": 6.0, "far": 12.0,
+}
+
+#: 规范方向 -> 世界方向向量（相对场景中心，XY 平面；Z-up、X=右、Y=前）。
+SCENE_CENTER_VECTORS: Dict[str, Vector3] = {
+    "right": (1.0, 0.0, 0.0),
+    "left": (-1.0, 0.0, 0.0),
+    "front": (0.0, 1.0, 0.0),
+    "back": (0.0, -1.0, 0.0),
+}
 
 
 @dataclass(frozen=True)
@@ -138,6 +188,42 @@ def parse_relation(text: str, *,
                           distance=distance)
 
 
+def resolve_scene_center_anchor(text: str) -> Optional[Vector3]:
+    """把环境锚的自由文本（无角色参照）解析成相对场景中心的坐标。
+
+    认法：最长优先匹配方位词（右侧/左侧/前方/深处/远处…）+ 距离档词
+    （近处/中部/远处）；没有档位词但带显式 ``N 米`` 时按米数落位。
+    方位或距离都认不出时返回 ``None``（不猜）。坐标系与角色锚一致：
+    Z-up、X=右、Y=前，落点在原点（场景中心）偏移。
+    """
+    raw = _normalise(_text(text))
+    if not raw:
+        return None
+    direction: Optional[str] = None
+    for canonical, word in sorted(
+            SCENE_CENTER_DIRECTION_WORDS, key=lambda item: -len(item[1])):
+        if word in raw:
+            direction = canonical
+            break
+    distance: Optional[str] = None
+    for canonical, word in sorted(
+            SCENE_CENTER_DISTANCE_WORDS, key=lambda item: -len(item[1])):
+        if word in raw:
+            distance = canonical
+            break
+    match = _DISTANCE_RE.search(raw)
+    if match:
+        meters = float(match.group(1))
+        if direction is not None:
+            vec = SCENE_CENTER_VECTORS[direction]
+            return (round(vec[0] * meters, 4), round(vec[1] * meters, 4), 0.0)
+    if direction is None or distance is None:
+        return None
+    vec = SCENE_CENTER_VECTORS[direction]
+    meters = SCENE_CENTER_DISTANCE_METERS[distance]
+    return (round(vec[0] * meters, 4), round(vec[1] * meters, 4), 0.0)
+
+
 def _unit(value: Vector3) -> Optional[Vector3]:
     length = math.sqrt(sum(component * component
                           for component in (value[0], value[1])))
@@ -187,12 +273,44 @@ def _place(relation: AnchorRelation,
         direction = (-unit[0], -unit[1], 0.0)
     elif relation.kind == "left_of":
         direction = _left_of(facing)
-    else:
+    elif relation.kind == "right_of":
         direction = _right_of(facing)
+    elif relation.kind == "beside":
+        #: ``旁`` = 紧邻一侧：确定性取目标左手方向（与 left_of 同轴，
+        #: 但语义是"贴邻"而非"在左方"；无相机时左右不分正负，
+        #: 取左手侧保证可重建、可对拍）。
+        direction = _left_of(facing)
+    elif relation.kind == "front_of":
+        unit = _unit(facing)
+        if unit is None:
+            return None
+        direction = unit
+    elif relation.kind == "ahead":
+        #: ``深处`` = 背景纵深：目标 facing 正方向、距离放大
+        #: （缺省 3×，显式距离优先）。
+        unit = _unit(facing)
+        if unit is None:
+            return None
+        direction = unit
+    elif relation.kind == "opposite":
+        #: ``对面`` = facing 反方向（与 behind 同一语义）。
+        unit = _unit(facing)
+        if unit is None:
+            return None
+        direction = (-unit[0], -unit[1], 0.0)
+    else:
+        return None
     if direction is None:
         return None
-    return (position[0] + direction[0] * relation.distance,
-            position[1] + direction[1] * relation.distance,
+    if relation.kind == "ahead":
+        #: 深处缺省纵深距离；显式 ``N 米`` 仍然优先（TDD §4.3 距离读取）。
+        distance = (relation.distance
+                    if relation.distance != DEFAULT_ANCHOR_DISTANCE
+                    else AHEAD_ANCHOR_DISTANCE)
+    else:
+        distance = relation.distance
+    return (position[0] + direction[0] * distance,
+            position[1] + direction[1] * distance,
             position[2])
 
 
@@ -251,6 +369,13 @@ def solve_anchor_positions(
         relation = parse_relation(relation_text, aliases=aliases, known=known)
         place = _place(relation, cast) if relation is not None else None
         if place is None:
+            #: R2 S1 补丁：环境锚没有角色参照（摊位/人群/光源），自由文本
+            #: "场地右侧近处…" 解析成相对场景中心的坐标——与设计快照同值，
+            #: 世界 JSON 实时对齐；认不出才落到"原点小圆环"缺省位。
+            center = resolve_scene_center_anchor(relation_text)
+            if center is not None:
+                positions[name] = [round(value, 4) for value in center]
+                continue
             reason = ("未声明 relation 也未给 position" if not relation_text
                       else f"relation={relation_text!r} 解析不出坐标")
             problems.append({"anchor": name, "reason": reason})
@@ -273,5 +398,7 @@ def solve_anchor_positions(
 
 __all__ = [
     "ANCHOR_RELATIONS", "DEFAULT_ANCHOR_DISTANCE", "AnchorRelation",
-    "parse_relation", "solve_anchor_positions",
+    "SCENE_CENTER_DIRECTION_WORDS", "SCENE_CENTER_DISTANCE_METERS",
+    "SCENE_CENTER_DISTANCE_WORDS", "SCENE_CENTER_VECTORS",
+    "parse_relation", "resolve_scene_center_anchor", "solve_anchor_positions",
 ]

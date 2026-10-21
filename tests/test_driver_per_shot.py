@@ -55,7 +55,8 @@ class PerShotBuilder:
         return {"characters": 2, "cameras": 0, "props": 0,
                 "crowd": 0, "prepared_at": "2026-10-11T00:00:00+00:00"}
 
-    def rebuild_shot(self, shot_id, *, plan=None, brief=None):
+    def rebuild_shot(self, shot_id, *, plan=None, brief=None,
+                     preserve_camera_edits=False):
         self.rebuilt.append({"shot_id": shot_id, "plan": plan})
         return {"shot_id": shot_id, "warnings": [], "protected": [],
                 "camera": f"BD_Cam_{shot_id}", "keyframes": 1,
@@ -162,6 +163,82 @@ def test_per_shot_path_reaches_done():
     assert [item["shot_id"] for item in builder.rebuilt] == ["shot_001",
                                                              "shot_002"]
     assert driver.state is DriverState.DONE
+
+
+def test_coarse_baseline_is_attached_before_prepare_scene():
+    """Approved coarse cameras must reach the builder before detail setup.
+
+    The coarse gate audits one frozen camera set; prepare/rebuild must receive
+    that same baseline, otherwise the detailed audit evaluates a second,
+    independently solved pose.  Attachment is an optional builder capability
+    and must happen before ``prepare_scene``.
+    """
+    baseline = {
+        "schema_version": "coarse-baseline/v1",
+        "state": "frozen",
+        "manifest": {"cameras": [{
+            "shot_id": "shot_001",
+            "position": [4.25, -1.75, 1.35],
+            "target": [-0.2, 0.15, 1.05],
+            "lens_mm": 85.0,
+            "resolved": True,
+        }]},
+    }
+
+    class BaselineBuilder(PerShotBuilder):
+        def __init__(self):
+            super().__init__()
+            self.events: list = []
+            self.baseline = None
+
+        def attach_coarse_baseline(self, payload):
+            self.events.append("attach")
+            self.baseline = payload
+            return 1
+
+        def prepare_scene(self, plan, brief=None, spec=None):
+            self.events.append("prepare")
+            return super().prepare_scene(plan, brief=brief, spec=spec)
+
+    builder = BaselineBuilder()
+    driver = _driver(
+        PerShotTransport(), FakeAuditor([]), builder,
+        coarse_gate=lambda plan, brief=None: {
+            "ready": True,
+            "gates": {"coarse": "pass", "baseline": "frozen"},
+            "baseline": baseline,
+        })
+
+    assert driver.run_to_completion() is DriverState.DONE
+    assert builder.events[:2] == ["attach", "prepare"]
+    assert builder.baseline is baseline
+
+
+def test_per_shot_iteration_preserves_agent_camera_edits():
+    """逐镜迭代 rebuild 必须传 ``preserve_camera_edits=True``。
+
+    final6 实测（2026-10-20，run f018ac273f35）：空间尺自动 reframe
+    35→25.2mm 后，下一轮 ``rebuild_shot`` 仍按计划 35mm 重摆相机，
+    构图修复在 20–43 徘徊上不了 80。保留 agent 相机编辑是收敛前提。
+    """
+
+    class RecordingBuilder(PerShotBuilder):
+        def __init__(self):
+            super().__init__()
+            self.flags: list = []
+
+        def rebuild_shot(self, shot_id, *, plan=None, brief=None,
+                         preserve_camera_edits=False):
+            self.flags.append(preserve_camera_edits)
+            return super().rebuild_shot(
+                shot_id, plan=plan, brief=brief,
+                preserve_camera_edits=preserve_camera_edits)
+
+    builder = RecordingBuilder()
+    driver = _driver(PerShotTransport(), FakeAuditor([]), builder)
+    assert driver.run_to_completion() is DriverState.DONE
+    assert len(builder.flags) == 2
+    assert all(builder.flags)
 
 
 def test_per_shot_without_auditor_still_builds_every_shot():
@@ -271,7 +348,8 @@ def test_rebuild_result_replaces_shot_entry_and_preserves_audit_keys():
             super().__init__()
             self._calls = 0
 
-        def rebuild_shot(self, shot_id, *, plan=None, brief=None):
+        def rebuild_shot(self, shot_id, *, plan=None, brief=None,
+                         preserve_camera_edits=False):
             base = super().rebuild_shot(shot_id, plan=plan, brief=brief)
             self._calls += 1
             if self._calls == 2:
@@ -315,7 +393,8 @@ def test_empty_shot_in_per_shot_path_rebuilds_and_passes():
     ], scene_heading="码头")
 
     class EmptyShotBuilder(PerShotBuilder):
-        def rebuild_shot(self, shot_id, *, plan=None, brief=None):
+        def rebuild_shot(self, shot_id, *, plan=None, brief=None,
+                         preserve_camera_edits=False):
             self.rebuilt.append({"shot_id": shot_id, "plan": plan})
             return {"shot_id": shot_id, "warnings": [], "protected": [],
                     "camera": f"BD_Cam_{shot_id}", "keyframes": 1,

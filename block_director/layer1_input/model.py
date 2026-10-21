@@ -163,6 +163,14 @@ class ParsedScript:
     #: v1.4 D-3：``{正式名: [别名, ...]}``——``莉莉安娜（贵妇）`` 里的括注。
     #: 角色管理（cast）与 ``shots.json`` 会把别名带上，避免"同一个人两个名字"。
     character_aliases: Dict[str, List[str]] = field(default_factory=dict)
+    #: iteration-fix T9：剧本里 ``【角色锚】`` 明确列出的出场角色。导演写进
+    #: 角色锚的角色即使没有台词（如伊恩只出镜不说话）也必须进角色表，否则
+    #: 模型的计划一旦带上他就会被 CAST_001 当"角色表外 id"拒掉。
+    cast_declarations: List[str] = field(default_factory=list)
+    #: R2-F5：剧本里 ``【场景锚】`` 块的原文（导演对环境的明确声明）。
+    #: 分镜表/动作/对白之外出现时也收集；内容不在此层猜测，原样保留，
+    #: 交给下游（brief / 粗排参考 JSON / 世界坐标求解）消费。
+    scene_anchor_texts: List[str] = field(default_factory=list)
 
     @property
     def declared_shots(self) -> List["ParsedShotDeclaration"]:
@@ -178,6 +186,9 @@ class ParsedScript:
     @property
     def character_names(self) -> List[str]:
         seen: List[str] = []
+        for name in self.cast_declarations:
+            if name and name not in seen:
+                seen.append(name)
         for scene in self.scenes:
             for name in scene.characters:
                 if name not in seen:
@@ -192,6 +203,8 @@ class ParsedScript:
         return {"title": self.title, "source_format": self.source_format,
                 "needs_llm_structure": self.needs_llm_structure,
                 "characters": self.character_names,
+                "cast_declarations": list(self.cast_declarations),
+                "scene_anchor_texts": list(self.scene_anchor_texts),
                 "warnings": list(self.warnings),
                 "declared_nodes": [node.to_dict()
                                    for node in self.declared_nodes],

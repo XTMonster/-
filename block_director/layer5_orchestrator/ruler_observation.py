@@ -25,6 +25,11 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 from ..contracts.audit import AuditError
 from ..contracts.enums import Severity as AuditSeverity
 from ..contracts.plan import Plan
+from ..contracts.quality import (
+    COMPOSITION_PASS_SCORE,
+    COMPOSITION_PASS_TEXT,
+    composition_decision,
+)
 
 
 SCHEMA_VERSION = "spatial-ruler-observation/v2"
@@ -83,14 +88,20 @@ def _load_registry() -> Dict[str, Any]:
     return dict(data.get("registry") or {})
 
 
-def _declared_map(parsed) -> Dict[int, Any]:
-    """``{declared_shot_number: ParsedShotDeclaration}``（按键序）。"""
-    out: Dict[int, Any] = {}
-    for shot in getattr(parsed, "declared_shots", []) or []:
-        number = int(getattr(shot, "shot_number", 0) or 0)
-        if number:
-            out[number] = shot
-    return out
+def _declared_by_plan_order(plan: Plan, parsed) -> Dict[str, Any]:
+    """按全片计划顺序把声明一一绑到计划镜头上。
+
+    局部镜号会在每个节点从 1 重新编号，不能把它当全片唯一键。驱动器已经把
+    声明按同一顺序钉进计划；这里沿用这个顺序事实，避免后一个节点覆盖前一个
+    节点的同号声明。局部镜号仍保留在 ``declared_shot_number`` 与声明对象里，
+    作为证据，而不是跨节点身份。
+    """
+    declarations = list(getattr(parsed, "declared_shots", []) or [])
+    return {
+        shot.shot_id: declarations[index]
+        for index, shot in enumerate(plan.shots)
+        if index < len(declarations)
+    }
 
 
 def _brief_names(brief) -> set:
@@ -326,7 +337,9 @@ def build_prescriptions(*, plan: Plan, parsed=None, brief=None,
                     "precondition_measurement_ids": [f"m_{shot_id}_{metric}"],
                     "postcondition_measurement_ids": [
                         f"m_{shot_id}_composition_score"],
-                    "postcondition": "全镜 visible_ratio > 0 且 composition_score > 80",
+                    "postcondition": (
+                        "全镜 visible_ratio > 0 且 composition_score > "
+                        f"{COMPOSITION_PASS_TEXT}"),
                     "applied": False, "applied_at": None,
                     "waived": False, "waive_reason": "",
                     "note": "相机类处方不自动执行：进入修复提示由模型走工具",
@@ -415,17 +428,23 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
                       ) -> Dict[str, Any]:
     """把运行产物折成 v2 观测文档（纯函数，确定性）。"""
     registry = _load_registry()
-    declared = _declared_map(parsed)
+    declared = _declared_by_plan_order(plan, parsed)
     audits = dict(shot_audits or {})
     build = dict(build_results or {})
-    pass_score = float(registry.get("composition", {}).get("pass_score", 80.0))
+    registry_pass_score = registry.get("composition", {}).get("pass_score")
+    if registry_pass_score is None:
+        raise ValueError("空间尺契约缺少 composition.pass_score")
+    if float(registry_pass_score) != COMPOSITION_PASS_SCORE:
+        raise ValueError(
+            "空间尺契约 composition.pass_score 与质量契约不一致："
+            f"{registry_pass_score!r} != {COMPOSITION_PASS_SCORE!r}")
+    pass_score = COMPOSITION_PASS_SCORE
     fps = int(fps or 24)
 
     shot_specs: List[Dict[str, Any]] = []
     camera_specs: List[Dict[str, Any]] = []
     for order, shot in enumerate(plan.shots, start=1):
-        decl = declared.get(int(getattr(shot, "declared_shot_number", 0)
-                                or order))
+        decl = declared.get(shot.shot_id)
         declared_s = (float(decl.declared_seconds)
                       if decl is not None and decl.declared_seconds is not None
                       else None)
@@ -478,8 +497,7 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
         "scene", total_s, declared_total, metric="total_duration"))
     measurement_ids.append("m_scene_total_duration")
     for shot in plan.shots:
-        decl = declared.get(int(getattr(shot, "declared_shot_number", 0)
-                                or 0))
+        decl = declared.get(shot.shot_id)
         declared_s = (float(decl.declared_seconds)
                       if decl is not None and decl.declared_seconds is not None
                       else None)
@@ -566,13 +584,14 @@ def build_observation(*, plan: Plan, parsed=None, brief=None,
             mid = f"m_{shot.shot_id}_composition_score"
             #: 用户 2026-10-18 裁决：构图分必须严格高于 80，
             #: score == pass_score 不算通过。
-            passed = float(score) > pass_score
+            quality = composition_decision(score)
+            passed = quality["status"] == "pass"
             verdicts.append(_verdict(
                 shot.shot_id, "COMPOSITION",
                 "pass" if passed else "repair",
                 "info" if passed else "error",
-                expected=pass_score, actual=round(float(score), 2),
-                threshold=pass_score, unit="score_0_100",
+                expected=quality["threshold"], actual=quality["score"],
+                threshold=quality["threshold"], unit="score_0_100",
                 evidence=[mid], provenance="blender_geometry",
                 message=(f"构图评分 {score:g}，"
                          + ("通过" if passed

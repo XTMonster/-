@@ -35,6 +35,8 @@ def _brief() -> SceneBrief:
 
 #: v1.6 新增的**可选**键；"旧字段逐字节不变"的比对要先把它们摘掉。
 NEW_BRIEF_KEYS = ("environment", "rhythm_arc")
+#: v1.8（T3）新增的镜头可选键；比对与降级时同样要摘掉。
+NEW_FRAMING_TARGET_KEYS = ("framing_target",)
 
 
 def _as_v15_file(payload: dict) -> dict:
@@ -45,6 +47,10 @@ def _as_v15_file(payload: dict) -> dict:
     if isinstance(brief, dict):
         for key in NEW_BRIEF_KEYS:
             brief.pop(key, None)
+    for scene in data.get("scenes") or []:
+        for shot in scene.get("shots") or []:
+            for key in NEW_FRAMING_TARGET_KEYS:
+                shot.pop(key, None)
     return data
 
 
@@ -54,18 +60,23 @@ def _strip_new(payload: dict) -> dict:
     if isinstance(brief, dict):
         for key in NEW_BRIEF_KEYS:
             brief.pop(key, None)
+    for scene in data.get("scenes") or []:
+        for shot in scene.get("shots") or []:
+            for key in NEW_FRAMING_TARGET_KEYS:
+                shot.pop(key, None)
     return data
 
 
 # --------------------------------------------------------------------------- #
 # 版本与兼容声明
 # --------------------------------------------------------------------------- #
-def test_sdl_version_is_1_7():
-    assert SDL_VERSION == "1.7"
+def test_sdl_version_is_1_8():
+    assert SDL_VERSION == "1.8"
 
 
 def test_known_versions_are_append_only():
-    for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7"):
+    for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6",
+                    "1.7", "1.8"):
         assert version in KNOWN_VERSIONS
     assert KNOWN_VERSIONS[-1] == SDL_VERSION
 
