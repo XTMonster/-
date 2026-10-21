@@ -42,6 +42,7 @@ from block_director.contracts.vlm_review import (  # noqa: E402
     frame_data_uri,
     frame_indices,
     parse_review_reply,
+    parse_review_reply_v2,
     review_shot,
     summarise_reviews,
 )
@@ -202,6 +203,66 @@ def test_parse_review_accepts_well_formed_replies(text, score):
 def test_parse_review_rejects_unusable_replies(text):
     with pytest.raises(VlmReviewError):
         parse_review_reply(_reply(text))
+
+
+def test_v2_issues_outside_the_allowed_sets_are_dropped_with_reasons():
+    """A structured issue is either valid as written or visibly dropped."""
+    transport = MockTransport([_reply(json.dumps({
+        "score": 3,
+        "reason": "主体压边",
+        "issues": [
+            {
+                "kind": "subject_cut_by_edge",
+                "subject": "char_001",
+                "frame": "12",
+                "suggested_tool": "reframe",
+            },
+            {
+                "kind": "invented_kind",
+                "subject": "char_001",
+                "frame": 12,
+                "suggested_tool": "reframe",
+            },
+            {
+                "kind": "occluded",
+                "subject": "char_999",
+                "frame": 12,
+                "suggested_tool": "move_camera",
+            },
+            {
+                "kind": "occluded",
+                "subject": "char_001",
+                "frame": True,
+                "suggested_tool": "move_camera",
+            },
+            {
+                "kind": "occluded",
+                "subject": "char_001",
+                "frame": 12,
+                "suggested_tool": "delete_scene",
+            },
+        ],
+    }, ensure_ascii=False))])
+    reply = transport.chat(None)
+
+    parsed = parse_review_reply_v2(
+        reply,
+        subjects=("char_001",),
+        tools=("reframe", "move_camera"),
+    )
+
+    assert parsed["issues"] == [{
+        "kind": "subject_cut_by_edge",
+        "subject": "char_001",
+        "frame": 12,
+        "suggested_tool": "reframe",
+    }]
+    assert [item["reason"] for item in parsed["dropped_issues"]] == [
+        "kind",
+        "subject",
+        "frame",
+        "suggested_tool",
+    ]
 
 
 # ------------------------------------------------------------------ 重试策略

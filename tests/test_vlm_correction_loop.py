@@ -22,6 +22,25 @@ def _edge_warning():
     )
 
 
+def test_geometry_only_warning_becomes_a_non_advisory_candidate():
+    candidates = build_correction_candidates(
+        [_edge_warning()],
+        [],
+    )
+
+    assert len(candidates) == 1
+    candidate = candidates[0]
+    assert candidate["candidate_id"].startswith("correction-")
+    assert candidate["kind"] == "subject_cut_by_edge"
+    assert candidate["subject"] == "char_001"
+    assert candidate["source"] == "geometry"
+    assert candidate["advisory"] is False
+    assert candidate["severity"] == "error"
+    assert candidate["suggested_tool"] == ""
+    assert "edge_clip_ratio=0.2" in candidate["evidence"]
+    assert "VLM:" not in candidate["evidence"]
+
+
 def test_each_merged_candidate_has_one_terminal_disposition():
     candidates = build_correction_candidates(
         [_edge_warning()],
