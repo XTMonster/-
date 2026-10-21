@@ -40,6 +40,7 @@ def concat_inputs(
     *,
     build_summary: Optional[Dict[str, object]] = None,
     concat_plan: Optional[Plan] = None,
+    shot_ids: Optional[Sequence[str]] = None,
 ) -> Tuple[List[str], List[int]]:
     """返回 (clips, clip_frames)：全片拼接的输入，按完整计划顺序。
 
@@ -48,6 +49,12 @@ def concat_inputs(
     """
     source = concat_plan if concat_plan is not None else plan
     ranges = shot_ranges(source, build_summary)
+    if shot_ids is not None:
+        selected = {str(shot_id) for shot_id in shot_ids if str(shot_id)}
+        ranges = [
+            row for row in ranges
+            if str(row.get("shot_id") or "") in selected
+        ]
     clips = [str(Path(export_dir) / f"blockout_{r['shot_id']}.mp4")
              for r in ranges]
     clip_frames = [int(r["end_frame"]) - int(r["start_frame"]) + 1

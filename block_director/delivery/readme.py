@@ -10,6 +10,7 @@ from .failures import (
     render_failures_markdown,
     render_pending_review_markdown,
 )
+from .package import concat_filename_for
 from ..layer5_orchestrator.rhythm_reading import rhythm_readings
 
 #: 张力 1–5 的 ASCII 弧线字形（由低到高）。
@@ -78,19 +79,90 @@ def render_readme(manifest: Dict[str, Any], *, out_dir: Path,
                   label_overlap_report: Optional[Dict[str, Any]] = None,
                   ruler_observation: bool = False,
                   failures: Optional[Sequence[Mapping[str, Any]]] = None,
-                  pending_review: Optional[Sequence[Mapping[str, Any]]] = None
+                  pending_review: Optional[Sequence[Mapping[str, Any]]] = None,
+                  delivery_quality: Optional[Mapping[str, Any]] = None,
                   ) -> str:
     """按真实 manifest 与已生成文件渲染交付说明，不读引擎状态。"""
     folder = Path(out_dir)
+    if delivery_quality is None:
+        concat_name = concat_filename_for("final")
+        concat_description = "是各镜按顺序接成的全片，适合一次性喂给视频模型。"
+    else:
+        canonical_class = str(
+            delivery_quality.get("delivery_class") or "blocked")
+        concat_name = concat_filename_for(canonical_class)
+        concat_description = {
+            "final": "是各镜按顺序接成的全片，适合一次性喂给视频模型。",
+            "partial": "只包含通过镜头，适合审查已通过部分的参考节奏。",
+            "diagnostic": "是诊断用途的最佳努力合片，不是 final。",
+        }.get(canonical_class, "")
+    delivered_manifest = manifest.get("delivery")
+    delivered_manifest = (
+        delivered_manifest
+        if isinstance(delivered_manifest, Mapping) else None
+    )
+    if delivery_quality is not None:
+        selected_shots = [
+            str(item)
+            for item in delivery_quality.get("selected_shots") or []
+            if str(item)
+        ]
+        shot_count = len(selected_shots)
+        total_frames = (
+            int(delivered_manifest.get("selected_frames") or 0)
+            if delivered_manifest is not None
+            else 0
+        )
+    else:
+        shot_count = len(manifest["shots"])
+        total_frames = int(manifest["total_frames"])
     width, height = manifest["resolution"]
     lines = [
         f"# {manifest['project']} — 白模预演交付包",
         "",
         f"- 分辨率：{width}×{height} @ {manifest['fps']}fps",
-        f"- 镜头数：{len(manifest['shots'])}，总时长 "
-        f"{round(manifest['total_frames'] / manifest['fps'], 2)} 秒",
+        f"- 镜头数：{shot_count}，总时长 "
+        f"{round(total_frames / manifest['fps'], 2)} 秒",
         f"- 生成时间：{manifest['generated_at']}",
         "",
+    ]
+    if delivery_quality is not None:
+        delivery_class = str(
+            delivery_quality.get("delivery_class") or "blocked")
+        lines.extend([
+            f"- 交付身份：**{delivery_class}**",
+        ])
+        omitted = [
+            str(item)
+            for item in delivery_quality.get("failed_shots") or []
+            if str(item) not in {
+                str(value)
+                for value in delivery_quality.get("selected_shots") or []
+            }
+        ]
+        if delivery_class == "partial" and omitted:
+            selected = [
+                str(item)
+                for item in delivery_quality.get("selected_shots") or []
+                if str(item)
+            ]
+            lines.append(
+                "- 本包只包含：" + "、".join(selected))
+            lines.append(
+                "- 已从 PARTIAL 成片中省略失败镜头："
+                + "、".join(omitted))
+            lines.append(
+                "- " + "、".join(omitted)
+                + " 没有参考视频、首帧、遮罩或深度序列")
+        if delivery_class == "diagnostic":
+            lines.append(
+                "- 本包是 DIAGNOSTIC 最佳努力版本，不是 final，"
+                "不得作为已批准参考片")
+        if delivery_class == "blocked":
+            lines.append(
+                "- 本包因质量或证据不完整而 BLOCKED，不得用于生产")
+        lines.append("")
+    lines.extend([
         "## 怎么用",
         "",
         "1. 取 `blockout_<shot>.mp4` 作为**参考视频**（结构 / 机位 / 节奏）；",
@@ -101,14 +173,13 @@ def render_readme(manifest: Dict[str, Any], *, out_dir: Path,
         "`first_frames/` 与 depth 序列**刻意不带标签**，"
         "避免标签被下游视频模型当成画面内容学走。",
         "",
-    ]
+    ])
     if (folder / "camera_traj.json").exists():
         lines.insert(-1, "4. `camera_traj.json` 提供逐帧相机内外参，"
                          "可喂给相机可控的视频生成模型。")
         lines.append("")
-    if (folder / "blockout_full.mp4").exists():
-        lines.insert(-1, "5. `blockout_full.mp4` 是各镜按顺序接成的全片，"
-                         "适合一次性喂给视频模型。")
+    if concat_name and (folder / concat_name).exists():
+        lines.insert(-1, f"5. `{concat_name}` {concat_description}")
         lines.append("")
     #: v1.6 D3（FR-B5）：节奏段。读数与 shots.json 的 rhythm 字段同源，
     #: 保证 README 与交付清单字段对拍一致。

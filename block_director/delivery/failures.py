@@ -222,3 +222,80 @@ def pending_review_shot_ids(
         if shot_id:
             pending.append(shot_id)
     return pending
+
+
+def align_failures_payload(
+    failures: Optional[Mapping[str, Any]],
+    delivery_quality: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Project failure details onto the canonical delivery disposition sets."""
+    existing_failures = {
+        str(item.get("shot_id") or ""): dict(item)
+        for item in (failures or {}).get("failures") or []
+        if isinstance(item, Mapping) and str(item.get("shot_id") or "")
+    }
+    existing_pending = {
+        str(item.get("shot_id") or ""): dict(item)
+        for item in (failures or {}).get("pending_review") or []
+        if isinstance(item, Mapping) and str(item.get("shot_id") or "")
+    }
+    explanations = dict(
+        delivery_quality.get("adoption_explanations") or {})
+
+    failed: List[Dict[str, Any]] = []
+    for shot_id in (
+            str(item) for item in delivery_quality.get("failed_shots") or []
+            if str(item)):
+        item = existing_failures.get(shot_id, {"shot_id": shot_id})
+        item.setdefault("shot_id", shot_id)
+        item.setdefault("best_score", 0.0)
+        item.setdefault("no_gain_rounds", 0)
+        item.setdefault(
+            "reason",
+            explanations.get(shot_id)
+            or "delivery evidence does not satisfy the passing contract",
+        )
+        failed.append(item)
+
+    pending: List[Dict[str, Any]] = []
+    for shot_id in (
+            str(item)
+            for item in delivery_quality.get("pending_review_shots") or []
+            if str(item)):
+        item = existing_pending.get(shot_id, {"shot_id": shot_id})
+        item.setdefault("shot_id", shot_id)
+        item.setdefault("status", "pending_review")
+        item.setdefault("best_score", 0.0)
+        item.setdefault(
+            "reason",
+            "pending review cannot be represented as an approved shot",
+        )
+        pending.append(item)
+
+    payload: Dict[str, Any] = {
+        "schema_version": str(
+            (failures or {}).get("schema_version") or FAILURES_SCHEMA),
+        "delivery_class": str(
+            delivery_quality.get("delivery_class") or "blocked"),
+        "selected_shots": [
+            str(item) for item in delivery_quality.get("selected_shots") or []
+            if str(item)
+        ],
+        "passed_shots": [
+            str(item) for item in delivery_quality.get("passed_shots") or []
+            if str(item)
+        ],
+        "failed_shots": [
+            str(item) for item in delivery_quality.get("failed_shots") or []
+            if str(item)
+        ],
+        "pending_review_shots": [
+            str(item)
+            for item in delivery_quality.get("pending_review_shots") or []
+            if str(item)
+        ],
+        "failures": failed,
+    }
+    if pending:
+        payload["pending_review"] = pending
+    return payload

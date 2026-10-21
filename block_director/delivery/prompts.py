@@ -118,6 +118,8 @@ def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
                         failures: Optional[Sequence[Mapping[str, Any]]] = None,
                         pending_review: Optional[
                             Sequence[Mapping[str, Any]]] = None,
+                        delivery_quality: Optional[
+                            Mapping[str, Any]] = None,
                         ) -> str:
     """生成 prompts.md 全文。
 
@@ -140,6 +142,29 @@ def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
         "下面的 Prompt 作为提示词，投给视频生成模型。",
         "",
     ]
+    delivery_class = ""
+    selected_ids: Optional[set[str]] = None
+    if delivery_quality is not None:
+        delivery_class = str(
+            delivery_quality.get("delivery_class") or "blocked")
+        selected_ids = {
+            str(item)
+            for item in delivery_quality.get("selected_shots") or []
+        }
+        lines.insert(
+            4,
+            f"- 交付身份：**{delivery_class}**",
+        )
+        if delivery_class == "diagnostic":
+            lines.insert(
+                5,
+                "- 本表对应 DIAGNOSTIC 最佳努力包，未形成 final 批准。",
+            )
+        elif delivery_class == "blocked":
+            lines.insert(
+                5,
+                "- 本表对应 BLOCKED 包，仅用于审查，不得用于生产。",
+            )
     if registry is not None and registry.elements:
         lines += [render_element_table(registry), ""]
 
@@ -170,14 +195,30 @@ def render_prompt_sheet(plan: Plan, *, style: str = DEFAULT_STYLE,
         movements = movement_labels(shot)
         if movements:
             lines.append(f"**运镜**：{movements}")
-        if shot.shot_id in failed_by_id:
+        omitted = (
+            selected_ids is not None
+            and shot.shot_id not in selected_ids
+        )
+        if omitted:
+            lines.append(
+                "**审核状态**：未交付（"
+                f"{delivery_class.upper()} 交付包未包含本镜）")
+        elif shot.shot_id in failed_by_id:
             lines.append("**审核状态**：未通过（尽力版本）")
         elif shot.shot_id in pending_by_id:
             status = str(
                 pending_by_id[shot.shot_id].get("status") or "unknown")
             lines.append(f"**审核状态**：待复核（{status}）")
-        lines.append(f"**参考视频**：export/blockout_{shot.shot_id}.mp4")
-        lines.append(f"**首帧**：export/first_frames/{shot.shot_id}.png")
+        if omitted:
+            lines.append(
+                "**参考视频**：未包含在本次 "
+                f"{delivery_class.upper()} 交付包")
+            lines.append("**首帧**：未包含在本次交付包")
+        else:
+            lines.append(
+                f"**参考视频**：export/blockout_{shot.shot_id}.mp4")
+            lines.append(
+                f"**首帧**：export/first_frames/{shot.shot_id}.png")
         lines.append("")
         prompt = shot.prompt.strip() or compose_prompt(
             shot.intent, str(shot.shot_type), style)

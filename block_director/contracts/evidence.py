@@ -8,6 +8,7 @@ can be replayed without an LLM.
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import math
 import os
@@ -21,6 +22,7 @@ from .audit import canonical_fingerprint
 
 EVIDENCE_SCHEMA_VERSION = "shot-evidence/v3"
 EVIDENCE_STORE_SCHEMA_VERSION = "evidence-store/v3"
+EVIDENCE_STORE_COMPACT_SCHEMA_VERSION = "evidence-store/shared-v1"
 _FRAME_PHASES = ("first", "middle", "last")
 _SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 _REQUIRED_BASIS_FINGERPRINTS = (
@@ -44,6 +46,175 @@ def _mapping(value: Any, field_name: str) -> Dict[str, Any]:
     if not isinstance(value, Mapping):
         raise EvidenceError(f"{field_name} must be a mapping")
     return copy.deepcopy(dict(value))
+
+
+_COMPACT_SHARED_FIELDS = (
+    "reference",
+    "manifest",
+    "world_state",
+)
+
+
+def _shared_reference(
+    shared: Dict[str, Dict[str, Any]],
+    field_name: str,
+    value: Any,
+) -> str:
+    """Intern one repeated payload under a content fingerprint."""
+    reference = canonical_fingerprint(value)
+    bucket = shared.setdefault(field_name, {})
+    existing = bucket.get(reference)
+    if existing is None:
+        bucket[reference] = copy.deepcopy(value)
+    elif existing != value:
+        raise EvidenceError(
+            f"compact evidence shared {field_name} fingerprint collision")
+    return reference
+
+
+def compact_evidence_store_payload(
+    payload: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Return a checkpoint wire with repeated scene payloads interned.
+
+    The public :meth:`EvidenceStore.to_dict` remains the complete logical
+    representation.  Checkpoints use this lossless wire so a long shot list
+    does not write the same plan/reference/manifest/world payload once per
+    shot.  Every record keeps its own digest and non-shared evidence.
+    """
+    if not isinstance(payload, Mapping):
+        raise EvidenceError("evidence store must be an object")
+    if payload.get("schema_version") != EVIDENCE_STORE_SCHEMA_VERSION:
+        raise EvidenceError("unsupported evidence store schema")
+    if "compact" in payload:
+        # Already encoded.  Keep the nested store as the single authority and
+        # avoid rebuilding every ShotEvidence on each checkpoint write.
+        return dict(payload)
+    histories = payload.get("histories")
+    if not isinstance(histories, Mapping):
+        raise EvidenceError("histories must be an object")
+
+    shared: Dict[str, Dict[str, Any]] = {
+        "plan_scene": {},
+        **{name: {} for name in _COMPACT_SHARED_FIELDS},
+    }
+    encoded_histories: Dict[str, list[Dict[str, Any]]] = {}
+    for shot_id, items in sorted(histories.items()):
+        if not isinstance(items, list):
+            raise EvidenceError(f"history {shot_id} must be a list")
+        encoded_items: list[Dict[str, Any]] = []
+        for item in items:
+            if not isinstance(item, Mapping):
+                raise EvidenceError(
+                    f"history {shot_id} contains a non-object record")
+            encoded = dict(item)
+            plan = encoded.get("plan")
+            if not isinstance(plan, Mapping):
+                raise EvidenceError(
+                    f"history {shot_id} contains a record without plan")
+            plan_copy = dict(plan)
+            if "scene" in plan_copy:
+                scene = plan_copy.pop("scene")
+                encoded["plan_scene_ref"] = _shared_reference(
+                    shared, "plan_scene", scene)
+            encoded["plan"] = plan_copy
+            for field_name in _COMPACT_SHARED_FIELDS:
+                if field_name not in encoded:
+                    raise EvidenceError(
+                        f"history {shot_id} record is missing {field_name}")
+                encoded[f"{field_name}_ref"] = _shared_reference(
+                    shared, field_name, encoded.pop(field_name))
+            encoded_items.append(encoded)
+        encoded_histories[str(shot_id)] = encoded_items
+
+    return {
+        "schema_version": EVIDENCE_STORE_SCHEMA_VERSION,
+        "run_id": str(payload.get("run_id") or ""),
+        "scene_id": str(payload.get("scene_id") or ""),
+        "compact": {
+            "schema_version": EVIDENCE_STORE_COMPACT_SCHEMA_VERSION,
+            "shared": shared,
+        },
+        "histories": encoded_histories,
+        "best": copy.deepcopy(dict(payload.get("best") or {})),
+        "adopted": copy.deepcopy(dict(payload.get("adopted") or {})),
+    }
+
+
+def _expand_compact_evidence_store(
+    payload: Mapping[str, Any],
+) -> Dict[str, Any]:
+    compact = payload.get("compact")
+    if not isinstance(compact, Mapping):
+        raise EvidenceError("compact evidence store must contain an object")
+    if compact.get("schema_version") != EVIDENCE_STORE_COMPACT_SCHEMA_VERSION:
+        raise EvidenceError("unsupported compact evidence store schema")
+    shared = compact.get("shared")
+    if not isinstance(shared, Mapping):
+        raise EvidenceError("compact evidence shared payloads must be an object")
+    normalized_shared: Dict[str, Mapping[str, Any]] = {}
+    for name in ("plan_scene", *_COMPACT_SHARED_FIELDS):
+        bucket = shared.get(name, {})
+        if not isinstance(bucket, Mapping):
+            raise EvidenceError(
+                f"compact evidence shared {name} must be an object")
+        normalized_shared[name] = bucket
+
+    def _resolve(name: str, reference: Any) -> Any:
+        ref = str(reference or "")
+        if not ref:
+            raise EvidenceError(
+                f"compact evidence shared {name} reference is empty")
+        bucket = normalized_shared[name]
+        if ref not in bucket:
+            raise EvidenceError(
+                f"compact evidence shared {name} reference is missing")
+        return copy.deepcopy(bucket[ref])
+
+    histories = payload.get("histories")
+    if not isinstance(histories, Mapping):
+        raise EvidenceError("histories must be an object")
+    expanded_histories: Dict[str, list[Dict[str, Any]]] = {}
+    for shot_id, items in sorted(histories.items()):
+        if not isinstance(items, list):
+            raise EvidenceError(f"history {shot_id} must be a list")
+        expanded_items: list[Dict[str, Any]] = []
+        for item in items:
+            if not isinstance(item, Mapping):
+                raise EvidenceError(
+                    f"history {shot_id} contains a non-object record")
+            expanded = dict(item)
+            plan_scene_ref = expanded.pop("plan_scene_ref", None)
+            plan = expanded.get("plan")
+            if plan_scene_ref is not None:
+                if not isinstance(plan, Mapping):
+                    raise EvidenceError(
+                        f"history {shot_id} has a plan_scene_ref without plan")
+                plan = dict(plan)
+                plan["scene"] = _resolve("plan_scene", plan_scene_ref)
+                expanded["plan"] = plan
+            for field_name in _COMPACT_SHARED_FIELDS:
+                reference_key = f"{field_name}_ref"
+                if reference_key not in expanded:
+                    raise EvidenceError(
+                        f"history {shot_id} is missing {reference_key}")
+                if field_name in expanded:
+                    raise EvidenceError(
+                        f"history {shot_id} duplicates {field_name} and "
+                        f"{reference_key}")
+                expanded[field_name] = _resolve(
+                    field_name, expanded.pop(reference_key))
+            expanded_items.append(expanded)
+        expanded_histories[str(shot_id)] = expanded_items
+
+    return {
+        "schema_version": EVIDENCE_STORE_SCHEMA_VERSION,
+        "run_id": str(payload.get("run_id") or ""),
+        "scene_id": str(payload.get("scene_id") or ""),
+        "histories": expanded_histories,
+        "best": copy.deepcopy(dict(payload.get("best") or {})),
+        "adopted": copy.deepcopy(dict(payload.get("adopted") or {})),
+    }
 
 
 @dataclass(frozen=True)
@@ -203,8 +374,19 @@ class ShotEvidence:
                    for key, value in current_basis.items())
 
     def is_passing(self) -> bool:
-        """Whether this version carries an explicit passing shot gate."""
-        return self.gates.get("shot_passed") is True
+        """Whether every required hard gate and the shot gate passed."""
+        semantic_required = (
+            self.semantic_review.get("required") is True
+        )
+        semantic_passed = (
+            not semantic_required
+            or self.semantic_review.get("reviewed") is True
+        )
+        return (
+            self.gates.get("shot_passed") is True
+            and self.hard_gates.get("status") == "pass"
+            and semantic_passed
+        )
 
     def absence_reason(self, section: str) -> str:
         """Return the recorded reason that a section is genuinely absent."""
@@ -411,7 +593,53 @@ class EvidenceStore:
         return errors
 
     def fingerprint(self) -> str:
-        return canonical_fingerprint(self.to_dict())
+        """Hash the public store payload one shot at a time.
+
+        ``canonical_fingerprint(self.to_dict())`` is the identity contract, but
+        the intermediate full store repeats every scene payload and can require
+        hundreds of megabytes.  This produces the byte-identical canonical JSON
+        stream while materialising at most one shot's history at a time.
+        """
+        digest = hashlib.sha256()
+
+        def emit(fragment: str) -> None:
+            digest.update(fragment.encode("utf-8"))
+
+        def encoded(value: Any) -> str:
+            return json.dumps(
+                value,
+                sort_keys=True,
+                ensure_ascii=False,
+                default=str,
+            )
+
+        # ``sort_keys=True`` orders the top-level keys alphabetically.  Emit
+        # each section in that exact order to preserve the established digest.
+        emit('{"adopted": ')
+        emit(encoded(dict(sorted(self._adopted.items()))))
+        emit(', "best": ')
+        emit(encoded(dict(sorted(self._best.items()))))
+        emit(', "histories": {')
+        for shot_index, (shot_id, history) in enumerate(
+                sorted(self._histories.items())):
+            if shot_index:
+                emit(", ")
+            emit(encoded(shot_id))
+            emit(": [")
+            for record_index, item in enumerate(history):
+                if record_index:
+                    emit(", ")
+                emit(encoded(item.to_dict()))
+            emit("]")
+        emit("}")
+        emit(', "run_id": ')
+        emit(encoded(self.run_id))
+        emit(', "scene_id": ')
+        emit(encoded(self.scene_id))
+        emit(', "schema_version": ')
+        emit(encoded(EVIDENCE_STORE_SCHEMA_VERSION))
+        emit("}")
+        return digest.hexdigest()
 
     def summary(self) -> Dict[str, Any]:
         return {
@@ -443,12 +671,35 @@ class EvidenceStore:
             "adopted": dict(sorted(self._adopted.items())),
         }
 
+    def to_checkpoint_dict(self) -> Dict[str, Any]:
+        """Return the compact checkpoint wire without changing public state."""
+        # Build from the immutable records' non-copying payload view.  Calling
+        # ``to_dict()`` here deep-copies every full scene for every shot before
+        # the compressor can deduplicate it, which recreates the long-run peak
+        # this wire is meant to remove.
+        return compact_evidence_store_payload({
+            "schema_version": EVIDENCE_STORE_SCHEMA_VERSION,
+            "run_id": self.run_id,
+            "scene_id": self.scene_id,
+            "histories": {
+                shot_id: [
+                    item._payload(include_digest=True)
+                    for item in history
+                ]
+                for shot_id, history in sorted(self._histories.items())
+            },
+            "best": dict(sorted(self._best.items())),
+            "adopted": dict(sorted(self._adopted.items())),
+        })
+
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "EvidenceStore":
         if not isinstance(data, Mapping):
             raise EvidenceError("evidence store must be an object")
         if data.get("schema_version") != EVIDENCE_STORE_SCHEMA_VERSION:
             raise EvidenceError("unsupported evidence store schema")
+        if "compact" in data:
+            data = _expand_compact_evidence_store(data)
         store = cls(run_id=str(data.get("run_id") or ""),
                     scene_id=str(data.get("scene_id") or ""))
         histories = data.get("histories")
@@ -474,7 +725,7 @@ class EvidenceStore:
         target.parent.mkdir(parents=True, exist_ok=True)
         try:
             serialized = json.dumps(
-                self.to_dict(),
+                self.to_checkpoint_dict(),
                 ensure_ascii=False,
                 indent=2,
                 allow_nan=False,
@@ -689,12 +940,14 @@ def evidence_status_text(status: Mapping[str, Any] | None) -> str:
 
 __all__ = [
     "EVIDENCE_SCHEMA_VERSION",
+    "EVIDENCE_STORE_COMPACT_SCHEMA_VERSION",
     "EVIDENCE_STORE_SCHEMA_VERSION",
     "EvidenceError",
     "EvidenceStore",
     "EvidenceStoreView",
     "ShotEvidence",
     "StaleEvidenceStore",
+    "compact_evidence_store_payload",
     "evidence_status_text",
     "inspect_evidence_store",
     "inspect_evidence_store_payload",

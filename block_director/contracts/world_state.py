@@ -39,6 +39,18 @@ E_WORLD_STATE_DIVERGED = "E_WORLD_STATE_DIVERGED"
 #: 世界坐标容差（米 / mm；与 spec R11 的 1e-4 一字不动）。
 WORLD_STATE_TOLERANCE = 1e-4
 
+#: Physical state a rebuilt Blockout scene must reproduce.  Render staging is
+#: an observation-only overlay produced by preview rendering; it is neither
+#: stored in the rebuilt runtime world nor usable as proof of physical state.
+PHYSICAL_WORLD_STATE_KEYS = (
+    "schema_version",
+    "characters",
+    "cameras",
+    "props",
+    "anchors",
+    "shot_states",
+)
+
 
 def normalize_world_state(value: Any) -> Any:
     """Return the semantic JSON form used for exact world-state identity.
@@ -63,6 +75,22 @@ def normalize_world_state(value: Any) -> Any:
 def world_state_fingerprint(world_state: Any) -> str:
     """Hash a world state after signed-zero normalisation."""
     return canonical_fingerprint(normalize_world_state(world_state))
+
+
+def physical_world_state_projection(
+    world_state: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Project only state that a rebuilt Blender scene can reproduce."""
+    return {
+        key: normalize_world_state(world_state[key])
+        for key in PHYSICAL_WORLD_STATE_KEYS
+        if key in world_state
+    }
+
+
+def physical_world_state_fingerprint(world_state: Mapping[str, Any]) -> str:
+    """Fingerprint the restorable physical projection of a world state."""
+    return canonical_fingerprint(physical_world_state_projection(world_state))
 
 
 def world_state_target_path(audit_dir) -> Optional[Path]:

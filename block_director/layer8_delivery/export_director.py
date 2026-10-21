@@ -10,14 +10,12 @@ from __future__ import annotations
 import json
 import os
 import time
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import bpy
 
 from ..cinema.camera_narration import narrate
-from ..cinema.schedule import shot_ranges
 from ..contracts.elements import ElementRegistry, build_registry
 from ..contracts.enums import ErrorCode, resolution_for
 from ..contracts.errors import user_message
@@ -25,17 +23,23 @@ from ..contracts.plan import FPS, Plan, unknown_cast_ids
 from ..delivery.depth import depth_range_note
 from ..delivery.concat_inputs import concat_inputs
 from ..delivery.failures import (
+    align_failures_payload,
     delivered_shot_ids,
-    passed_shot_ids,
-    pending_review_shot_ids,
 )
 from ..delivery.manifest import build_manifest
 from ..delivery.mask_check import empty_mask_warning
+from ..delivery.package import (
+    clear_stale_concat_outputs,
+    clear_stale_shot_outputs,
+    delivery_artifacts_match,
+    resolve_delivery_package,
+)
 from ..delivery.prompts import (
     DEFAULT_STYLE,
     render_prompt_sheet,
     unknown_prompt_names,
 )
+from ..delivery.report import DeliveryReport
 from ..delivery.readme import render_readme
 from ..layer3_engine.collection_router import (
     audit_renderable_objects,
@@ -56,51 +60,6 @@ from .reference_cards import render_reference_cards
 from .renderer import apply_delivery_settings, render_first_frame, render_shot_video
 
 log = get_logger("delivery")
-
-
-@dataclass
-class DeliveryReport:
-    out_dir: str = ""
-    aborted: bool = False
-    reason: str = ""
-    files: List[str] = field(default_factory=list)
-    shots: List[Dict[str, Any]] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
-    total_frames: int = 0
-    duration_s: float = 0.0
-    audit_leaks: List[str] = field(default_factory=list)
-    depth_shots: List[Dict[str, Any]] = field(default_factory=list)
-    mask_shots: List[Dict[str, Any]] = field(default_factory=list)
-    full_video: str = ""
-    total_frames_concat: int = 0
-    #: 声明要产出却没落盘的文件（视频 / 首帧）。v1.2 没有这个字段，
-    #: 于是"六段视频一个都没生成"也会因为 shots.json 等元数据文件写成功
-    #: 而报 ok=True——调用方据此判定成功，用户拿到的却是一个空交付包。
-    missing_clips: List[str] = field(default_factory=list)
-
-    @property
-    def ok(self) -> bool:
-        if self.aborted or not self.files:
-            return False
-        return not self.missing_clips
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "ok": self.ok, "aborted": self.aborted, "reason": self.reason,
-            "out_dir": self.out_dir, "files": list(self.files),
-            "shots": list(self.shots), "warnings": list(self.warnings),
-            "total_frames": self.total_frames,
-            "duration_s": round(self.duration_s, 2),
-            "audit_leaks": list(self.audit_leaks),
-            "depth_shots": list(self.depth_shots),
-            "mask_shots": list(self.mask_shots),
-            "full_video": self.full_video,
-            "total_frames_concat": self.total_frames_concat,
-            "missing_clips": list(self.missing_clips),
-            "delivered_shots": delivered_shot_ids(self.shots),
-            "passed_shots": passed_shot_ids(self.shots),
-            "pending_review_shots": pending_review_shot_ids(self.shots),
-        }
 
 
 def _shot_ranges(plan: Plan,
@@ -128,14 +87,16 @@ def _shot_ranges(plan: Plan,
 def _readme(manifest: Dict[str, Any], report: DeliveryReport,
             label_overlap_report: Optional[Dict[str, Any]] = None,
             ruler_observation: bool = False,
-            failures: Optional[Dict[str, Any]] = None) -> str:
+            failures: Optional[Dict[str, Any]] = None,
+            delivery_quality: Optional[Dict[str, Any]] = None) -> str:
     return render_readme(manifest, out_dir=Path(report.out_dir),
                          warnings=report.warnings,
                          label_overlap_report=label_overlap_report,
                          ruler_observation=ruler_observation,
                          failures=(failures or {}).get("failures"),
                          pending_review=(failures or {}).get(
-                             "pending_review"))
+                             "pending_review"),
+                         delivery_quality=delivery_quality)
 
 
 def _ruler_manifest_summary(ruler_evidence, ruler_shot_measurements):
@@ -218,6 +179,7 @@ def export_project(plan: Plan, *,
                    spatial_observation: Optional[Dict[str, Any]] = None,
                    spatial_diff: Optional[Dict[str, Any]] = None,
                    failures: Optional[Dict[str, Any]] = None,
+                   delivery_quality: Optional[Dict[str, Any]] = None,
                    concat_plan: Optional[Plan] = None,
                    ) -> DeliveryReport:
     """导出完整交付包。画面审计不通过则中止。"""
@@ -229,16 +191,54 @@ def export_project(plan: Plan, *,
     out_dir = Path(os.path.abspath(str(out_dir)))
     export_dir = out_dir / "export"
     frames_dir = export_dir / "first_frames"
-    frames_dir.mkdir(parents=True, exist_ok=True)
 
-    report = DeliveryReport(out_dir=str(export_dir))
+    plan_shot_ids = [str(shot.shot_id) for shot in plan.shots]
+    quality_payload = (
+        dict(delivery_quality) if delivery_quality is not None else None)
+    package = resolve_delivery_package(quality_payload, plan_shot_ids)
+    clear_stale_concat_outputs(export_dir)
+    report = DeliveryReport(
+        out_dir=str(export_dir),
+        delivery_class=package.delivery_class,
+        delivery_quality=dict(quality_payload or {}),
+    )
+    if package.blocked:
+        blocked_quality = dict(quality_payload or {})
+        blocked_quality.update({
+            "schema_version": str(
+                blocked_quality.get("schema_version")
+                or "quality-contract/v1"),
+            "component": "delivery",
+            "delivery_class": "blocked",
+            "reasons": list(dict.fromkeys(
+                list(blocked_quality.get("reasons") or [])
+                + list(package.reasons)
+                + ["delivery_package_invalid"]
+            )),
+            "selected_shots": list(package.selected_shots),
+            "sequence_review_passed": False,
+        })
+        report.delivery_class = "blocked"
+        report.delivery_quality = blocked_quality
+        report.aborted = True
+        details = "、".join(package.reasons) or "blocked"
+        report.reason = f"导出中止：交付质量身份为 blocked（{details}）"
+        log.error(report.reason)
+        return report
+
+    clear_stale_shot_outputs(export_dir, plan_shot_ids)
+    frames_dir.mkdir(parents=True, exist_ok=True)
+    export_failures = (
+        align_failures_payload(failures, quality_payload)
+        if quality_payload is not None else failures
+    )
     #: 缺陷 D / T8（D3）：fail 镜照常产出最佳版本，渲染后标 ``failed``；
     #: shots.json / prompts.md / README 与失败清单保留真实身份，不伪装通过。
     failure_ids = {str(item.get("shot_id"))
-                   for item in (failures or {}).get("failures") or []}
+                   for item in (export_failures or {}).get("failures") or []}
     pending_review_ids = {
         str(item.get("shot_id"))
-        for item in (failures or {}).get("pending_review") or []
+        for item in (export_failures or {}).get("pending_review") or []
     }
     if pending_review_ids:
         report.warnings.append(
@@ -294,28 +294,21 @@ def export_project(plan: Plan, *,
     #: ——未过结构校验即中止导出，不产脏交付包。缺省全部 None ⇒ 现有交付
     #: 逐字节不变（零形状差）。
     spatial_artifacts = (
-        (spatial_design, "spatial_design_snapshot.json", "DESIGN_SCHEMA"),
+        (spatial_design, "spatial_design_snapshot.json", "design"),
         (spatial_observation, "spatial_observation_snapshot.json",
-         "OBSERVATION_SCHEMA"),
-        (spatial_diff, "spatial_diff_report.json", "DIFF_SCHEMA"),
+         "observation"),
+        (spatial_diff, "spatial_diff_report.json", "diff"),
     )
     spatial_written: List[Tuple[str, Dict[str, Any]]] = []
     if any(item[0] is not None for item in spatial_artifacts):
         from ..contracts.spatial_snapshot import (
-            DESIGN_SCHEMA,
-            DIFF_SCHEMA,
-            OBSERVATION_SCHEMA,
-            validate_spatial_snapshot,
+            validate_spatial_artifact,
         )
 
-        schema_by_name = {"DESIGN_SCHEMA": DESIGN_SCHEMA,
-                          "OBSERVATION_SCHEMA": OBSERVATION_SCHEMA,
-                          "DIFF_SCHEMA": DIFF_SCHEMA}
-        for snapshot, filename, schema_name in spatial_artifacts:
+        for snapshot, filename, artifact in spatial_artifacts:
             if snapshot is None:
                 continue
-            problems = validate_spatial_snapshot(
-                snapshot, schema_by_name[schema_name])
+            problems = validate_spatial_artifact(snapshot, artifact)
             if problems:
                 report.aborted = True
                 report.reason = (f"导出中止：{filename} 未通过结构校验："
@@ -333,9 +326,11 @@ def export_project(plan: Plan, *,
     prompt_text = render_prompt_sheet(plan, style=style,
                                       resolution=(width, height),
                                       project=project, registry=registry,
-                                      failures=(failures or {}).get("failures"),
-                                      pending_review=(failures or {}).get(
-                                          "pending_review"))
+                                      failures=(export_failures or {}).get(
+                                          "failures"),
+                                      pending_review=(export_failures or {}).get(
+                                          "pending_review"),
+                                      delivery_quality=quality_payload)
     unknown = unknown_prompt_names(prompt_text, registry)
     if unknown:
         report.aborted = True
@@ -353,6 +348,12 @@ def export_project(plan: Plan, *,
         report.warnings.extend(apply_delivery_settings(scene, config))
 
         ranges = _shot_ranges(plan, build_summary)
+        selected_ids = set(package.selected_shots)
+        if quality_payload is not None:
+            ranges = [
+                shot for shot in ranges
+                if str(shot.get("shot_id") or "") in selected_ids
+            ]
         original_range = (scene.frame_start, scene.frame_end)
         context = get_context()
 
@@ -484,13 +485,55 @@ def export_project(plan: Plan, *,
             log.info("已导出镜头 %s（%d-%d）", shot_id,
                      shot["start_frame"], shot["end_frame"])
 
+        if package.requires_artifacts:
+            delivered = delivered_shot_ids(report.shots)
+            if not delivery_artifacts_match(package, delivered):
+                blocked_quality = dict(quality_payload or {})
+                blocked_quality.update({
+                    "schema_version": str(
+                        blocked_quality.get("schema_version")
+                        or "quality-contract/v1"),
+                    "component": "delivery",
+                    "delivery_class": "blocked",
+                    "reasons": list(dict.fromkeys(
+                        list(blocked_quality.get("reasons") or [])
+                        + ["delivered_artifact_set_mismatch"]
+                    )),
+                    "selected_shots": list(package.selected_shots),
+                    "delivered_shots": delivered,
+                    "artifact_check_complete": True,
+                    "sequence_review_passed": False,
+                })
+                report.delivery_class = "blocked"
+                report.delivery_quality = blocked_quality
+                report.aborted = True
+                report.reason = (
+                    "导出中止：实际逐镜产物集合与交付分类不一致（"
+                    f"selected={list(package.selected_shots)}，"
+                    f"delivered={delivered}）")
+                log.error(report.reason)
+                return report
+            quality_payload = dict(quality_payload or {})
+            quality_payload.update({
+                "delivered_shots": list(package.selected_shots),
+                "artifact_check_complete": True,
+            })
+            report.delivery_quality = quality_payload
+
         #: v1.6 E2（FR-A3）：逐元素遮罩（可选，默认开）。非 EEVEE 后端出不了遮罩
         #: 就跳过并写进报告告警（与 depth 的 DepthUnavailable 同一模式），绝不
         #: 静默；成功时逐镜记进 ``mask_shots``。帧表与分镜 mp4 同一份 schedule。
         if config.mask_pass:
             try:
+                mask_ranges = {
+                    str(shot["shot_id"]): (
+                        int(shot["start_frame"]),
+                        int(shot["end_frame"]),
+                    )
+                    for shot in ranges
+                }
                 mask_results = render_mask_pass(
-                    scene, registry, shot_ranges(plan), str(export_dir))
+                    scene, registry, mask_ranges, str(export_dir))
                 for item in mask_results:
                     warning = empty_mask_warning(
                         str(item["shot_id"]),
@@ -513,10 +556,16 @@ def export_project(plan: Plan, *,
             #: 前段已过镜不再被子集 plan 丢掉。
             clips, clip_frames = concat_inputs(
                 plan, export_dir,
-                build_summary=build_summary, concat_plan=concat_plan)
+                build_summary=build_summary, concat_plan=concat_plan,
+                shot_ids=(
+                    list(package.selected_shots)
+                    if quality_payload is not None else None))
+            output_path = (
+                str(export_dir / package.concat_filename)
+                if package.concat_filename else full_output_path(export_dir))
             try:
                 concat = concat_shot_clips(
-                    scene, clips, full_output_path(export_dir),
+                    scene, clips, output_path,
                     clip_frames=clip_frames,
                     preset=str(config.preset), fps=24,
                     codec=str(config.video_codec), crf=str(config.crf))
@@ -557,7 +606,8 @@ def export_project(plan: Plan, *,
                                   registry=registry,
                                   rhythm_arc=rhythm_arc,
                                   ruler_observation=ruler_manifest_summary,
-                                  failures=failures)
+                                  failures=export_failures,
+                                  delivery_quality=quality_payload)
 
         #: 空间尺观测 JSON（Ticket 06）：优先写完整观测文档
         #: （``ruler_observation``，build_observation 产物）；否则由计划级
@@ -663,14 +713,22 @@ def export_project(plan: Plan, *,
     report.files.append(str(prompt_path))
 
     #: 缺陷 D / T8（U1）：失败清单单独落盘，README/prompts.md 与它同源。
-    if failures is not None and (
-            (failures.get("failures") or [])
-            or (failures.get("pending_review") or [])):
+    if export_failures is not None and (
+            quality_payload is not None
+            or (export_failures.get("failures") or [])
+            or (export_failures.get("pending_review") or [])):
         failures_path = export_dir / "failures.json"
         failures_path.write_text(
-            json.dumps(failures, ensure_ascii=False, indent=2),
+            json.dumps(export_failures, ensure_ascii=False, indent=2),
             encoding="utf-8")
         report.files.append(str(failures_path))
+
+    if quality_payload is not None:
+        quality_path = export_dir / "delivery_quality.json"
+        quality_path.write_text(
+            json.dumps(quality_payload, ensure_ascii=False, indent=2),
+            encoding="utf-8")
+        report.files.append(str(quality_path))
 
     if config.export_camera_traj:
         trajectory = camera_trajectory(scene, ranges)
@@ -736,7 +794,8 @@ def export_project(plan: Plan, *,
     readme_text = _readme(manifest, report,
                           label_overlap_report=label_overlap_report,
                           ruler_observation=obs_written,
-                          failures=failures)
+                          failures=export_failures,
+                          delivery_quality=quality_payload)
     readme_path = export_dir / "README.md"
     readme_path.write_text(readme_text, encoding="utf-8")
     report.files.append(str(readme_path))

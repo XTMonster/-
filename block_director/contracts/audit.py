@@ -101,6 +101,8 @@ V16_EVENT_FIELDS = {
     "resume_checkpoint_failed": ("path", "stage"),
     "wall_clock_exhausted": ("llm_calls", "terminal_shots",
                              "resume_state_path"),
+    "budget_exhausted": ("llm_calls", "terminal_shots",
+                         "resume_state_path"),
     "run_resumed": ("version", "terminal_shots", "first_shot"),
     "shot_resumed_skipped": ("shot_id", "status"),
     #: G2 #8（用户 2026-10-11 裁决）：计划多轮就地调整后仍不完整，用剧本
@@ -300,6 +302,11 @@ class AuditResult:
     #: 其 ``hard_gates`` 是 CHECKING 阶段的**新增阻断条件**（旧 passed 之后
     #: 再查），但**不参与 passed/score**（与 guard_warnings 同纪律）。
     ruler_review: Optional[Dict[str, Any]] = None
+    #: 本次审核实际采到的原始 ``SpatialFrame`` 序列，只供 Driver 折叠 v2
+    #: 观测快照与设计/实测 diff。它是运行时接缝，不是公开审计 JSON 字段：
+    #: ``to_dict()`` 永不输出该键，避免 Blender 对象混入交付契约。
+    spatial_frames: List[Any] = field(default_factory=list, repr=False,
+                                      compare=False)
 
     @property
     def total(self) -> int:

@@ -158,6 +158,10 @@ class ShotPlan:
     #: v1.3：剧本声明的时长（帧）。**只作证据**，永不参与排片（§3.4 单一真源）。
     #: 它与 ``duration_frames`` 的差值就是 R015 的"声明 vs 落实"证据。
     declared_duration_frames: int = 0
+    #: 剧本原句写的是“约X秒”时为 True。约数目标是可审计的规划下界：
+    #: 可以为了容纳逐字台词延长，不得静默缩短；``duration_frames`` 仍是
+    #: 唯一可执行时长真源。
+    declared_duration_approximate: bool = False
     #: v1.4：分镜表声明的镜号（生产者 = P11 的 ``ParsedScript.declared_shots[]``，
     #: 按顺序钉入；模型的 ``emit_plan`` schema 里**没有**这个键）。
     #: 消费者 = R015/F4 的镜号/顺序/身份错位核对。
@@ -227,6 +231,8 @@ class ShotPlan:
             "gaze": [dict(item) for item in self.gaze],
             "vfx": [dict(item) for item in self.vfx],
             "declared_duration_frames": self.declared_duration_frames,
+            "declared_duration_approximate":
+                bool(self.declared_duration_approximate),
             "declared_shot_number": self.declared_shot_number,
             "declared_camera_move": self.declared_camera_move,
             "intent_type": self.intent_type,
@@ -268,6 +274,8 @@ class ShotPlan:
                  if isinstance(item, dict)],
             declared_duration_frames=int(data.get("declared_duration_frames")
                                          or 0),
+            declared_duration_approximate=bool(
+                data.get("declared_duration_approximate") or False),
             declared_shot_number=int(data.get("declared_shot_number") or 0),
             declared_camera_move=str(data.get("declared_camera_move") or ""),
             intent_type=str(data.get("intent_type") or ""),
@@ -327,6 +335,49 @@ class Plan:
             scene_heading=str(data.get("scene_heading", "")),
             environment=dict(data.get("environment") or {}),
         )
+
+
+def timing_overrides_from_plan(plan: "Plan", *, fps: int = FPS
+                               ) -> List[Dict[str, Any]]:
+    """Derive auditable declared-vs-applied duration revisions from a plan.
+
+    The plan is the durable source shared by resume, SDL and replay.  Keeping
+    this derivation beside the wire contract prevents the driver and replay
+    exporter from disagreeing about whether an approximate target was extended
+    or an exact declaration drifted.
+    """
+    overrides: List[Dict[str, Any]] = []
+    for shot in plan.shots:
+        declared_frames = int(shot.declared_duration_frames or 0)
+        if declared_frames <= 0:
+            continue
+        declared_s = declared_frames / float(fps)
+        applied_s = round(int(shot.duration_frames) / float(fps), 3)
+        if abs(applied_s - declared_s) <= 0.2:
+            continue
+        approximate = bool(shot.declared_duration_approximate)
+        if approximate and applied_s >= declared_s:
+            reason = (
+                "规划级修订：约数时长目标"
+                f" {declared_s:g}s 为容纳声明台词延长，"
+                f"计划采用 {applied_s:g}s；原声明帧仍保留")
+        elif approximate:
+            reason = (
+                "约数时长目标被缩短："
+                f" {declared_s:g}s → {applied_s:g}s；"
+                "须在进入粗排前修正")
+        else:
+            reason = "计划时长与精确声明不一致（R015 会单独报）"
+        overrides.append({
+            "shot_id": str(shot.shot_id),
+            "shot_number": int(shot.declared_shot_number or shot.order),
+            "declared_s": declared_s,
+            "engine_s": None,
+            "applied_s": applied_s,
+            "declaration_kind": "approximate" if approximate else "exact",
+            "reason": reason,
+        })
+    return overrides
 
 
 #: 粗排通过后，B1 与后续修复只能细化这些镜头字段的**外围内容**

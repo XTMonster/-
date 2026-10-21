@@ -20,7 +20,7 @@ if str(ROOT) not in sys.path:
 import bpy  # noqa: E402
 
 from block_director.contracts.config import DeliveryConfig  # noqa: E402
-from block_director.contracts.enums import DeliveryPreset  # noqa: E402
+from block_director.contracts.enums import DeliveryPreset, RenderBackend  # noqa: E402
 from block_director.layer3_engine.collection_router import ensure_collections  # noqa: E402
 from block_director.layer3_engine.shot_builder import build_scene  # noqa: E402
 from block_director.layer8_delivery import export_project  # noqa: E402
@@ -80,6 +80,7 @@ def t_export_produces_all_deliverables():
     expected = [
         export_dir / "blockout_shot_001.mp4",
         export_dir / "blockout_shot_002.mp4",
+        export_dir / "blockout_full.mp4",
         export_dir / "first_frames" / "shot_001.png",
         export_dir / "first_frames" / "shot_002.png",
         export_dir / "shots.json",
@@ -106,11 +107,23 @@ def t_export_produces_all_deliverables():
         continuity_shots = sorted(json.loads(
             continuity_path.read_text(encoding="utf-8")))
     continuity_ok = continuity_shots == ["shot_001", "shot_002"]
-    return {"ok": report.ok and not missing and not empty and continuity_ok,
+    payload = report.to_dict()
+    legacy_unscoped = (
+        payload["delivery_class"] == ""
+        and payload["delivery_quality"] == {}
+        and payload["final"] is False
+        and not (export_dir / "blockout_partial.mp4").exists()
+        and not (export_dir / "blockout_diagnostic.mp4").exists()
+        and not (export_dir / "final_video.mp4").exists()
+        and not (export_dir / "delivery_quality.json").exists()
+    )
+    return {"ok": (report.ok and not missing and not empty and continuity_ok
+                   and legacy_unscoped),
             "missing": missing, "empty": empty,
             "files": len(report.files), "total_frames": report.total_frames,
             "duration_s": report.duration_s,
-            "continuity_shots": continuity_shots}
+            "continuity_shots": continuity_shots,
+            "legacy_unscoped": legacy_unscoped}
 
 
 # --------------------------------------------------------------------------- #
@@ -414,6 +427,692 @@ def t_export_aborts_on_leak():
             "reason": report.reason, "videos_written": len(videos)}
 
 
+def t_blocked_quality_creates_no_delivery_tree():
+    with tempfile.TemporaryDirectory(prefix="bd_blocked_export_") as tmp:
+        out_dir = Path(tmp) / "requested"
+        report = export_project(
+            demo_plan(),
+            out_dir=out_dir,
+            config=fresh_config(),
+            project="BlockDirector",
+            delivery_quality={
+                "schema_version": "quality-contract/v1",
+                "delivery_class": "blocked",
+                "reasons": ["authoritative_evidence_store_unavailable"],
+                "selected_shots": ["shot_001", "shot_002"],
+                "passed_shots": [],
+                "failed_shots": [],
+                "pending_review_shots": [],
+            },
+        )
+        assert report.aborted, report.to_dict()
+        assert report.delivery_class == "blocked"
+        assert not out_dir.exists(), list(out_dir.rglob("*"))
+        return {
+            "ok": True,
+            "reason": report.reason,
+        }
+
+
+def t_blocked_quality_clears_stale_concat_identities():
+    with tempfile.TemporaryDirectory(prefix="bd_blocked_stale_") as tmp:
+        fresh_scene()
+        out_dir = Path(tmp) / "requested"
+        export_dir = out_dir / "export"
+        export_dir.mkdir(parents=True)
+        stale_names = (
+            "blockout_full.mp4",
+            "blockout_partial.mp4",
+            "blockout_diagnostic.mp4",
+            "final_video.mp4",
+        )
+        for name in stale_names:
+            (export_dir / name).write_bytes(b"stale")
+        unrelated = export_dir / "notes.txt"
+        unrelated.write_text("keep", encoding="utf-8")
+
+        report = export_project(
+            demo_plan(),
+            out_dir=out_dir,
+            config=fresh_config(),
+            project="BlockDirector",
+            delivery_quality={
+                "schema_version": "quality-contract/v1",
+                "delivery_class": "blocked",
+                "reasons": ["authoritative_evidence_store_unavailable"],
+                "selected_shots": ["shot_001", "shot_002"],
+                "passed_shots": [],
+                "failed_shots": [],
+                "pending_review_shots": [],
+            },
+        )
+
+        stale = [name for name in stale_names
+                 if (export_dir / name).exists()]
+        ok = (
+            report.aborted
+            and report.delivery_class == "blocked"
+            and not stale
+            and unrelated.read_text(encoding="utf-8") == "keep"
+        )
+        return {"ok": ok, "stale": stale, "reason": report.reason}
+
+
+def t_sequence_render_rejects_missing_shot_file_and_clears_stale_clips():
+    from block_director.layer8_delivery import blockout_sequence
+
+    with tempfile.TemporaryDirectory(prefix="bd_missing_shot_video_") as tmp:
+        fresh_scene()
+        out_dir = Path(tmp) / "delivery"
+        video_dir = out_dir / blockout_sequence.SHOT_VIDEO_DIRNAME
+        video_dir.mkdir(parents=True)
+        stale = video_dir / "blockout_shot_009.mp4"
+        stale.write_bytes(b"stale")
+        claimed = video_dir / "blockout_shot_001.mp4"
+        original_render = blockout_sequence.render_shot_video
+
+        def _missing_render(*_args, **_kwargs):
+            return str(claimed), 2
+
+        manifest = {
+            "cameras": [{
+                "shot_id": "shot_001",
+                "camera_id": "missing",
+                "start_frame": 1,
+                "end_frame": 2,
+            }],
+            "shot_table": [],
+            "primitives": [],
+        }
+        blockout_sequence.render_shot_video = _missing_render
+        try:
+            rendered = blockout_sequence.render_blockout_sequence_video(
+                manifest,
+                out_dir,
+                delivery_class="diagnostic",
+            )
+        finally:
+            blockout_sequence.render_shot_video = original_render
+
+        ok = (
+            rendered.get("path") is None
+            and rendered.get("full_path") is None
+            and rendered.get("shot_videos") == []
+            and [item.get("shot_id")
+                 for item in rendered.get("missing_shots") or []]
+            == ["shot_001"]
+            and not stale.exists()
+            and not claimed.exists()
+            and not (out_dir / "blockout_diagnostic.mp4").exists()
+        )
+        return {
+            "ok": ok,
+            "path": rendered.get("path"),
+            "shot_videos": rendered.get("shot_videos"),
+            "missing_shots": rendered.get("missing_shots"),
+            "stale_exists": stale.exists(),
+        }
+
+
+def t_partial_reuse_clears_stale_omitted_shot_artifacts_and_claims():
+    from block_director.layer8_delivery import export_director
+
+    with tempfile.TemporaryDirectory(prefix="bd_partial_reuse_") as tmp:
+        fresh_scene()
+        plan = demo_plan()
+        summary = build_scene(plan).to_dict()
+        export_dir = Path(tmp) / "export"
+        first_frames = export_dir / "first_frames"
+        depth = export_dir / "depth_shot_shot_002"
+        masks = export_dir / "masks" / "shot_002"
+        for folder in (first_frames, depth, masks):
+            folder.mkdir(parents=True)
+        stale_001 = export_dir / "blockout_shot_001.mp4"
+        stale_002 = export_dir / "blockout_shot_002.mp4"
+        stale_first_002 = first_frames / "shot_002.png"
+        for path in (stale_001, stale_002, stale_first_002):
+            path.write_bytes(b"stale")
+        (depth / "frame_0001.png").write_bytes(b"stale")
+        (masks / "frame_0001.png").write_bytes(b"stale")
+        unrelated = export_dir / "notes.txt"
+        unrelated.write_text("keep", encoding="utf-8")
+        original_render = export_director.render_shot_video
+
+        def _missing_render(_scene, _start, _end, base, **_kwargs):
+            return str(base), 2
+
+        quality = {
+            "schema_version": "quality-contract/v1",
+            "component": "delivery",
+            "delivery_class": "partial",
+            "reasons": ["failed_shots_omitted_from_partial_delivery"],
+            "passed_shots": ["shot_001"],
+            "failed_shots": ["shot_002"],
+            "pending_review_shots": [],
+            "selected_shots": ["shot_001"],
+            "sequence_reviewed_shots": ["shot_001"],
+            "sequence_review_passed": True,
+            "full_sequence_review_passed": False,
+            "subset_sequence_review_passed": True,
+            "delivered_shots": [],
+            "artifact_check_complete": False,
+            "adoption_explanations": {},
+            "blocked_shots": {},
+        }
+        export_director.render_shot_video = _missing_render
+        try:
+            report = export_project(
+                plan,
+                build_summary=summary,
+                out_dir=Path(tmp),
+                config=fresh_config(
+                    mask_pass=False,
+                    reference_cards=False,
+                    export_depth=False,
+                ),
+                project="BlockDirector",
+                delivery_quality=quality,
+            )
+        finally:
+            export_director.render_shot_video = original_render
+
+        ok = (
+            report.aborted
+            and report.canonical_delivery_class == "blocked"
+            and "delivered_artifact_set_mismatch"
+            in report.delivery_quality.get("reasons", [])
+            and not stale_001.exists()
+            and not stale_002.exists()
+            and not stale_first_002.exists()
+            and not depth.exists()
+            and not masks.exists()
+            and unrelated.read_text(encoding="utf-8") == "keep"
+        )
+        return {
+            "ok": ok,
+            "delivery_class": report.canonical_delivery_class,
+            "reasons": report.delivery_quality.get("reasons"),
+        }
+
+
+def t_partial_quality_identity_is_consistent_across_the_package():
+    with tempfile.TemporaryDirectory(prefix="bd_partial_identity_") as tmp:
+        fresh_scene()
+        plan = demo_plan()
+        summary = build_scene(plan).to_dict()
+        quality = {
+            "schema_version": "quality-contract/v1",
+            "component": "delivery",
+            "delivery_class": "partial",
+            "reasons": ["failed_shots_omitted_from_partial_delivery"],
+            "passed_shots": ["shot_001"],
+            "failed_shots": ["shot_002"],
+            "pending_review_shots": [],
+            "selected_shots": ["shot_001"],
+            "sequence_reviewed_shots": ["shot_001"],
+            "sequence_review_passed": True,
+            "full_sequence_review_passed": False,
+            "subset_sequence_review_passed": True,
+            "delivered_shots": [],
+            "artifact_check_complete": False,
+            "adoption_explanations": {},
+            "blocked_shots": {},
+        }
+        report = export_project(
+            plan,
+            build_summary=summary,
+            out_dir=Path(tmp),
+            config=fresh_config(
+                mask_pass=False,
+                reference_cards=False,
+            ),
+            project="BlockDirector",
+            failures={
+                "schema_version": "delivery-failures/v1",
+                "failures": [{
+                    "shot_id": "shot_002",
+                    "best_score": 80.0,
+                    "no_gain_rounds": 3,
+                    "reason": "strict boundary not passed",
+                }],
+                "pending_review": [],
+            },
+            delivery_quality=quality,
+        )
+        export_dir = Path(tmp) / "export"
+        manifest = json.loads(
+            (export_dir / "shots.json").read_text(encoding="utf-8"))
+        failures = json.loads(
+            (export_dir / "failures.json").read_text(encoding="utf-8"))
+        written_quality = json.loads(
+            (export_dir / "delivery_quality.json").read_text(encoding="utf-8"))
+        readme = (export_dir / "README.md").read_text(encoding="utf-8")
+        prompts = (export_dir / "prompts.md").read_text(encoding="utf-8")
+        rows = {row["shot_id"]: row for row in manifest["shots"]}
+        checks = {
+            "report_ok": report.ok,
+            "report_partial": report.delivery_class == "partial",
+            "report_not_final": report.to_dict()["final"] is False,
+            "report_video_identity": (
+                Path(report.full_video).name == "blockout_partial.mp4"),
+            "artifact_check_complete": (
+                report.delivery_quality["artifact_check_complete"] is True),
+            "quality_partial": written_quality["delivery_class"] == "partial",
+            "quality_delivery_exact": (
+                written_quality["delivered_shots"] == ["shot_001"]),
+            "manifest_partial": manifest["delivery"]["class"] == "partial",
+            "manifest_delivery_exact": (
+                manifest["delivery"]["delivered_shots"] == ["shot_001"]),
+            "passed_included": (
+                rows["shot_001"]["delivery_status"] == "passed"
+                and rows["shot_001"]["delivery_included"] is True),
+            "failed_omitted": (
+                rows["shot_002"]["delivery_status"] == "failed"
+                and rows["shot_002"]["delivery_included"] is False
+                and rows["shot_002"]["video_file"] is None
+                and rows["shot_002"]["first_frame"] is None),
+            "failures_aligned": (
+                failures["delivery_class"] == "partial"
+                and failures["selected_shots"] == ["shot_001"]
+                and [item["shot_id"] for item in failures["failures"]]
+                == ["shot_002"]),
+            "readme_partial": (
+                "交付身份：**partial**" in readme
+                and "已从 PARTIAL 成片中省略失败镜头：shot_002" in readme),
+            "prompts_omitted": (
+                "未包含在本次 PARTIAL 交付包" in prompts),
+            "partial_video_only": (
+                (export_dir / "blockout_partial.mp4").is_file()
+                and not (export_dir / "blockout_full.mp4").exists()
+                and not (export_dir / "final_video.mp4").exists()),
+            "omitted_assets_absent": (
+                not (export_dir / "blockout_shot_002.mp4").exists()
+                and not (
+                    export_dir / "first_frames" / "shot_002.png").exists()),
+        }
+        failed = [name for name, ok in checks.items() if not ok]
+        if failed:
+            raise AssertionError(
+                f"partial identity mismatch: {failed}; "
+                f"report={report.to_dict()}; quality={written_quality}")
+        return {
+            "ok": True,
+            "delivery_class": report.delivery_class,
+            "selected_shots": written_quality["selected_shots"],
+        }
+
+
+def t_partial_mask_pass_uses_only_selected_built_ranges():
+    """Partial delivery must carry exactly the selected built ranges into masks.
+
+    The delivery report and masks share one frame schedule. A selected subset
+    therefore cannot fall back to the plan-wide schedule, and an omitted shot
+    must not gain a mask directory.
+    """
+    from block_director.layer8_delivery import export_director, mask_pass
+
+    with tempfile.TemporaryDirectory(prefix="bd_partial_mask_") as tmp:
+        fresh_scene()
+        plan = demo_plan()
+        summary = build_scene(plan).to_dict()
+        results = {
+            str(item["shot_id"]): item
+            for item in summary.get("results") or []
+        }
+        selected_range = (
+            int(results["shot_001"]["start_frame"]),
+            int(results["shot_001"]["end_frame"]),
+        )
+        quality = {
+            "schema_version": "quality-contract/v1",
+            "component": "delivery",
+            "delivery_class": "partial",
+            "reasons": ["failed_shots_omitted_from_partial_delivery"],
+            "passed_shots": ["shot_001"],
+            "failed_shots": ["shot_002"],
+            "pending_review_shots": [],
+            "selected_shots": ["shot_001"],
+            "sequence_reviewed_shots": ["shot_001"],
+            "sequence_review_passed": True,
+            "full_sequence_review_passed": False,
+            "subset_sequence_review_passed": True,
+            "delivered_shots": [],
+            "artifact_check_complete": False,
+            "adoption_explanations": {},
+            "blocked_shots": {},
+        }
+        original_video = export_director.render_shot_video
+        original_still = export_director.render_first_frame
+        original_mask_render = mask_pass._render_animation
+
+        def fake_video(_scene, start_frame, end_frame, base_path, **_kwargs):
+            path = Path(base_path)
+            path.write_bytes(b"BD_FAKE_MP4")
+            return str(path), int(end_frame) - int(start_frame) + 1
+
+        def fake_still(_scene, _frame, path):
+            Path(path).write_bytes(b"BD_FAKE_PNG")
+            return True
+
+        def fake_mask_render(scene):
+            prefix = str(scene.render.filepath)
+            for frame in range(int(scene.frame_start),
+                               int(scene.frame_end) + 1):
+                Path(f"{prefix}{frame:04d}.png").write_bytes(b"BD_FAKE_MASK")
+
+        export_director.render_shot_video = fake_video
+        export_director.render_first_frame = fake_still
+        mask_pass._render_animation = fake_mask_render
+        try:
+            report = export_project(
+                plan,
+                build_summary=summary,
+                out_dir=Path(tmp),
+                config=fresh_config(
+                    render_backend=RenderBackend.EEVEE,
+                    mask_pass=True,
+                    reference_cards=False,
+                    export_depth=False,
+                    full_concat=False,
+                ),
+                project="BlockDirector",
+                delivery_quality=quality,
+            )
+        finally:
+            export_director.render_shot_video = original_video
+            export_director.render_first_frame = original_still
+            mask_pass._render_animation = original_mask_render
+
+        export_dir = Path(tmp) / "export"
+        mask_shots = {
+            str(item["shot_id"]): item for item in report.mask_shots
+        }
+        checks = {
+            "report_ok": report.ok,
+            "partial_identity": report.delivery_class == "partial",
+            "selected_only": list(mask_shots) == ["shot_001"],
+            "built_range": (
+                mask_shots["shot_001"]["start_frame"],
+                mask_shots["shot_001"]["end_frame"],
+            ) == selected_range,
+            "omitted_mask_absent": not (
+                export_dir / "masks" / "shot_002").exists(),
+        }
+        failed = [name for name, ok in checks.items() if not ok]
+        if failed:
+            raise AssertionError(
+                f"partial mask mismatch: {failed}; "
+                f"selected_range={selected_range}; "
+                f"mask_shots={mask_shots}; report={report.to_dict()}")
+        return {
+            "ok": True,
+            "delivery_class": report.delivery_class,
+            "mask_shots": mask_shots,
+        }
+
+
+def t_diagnostic_quality_identity_is_consistent_across_the_package():
+    with tempfile.TemporaryDirectory(prefix="bd_diagnostic_identity_") as tmp:
+        fresh_scene()
+        plan = demo_plan()
+        summary = build_scene(plan).to_dict()
+        quality = {
+            "schema_version": "quality-contract/v1",
+            "component": "delivery",
+            "delivery_class": "diagnostic",
+            "reasons": [
+                "failed_shots_require_diagnostic_delivery",
+                "full_sequence_review_not_passed",
+            ],
+            "passed_shots": ["shot_001"],
+            "failed_shots": ["shot_002"],
+            "pending_review_shots": [],
+            "selected_shots": ["shot_001", "shot_002"],
+            "sequence_reviewed_shots": [],
+            "sequence_review_passed": False,
+            "full_sequence_review_passed": False,
+            "subset_sequence_review_passed": False,
+            "delivered_shots": [],
+            "artifact_check_complete": False,
+            "adoption_explanations": {
+                "shot_002": "composition_not_strictly_above_threshold",
+            },
+            "blocked_shots": {},
+        }
+        report = export_project(
+            plan,
+            build_summary=summary,
+            out_dir=Path(tmp),
+            config=fresh_config(mask_pass=False, reference_cards=False),
+            project="BlockDirector",
+            failures={
+                "schema_version": "delivery-failures/v1",
+                "failures": [{
+                    "shot_id": "shot_002",
+                    "best_score": 79.0,
+                    "no_gain_rounds": 3,
+                    "reason": "composition did not pass",
+                }],
+                "pending_review": [],
+            },
+            delivery_quality=quality,
+        )
+        export_dir = Path(tmp) / "export"
+        manifest = json.loads(
+            (export_dir / "shots.json").read_text(encoding="utf-8"))
+        failures = json.loads(
+            (export_dir / "failures.json").read_text(encoding="utf-8"))
+        written_quality = json.loads(
+            (export_dir / "delivery_quality.json").read_text(
+                encoding="utf-8"))
+        readme = (export_dir / "README.md").read_text(encoding="utf-8")
+        prompts = (export_dir / "prompts.md").read_text(encoding="utf-8")
+        rows = {row["shot_id"]: row for row in manifest["shots"]}
+        checks = {
+            "report_ok": report.ok,
+            "report_diagnostic": (
+                report.canonical_delivery_class == "diagnostic"),
+            "report_not_final": report.to_dict()["final"] is False,
+            "report_video_identity": (
+                Path(report.full_video).name == "blockout_diagnostic.mp4"),
+            "artifact_check_complete": (
+                report.delivery_quality["artifact_check_complete"] is True),
+            "quality_diagnostic": (
+                written_quality["delivery_class"] == "diagnostic"),
+            "quality_delivery_exact": (
+                written_quality["delivered_shots"]
+                == ["shot_001", "shot_002"]),
+            "manifest_diagnostic": (
+                manifest["delivery"]["class"] == "diagnostic"),
+            "manifest_delivery_exact": (
+                manifest["delivery"]["delivered_shots"]
+                == ["shot_001", "shot_002"]),
+            "shot_dispositions": (
+                rows["shot_001"]["delivery_status"] == "passed"
+                and rows["shot_002"]["delivery_status"] == "failed"
+                and rows["shot_001"]["delivery_included"] is True
+                and rows["shot_002"]["delivery_included"] is True),
+            "failures_aligned": (
+                failures["delivery_class"] == "diagnostic"
+                and failures["selected_shots"]
+                == ["shot_001", "shot_002"]
+                and [item["shot_id"] for item in failures["failures"]]
+                == ["shot_002"]),
+            "readme_diagnostic": (
+                "交付身份：**diagnostic**" in readme
+                and "DIAGNOSTIC 最佳努力版本" in readme),
+            "prompts_diagnostic": (
+                "- 交付身份：**diagnostic**" in prompts),
+            "diagnostic_video_only": (
+                (export_dir / "blockout_diagnostic.mp4").is_file()
+                and not (export_dir / "blockout_full.mp4").exists()
+                and not (export_dir / "blockout_partial.mp4").exists()
+                and not (export_dir / "final_video.mp4").exists()),
+            "all_inspection_assets_present": (
+                (export_dir / "blockout_shot_001.mp4").is_file()
+                and (export_dir / "blockout_shot_002.mp4").is_file()
+                and (export_dir / "first_frames" / "shot_001.png").is_file()
+                and (export_dir / "first_frames" / "shot_002.png").is_file()),
+        }
+        failed = [name for name, ok in checks.items() if not ok]
+        if failed:
+            raise AssertionError(
+                f"diagnostic identity mismatch: {failed}; "
+                f"report={report.to_dict()}; quality={written_quality}")
+        return {
+            "ok": True,
+            "delivery_class": report.delivery_class,
+            "selected_shots": written_quality["selected_shots"],
+        }
+
+
+def t_final_quality_identity_is_consistent_across_the_package():
+    with tempfile.TemporaryDirectory(prefix="bd_final_identity_") as tmp:
+        fresh_scene()
+        plan = demo_plan()
+        summary = build_scene(plan).to_dict()
+        quality = {
+            "schema_version": "quality-contract/v1",
+            "component": "delivery",
+            "delivery_class": "final",
+            "reasons": [],
+            "passed_shots": ["shot_001", "shot_002"],
+            "failed_shots": [],
+            "pending_review_shots": [],
+            "selected_shots": ["shot_001", "shot_002"],
+            "sequence_reviewed_shots": ["shot_001", "shot_002"],
+            "sequence_review_passed": True,
+            "full_sequence_review_passed": True,
+            "subset_sequence_review_passed": False,
+            "delivered_shots": [],
+            "artifact_check_complete": False,
+            "adoption_explanations": {},
+            "blocked_shots": {},
+        }
+        report = export_project(
+            plan,
+            build_summary=summary,
+            out_dir=Path(tmp),
+            config=fresh_config(mask_pass=False, reference_cards=False),
+            project="BlockDirector",
+            delivery_quality=quality,
+        )
+        export_dir = Path(tmp) / "export"
+        manifest = json.loads(
+            (export_dir / "shots.json").read_text(encoding="utf-8"))
+        written_quality = json.loads(
+            (export_dir / "delivery_quality.json").read_text(
+                encoding="utf-8"))
+        readme = (export_dir / "README.md").read_text(encoding="utf-8")
+        rows = {row["shot_id"]: row for row in manifest["shots"]}
+        checks = {
+            "report_ok": report.ok,
+            "report_final": report.canonical_delivery_class == "final",
+            "report_final_flag": report.to_dict()["final"] is True,
+            "report_video_identity": (
+                Path(report.full_video).name == "blockout_full.mp4"),
+            "artifact_check_complete": (
+                report.delivery_quality["artifact_check_complete"] is True),
+            "quality_final": written_quality["delivery_class"] == "final",
+            "quality_delivery_exact": (
+                written_quality["delivered_shots"]
+                == ["shot_001", "shot_002"]),
+            "manifest_final": manifest["delivery"]["class"] == "final",
+            "manifest_delivery_exact": (
+                manifest["delivery"]["delivered_shots"]
+                == ["shot_001", "shot_002"]),
+            "all_shots_passed": all(
+                row["delivery_status"] == "passed"
+                and row["delivery_included"] is True
+                for row in rows.values()),
+            "readme_final": "交付身份：**final**" in readme,
+            "final_video_only": (
+                (export_dir / "blockout_full.mp4").is_file()
+                and not (export_dir / "blockout_partial.mp4").exists()
+                and not (export_dir / "blockout_diagnostic.mp4").exists()
+                and not (export_dir / "final_video.mp4").exists()),
+        }
+        failed = [name for name, ok in checks.items() if not ok]
+        if failed:
+            raise AssertionError(
+                f"final identity mismatch: {failed}; "
+                f"report={report.to_dict()}; quality={written_quality}")
+        return {
+            "ok": True,
+            "delivery_class": report.delivery_class,
+            "selected_shots": written_quality["selected_shots"],
+        }
+
+
+def t_post_render_artifact_mismatch_blocks_final_metadata():
+    with tempfile.TemporaryDirectory(prefix="bd_artifact_mismatch_") as tmp:
+        fresh_scene()
+        plan = demo_plan()
+        summary = build_scene(plan).to_dict()
+        report = export_project(
+            plan,
+            build_summary=summary,
+            out_dir=Path(tmp),
+            config=fresh_config(
+                per_shot_clips=False,
+                mask_pass=False,
+                reference_cards=False,
+            ),
+            project="BlockDirector",
+            delivery_quality={
+                "schema_version": "quality-contract/v1",
+                "component": "delivery",
+                "delivery_class": "diagnostic",
+                "reasons": ["failed_shots_require_diagnostic_delivery"],
+                "passed_shots": ["shot_001"],
+                "failed_shots": ["shot_002"],
+                "pending_review_shots": [],
+                "selected_shots": ["shot_001", "shot_002"],
+                "sequence_reviewed_shots": [],
+                "sequence_review_passed": False,
+                "full_sequence_review_passed": False,
+                "subset_sequence_review_passed": False,
+                "delivered_shots": [],
+                "artifact_check_complete": False,
+                "adoption_explanations": {},
+                "blocked_shots": {},
+            },
+        )
+        export_dir = Path(tmp) / "export"
+        checks = {
+            "aborted": report.aborted,
+            "blocked": report.canonical_delivery_class == "blocked",
+            "mismatch_reason": (
+                "delivered_artifact_set_mismatch"
+                in report.delivery_quality.get("reasons", [])),
+            "inspection_stills_retained": (
+                (export_dir / "first_frames" / "shot_001.png").is_file()
+                and (export_dir / "first_frames" / "shot_002.png").is_file()),
+            "no_video_claim": not any(
+                (export_dir / name).exists()
+                for name in (
+                    "blockout_full.mp4",
+                    "blockout_partial.mp4",
+                    "blockout_diagnostic.mp4",
+                    "final_video.mp4",
+                )),
+            "no_manifest_or_readme": (
+                not (export_dir / "shots.json").exists()
+                and not (export_dir / "delivery_quality.json").exists()
+                and not (export_dir / "README.md").exists()),
+        }
+        failed = [name for name, ok in checks.items() if not ok]
+        if failed:
+            raise AssertionError(
+                f"artifact mismatch handling failed: {failed}; "
+                f"report={report.to_dict()}")
+        return {
+            "ok": True,
+            "delivery_class": report.delivery_class,
+            "reason": report.reason,
+        }
+
+
 # --------------------------------------------------------------------------- #
 # 5. 可选相机轨迹逐帧对齐
 # --------------------------------------------------------------------------- #
@@ -450,9 +1149,14 @@ def t_prompt_sheet_covers_every_shot():
 
 def t_review_requests_survive_real_driver_build_and_export():
     """A5: actual control dispatch -> JSON runner boundary -> actual rendered package."""
+    from block_director.contracts.audit import AuditError, AuditResult
     from block_director.contracts.config import AppConfig
-    from block_director.contracts.enums import Purpose
-    from block_director.contracts.messages import FunctionCall, ToolCall
+    from block_director.contracts.enums import Purpose, Severity
+    from block_director.contracts.messages import (
+        ChatReply,
+        FunctionCall,
+        ToolCall,
+    )
     from block_director.layer3_engine.shot_builder import BpySceneBuilder
     from block_director.layer5_orchestrator.driver import PrevisDriver
     from block_director.layer5_orchestrator.offline import OfflineTransport
@@ -466,10 +1170,42 @@ def t_review_requests_survive_real_driver_build_and_export():
         def start(self):
             self.target()
 
+    class ReviewAuditor:
+        """Force one repair turn so the controller has a real current shot."""
+
+        def __init__(self):
+            self.failed = set()
+
+        def shot_ids(self):
+            return ["shot_001", "shot_002"]
+
+        def audit(self, shot_id):
+            if shot_id == "shot_001" and shot_id not in self.failed:
+                self.failed.add(shot_id)
+                return AuditResult(
+                    passed=False,
+                    target=shot_id,
+                    errors=[AuditError(
+                        rule="R001",
+                        code="E_AXIS_001",
+                        message="测试用首轮轴线路由",
+                        severity=Severity.ERROR,
+                        target=shot_id,
+                        suggestion="留在当前轴侧",
+                    )],
+                )
+            return AuditResult(passed=True, target=shot_id)
+
     class ReviewTransport(OfflineTransport):
+        def __init__(self):
+            super().__init__()
+            self._repair_reviewed = False
+
         def chat(self, payload, timeout=120.0):
-            reply = super().chat(payload, timeout=timeout)
-            if payload.purpose is Purpose.PLAN:
+            if payload.purpose is Purpose.REPAIR and not self._repair_reviewed:
+                self._repair_reviewed = True
+                self.chat_calls += 1
+                self.last_payload = payload
                 requests = [
                     ToolCall(id=f"review_{i}", function=FunctionCall(
                         name="request_self_review",
@@ -477,15 +1213,29 @@ def t_review_requests_survive_real_driver_build_and_export():
                                               "shot_intent": "检查构图"})))
                     for i in range(2)
                 ]
-                reply.tool_calls = requests + list(reply.tool_calls)
-            return reply
+                requests.append(ToolCall(
+                    id="review_finish",
+                    function=FunctionCall(
+                        name="finish_shot",
+                        arguments=json.dumps({"summary": "已完成自审"}),
+                    ),
+                ))
+                return ChatReply(
+                    content=None,
+                    tool_calls=requests,
+                    request_id=payload.request_id,
+                    model="offline-review",
+                    finish_reason="tool_calls",
+                )
+            return super().chat(payload, timeout=timeout)
 
     fresh_scene()
     with tempfile.TemporaryDirectory(prefix="bd_a5_review_") as tmp:
         audit = AuditLogger(directory=Path(tmp) / "runs")
         driver = PrevisDriver(
             transport=ReviewTransport(), audit=audit, config=AppConfig(),
-            builder=BpySceneBuilder(clear_scene=True), thread_factory=InlineThread)
+            builder=BpySceneBuilder(clear_scene=True),
+            auditor=ReviewAuditor(), thread_factory=InlineThread)
         assert driver.run_to_completion() is DriverState.DONE, driver.error
         summary = json.loads(json.dumps(driver.snapshot()))
         report = export_project(
@@ -527,6 +1277,24 @@ def main() -> int:
     check("videos_are_real_mp4", t_videos_are_real_mp4)
     check("manifest_matches_build", t_manifest_matches_build)
     check("export_aborts_on_leak", t_export_aborts_on_leak)
+    check("blocked_quality_creates_no_delivery_tree",
+          t_blocked_quality_creates_no_delivery_tree)
+    check("blocked_quality_clears_stale_concat_identities",
+          t_blocked_quality_clears_stale_concat_identities)
+    check("sequence_render_rejects_missing_shot_file_and_clears_stale_clips",
+          t_sequence_render_rejects_missing_shot_file_and_clears_stale_clips)
+    check("partial_reuse_clears_stale_omitted_shot_artifacts_and_claims",
+          t_partial_reuse_clears_stale_omitted_shot_artifacts_and_claims)
+    check("partial_quality_identity_is_consistent_across_the_package",
+          t_partial_quality_identity_is_consistent_across_the_package)
+    check("partial_mask_pass_uses_only_selected_built_ranges",
+          t_partial_mask_pass_uses_only_selected_built_ranges)
+    check("diagnostic_quality_identity_is_consistent_across_the_package",
+          t_diagnostic_quality_identity_is_consistent_across_the_package)
+    check("final_quality_identity_is_consistent_across_the_package",
+          t_final_quality_identity_is_consistent_across_the_package)
+    check("post_render_artifact_mismatch_blocks_final_metadata",
+          t_post_render_artifact_mismatch_blocks_final_metadata)
     check("camera_trajectory_is_per_frame", t_camera_trajectory_is_per_frame)
     check("prompt_sheet_covers_every_shot", t_prompt_sheet_covers_every_shot)
     check("review_requests_survive_real_driver_build_and_export",

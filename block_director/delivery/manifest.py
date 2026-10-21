@@ -39,6 +39,7 @@ def build_manifest(plan: Plan, *,
                    rhythm_arc: Optional[Sequence[Dict[str, Any]]] = None,
                    ruler_observation: Optional[Dict[str, Any]] = None,
                    failures: Optional[Dict[str, Any]] = None,
+                   delivery_quality: Optional[Dict[str, Any]] = None,
                   ) -> Dict[str, Any]:
     """把分镜计划与构建结果拼成交付用清单。
 
@@ -75,6 +76,22 @@ def build_manifest(plan: Plan, *,
         for item in (failures or {}).get("pending_review") or []
         if isinstance(item, dict)
     }
+    delivery_passed = {
+        str(item) for item in (delivery_quality or {}).get("passed_shots") or []
+    }
+    delivery_failed = {
+        str(item) for item in (delivery_quality or {}).get("failed_shots") or []
+    }
+    delivery_pending = {
+        str(item)
+        for item in (delivery_quality or {}).get("pending_review_shots") or []
+    }
+    delivery_selected = [
+        str(item)
+        for item in (delivery_quality or {}).get("selected_shots") or []
+        if str(item)
+    ]
+    delivery_selected_set = set(delivery_selected)
 
     shots: List[Dict[str, Any]] = []
     cursor = 1
@@ -179,6 +196,20 @@ def build_manifest(plan: Plan, *,
             payload["failed"] = True
         elif shot.shot_id in pending_review_ids:
             payload["pending_review"] = True
+        if delivery_quality is not None:
+            included = shot.shot_id in delivery_selected_set
+            payload["delivery_included"] = included
+            if not included:
+                payload["video_file"] = None
+                payload["first_frame"] = None
+            if shot.shot_id in delivery_passed:
+                payload["delivery_status"] = "passed"
+            elif shot.shot_id in delivery_failed:
+                payload["delivery_status"] = "failed"
+            elif shot.shot_id in delivery_pending:
+                payload["delivery_status"] = "pending_review"
+            else:
+                payload["delivery_status"] = "blocked"
         shots.append(payload)
 
     manifest = {
@@ -212,6 +243,34 @@ def build_manifest(plan: Plan, *,
         "knowledge": dict(knowledge or {}),
         "shots": shots,
     }
+    if delivery_quality is not None:
+        manifest["delivery"] = {
+            "schema_version": str(
+                delivery_quality.get("schema_version") or ""),
+            "class": str(delivery_quality.get("delivery_class") or "blocked"),
+            "reasons": list(delivery_quality.get("reasons") or []),
+            "passed_shots": sorted(delivery_passed),
+            "failed_shots": sorted(delivery_failed),
+            "pending_review_shots": sorted(delivery_pending),
+            "selected_shots": [
+                str(item) for item in delivery_selected
+            ],
+            "delivered_shots": [
+                str(item)
+                for item in delivery_quality.get("delivered_shots") or []
+            ],
+            "sequence_review_passed": bool(
+                delivery_quality.get("sequence_review_passed")),
+            "artifact_check_complete": bool(
+                delivery_quality.get("artifact_check_complete")),
+            "adoption_explanations": dict(
+                delivery_quality.get("adoption_explanations") or {}),
+            "selected_frames": sum(
+                int(shot.get("duration_frames") or 0)
+                for shot in shots
+                if shot["shot_id"] in delivery_selected_set
+            ),
+        }
     #: 空间尺观测交付引用（Ticket 06）：有 ruler_observation 数据才出这个键，
     #: 缺省 None ⇒ 旧调用方拿到的 manifest 与升级前逐字节一致（零形状差）。
     if ruler_observation is not None:

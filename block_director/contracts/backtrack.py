@@ -34,14 +34,29 @@ class BacktrackDecision:
     adopted: bool = False            # 是否达到"过分数采用"
 
 
-def backtrack_three_state(score: float, *, best_score=None, no_gain: int = 0,
-                          threshold: Optional[float] = None) -> BacktrackDecision:
-    """按 U10 的三态对一次审核分数做裁定（门槛一字不动，默认 80）。"""
+def backtrack_three_state(
+    score: float,
+    *,
+    best_score=None,
+    no_gain: int = 0,
+    threshold: Optional[float] = None,
+    audit_passed: bool = True,
+) -> BacktrackDecision:
+    """按 U10 的三态对一次审核做裁定（门槛一字不动，默认 80）。
+
+    ``audit_passed`` is independent from the composition score.  A score above
+    the threshold can be adopted only when the complete audit passed; hard
+    errors such as an invisible subject must still enter the no-gain path.
+    The default keeps legacy pure-score callers source compatible.
+    """
     score = float(score)
     no_gain = int(no_gain or 0)
     threshold = (COMPOSITION_PASS_SCORE if threshold is None
                  else float(threshold))
-    if composition_decision(score, threshold=threshold)["status"] == "pass":
+    if (
+        audit_passed
+        and composition_decision(score, threshold=threshold)["status"] == "pass"
+    ):
         # 过分数采用：无论是否新高，合格版本收下并收尾（best 记录仅作审计）。
         return BacktrackDecision(disposition="adopt", best_score=score,
                                  no_gain=0, should_revert=False, adopted=True)
