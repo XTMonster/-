@@ -10,6 +10,7 @@ from block_director.cinema.detail_loop import (
     DetailLoopBlocked,
     run_detail_revision_loop,
 )
+from block_director.contracts.world_state import world_state_fingerprint
 
 
 def _reference():
@@ -88,6 +89,54 @@ def _world_x_from_reference(reference, shot_id):
     return float(character["position"]["x"])
 
 
+def _staging_check(shot_id):
+    return {
+        "check_id": "staging_design_vs_observed",
+        "shot_id": shot_id,
+        "actual": 0.0,
+        "threshold": 0.3,
+        "verdict": "pass",
+        "evidence": {
+            "scope": "camera_and_character_start_positions",
+            "coverage": {
+                "camera_expected": 1,
+                "camera_observed": 1,
+                "camera_target_expected": 1,
+                "camera_target_observed": 1,
+                "characters_expected": 1,
+                "characters_observed": 1,
+                "missing_subjects": [],
+            },
+            "items": [
+                {
+                    "metric": "camera_position",
+                    "subject": f"cam_{shot_id}",
+                    "expected": [0.0, 3.0, 1.5],
+                    "actual": 0.0,
+                    "threshold": 0.3,
+                    "verdict": "pass",
+                },
+                {
+                    "metric": "camera_target_position",
+                    "subject": f"cam_{shot_id}",
+                    "expected": [0.0, 0.0, 1.0],
+                    "actual": 0.0,
+                    "threshold": 0.3,
+                    "verdict": "pass",
+                },
+                {
+                    "metric": "character_position",
+                    "subject": "subject",
+                    "expected": [0.0, 0.0, 0.0],
+                    "actual": 0.0,
+                    "threshold": 0.3,
+                    "verdict": "pass",
+                },
+            ],
+        },
+    }
+
+
 def _observation(
     *,
     observation_id,
@@ -97,6 +146,7 @@ def _observation(
     hard_error=False,
     world_x=0.0,
     reference=None,
+    render_staging=None,
 ):
     findings = []
     if hard_error:
@@ -106,7 +156,7 @@ def _observation(
             "severity": "error",
             "message": "injected hard error",
         })
-    return {
+    observation = {
         "observation_id": observation_id,
         "complete": bool(complete),
         "errors": [] if complete else ["missing first/middle/last frames"],
@@ -126,7 +176,7 @@ def _observation(
                     if isinstance(score, (int, float)) and score > 80.0
                     else "fail"
                 ),
-            }],
+            }, _staging_check(shot_id)],
         },
         "world_state": {
             "shot_states": {
@@ -156,12 +206,19 @@ def _observation(
             )
         ],
     }
+    if render_staging is not None:
+        observation["world_state"]["render_staging"] = {
+            shot_id: copy.deepcopy(render_staging),
+        }
+    observation["world_state_fingerprint"] = world_state_fingerprint(
+        observation["world_state"])
+    return observation
 
 
 def _proposal(shot_id, *, x=0.25):
     entity = "米迦尔" if shot_id == "shot_001" else "伊恩"
     return {
-        "schema_version": "coarse-proposal/v1",
+        "schema_version": "coarse-proposal/v2",
         "provider_kind": "agent",
         "reason": f"improve {shot_id}",
         "prescriptions": [{
@@ -257,6 +314,42 @@ def test_later_passed_shot_cannot_mask_an_earlier_failed_shot():
     assert outcome["shots"]["shot_002"]["status"] == "passed"
     assert outcome["sequence_review"]["shot_phase"]["all_passed"] is False
     assert sequence_calls == []
+
+
+def test_missing_staging_evidence_blocks_before_agent_or_sequence_review():
+    observation = _observation(
+        observation_id="obs-staging-unresolved",
+        shot_id="shot_001",
+        score=96.0,
+    )
+    observation["report"]["checks"] = [
+        check
+        for check in observation["report"]["checks"]
+        if check.get("check_id") != "staging_design_vs_observed"
+    ]
+    proposal_calls = []
+    sequence_calls = []
+
+    outcome = run_detail_revision_loop(
+        detail_shots=[_detail_shots()[0]],
+        reference=_reference(),
+        observe=lambda reference, shot_id: observation,
+        rebuild=lambda reference, shot_id: None,
+        restore_best=lambda reference, shot_id: None,
+        proposal_provider=lambda *, request: proposal_calls.append(request),
+        sequence_review=lambda reference: sequence_calls.append(reference)
+        or {"verdict": "pass"},
+    )
+
+    shot = outcome["shots"]["shot_001"]
+    assert outcome["status"] == "blocked"
+    assert shot["status"] == "blocked"
+    assert shot["blocked_code"] == "staging_design_unresolved"
+    assert proposal_calls == []
+    assert sequence_calls == []
+    assert shot["versions"][0]["quality"]["shots"]["shot_001"][
+        "staging_design"
+    ]["status"] == "blocked"
 
 
 def test_successive_improvements_replace_best_until_the_shot_passes():
@@ -384,10 +477,59 @@ def test_repeated_physical_state_stops_the_shot_and_restores_best():
 
     shot = outcome["shots"]["shot_001"]
     assert shot["status"] == "failed"
-    assert shot["blocked_code"] == "candidate_cycle_detected"
+    assert shot["blocked_code"] == "candidate_cycle_detected", (
+        shot["blocked_reason"])
     assert shot["best_score"] == 75.0
     assert shot["versions"][-1]["disposition"] == "candidate_cycle"
     assert restore_calls == ["shot_001"]
+
+
+def test_cycle_uses_physical_state_after_restore_despite_staging_changes():
+    scores_by_x = {
+        0.0: 70.0,
+        0.5: 75.0,
+        9.0: 69.0,
+    }
+    observation_no = 0
+    restore_calls = []
+
+    def observe(reference, shot_id):
+        nonlocal observation_no
+        observation_no += 1
+        world_x = _world_x_from_reference(reference, shot_id)
+        return _observation(
+            observation_id=f"obs-cycle-{observation_no}",
+            shot_id=shot_id,
+            score=scores_by_x[world_x],
+            world_x=world_x,
+            reference=reference,
+            render_staging={
+                "layer": f"observation-{observation_no}",
+                "staging_position": [world_x, float(observation_no), 0.0],
+            },
+        )
+
+    outcome = run_detail_revision_loop(
+        detail_shots=[_detail_shots()[0]],
+        reference=_reference(),
+        observe=observe,
+        rebuild=lambda reference, shot_id: None,
+        restore_best=lambda reference, shot_id: restore_calls.append(shot_id),
+        proposal_provider=lambda *, request: _proposal(
+            "shot_001",
+            x={1: 0.5, 2: 9.0, 3: 0.0, 4: 0.0}[request.round_no],
+        ),
+        no_gain_limit=3,
+    )
+
+    shot = outcome["shots"]["shot_001"]
+    assert shot["status"] == "failed"
+    assert shot["blocked_code"] == "candidate_cycle_detected", (
+        shot["blocked_reason"])
+    assert shot["best_version"] == 1
+    assert shot["best_score"] == 75.0
+    assert shot["versions"][-1]["disposition"] == "candidate_cycle"
+    assert restore_calls == ["shot_001", "shot_001"]
 
 
 def test_user_owned_animation_conflict_blocks_without_retrying_or_overwriting():
@@ -424,6 +566,45 @@ def test_user_owned_animation_conflict_blocks_without_retrying_or_overwriting():
     assert len(shot["versions"]) == 2
 
 
+def test_detail_loop_unlimited_revisions_stop_on_no_gain():
+    """细排同样 0 = 不限（用户 2026-10-23 裁决"循环调整无上限、主要是过
+    评分"）：连续 ``no_gain_limit`` 轮无新高只记录 ``stagnation_reached``
+    信号并继续，不再把 no_gain 当作收尾条件；只有处方空间/硬性资源耗尽
+    （此处为重复物理状态 cycle）才收尾。
+    """
+    observations = iter([
+        _observation(
+            observation_id="obs-base", shot_id="shot_001",
+            score=70.0, world_x=0.0),
+        _observation(
+            observation_id="obs-tie", shot_id="shot_001",
+            score=70.0, world_x=0.25),
+        _observation(
+            observation_id="obs-tie-again", shot_id="shot_001",
+            score=70.0, world_x=0.25),
+    ])
+
+    outcome = run_detail_revision_loop(
+        detail_shots=[_detail_shots()[0]],
+        reference=_reference(),
+        observe=lambda reference, shot_id: next(observations),
+        rebuild=lambda reference, shot_id: None,
+        restore_best=lambda reference, shot_id: None,
+        proposal_provider=lambda *, request: _proposal("shot_001"),
+        max_revisions=0,
+        no_gain_limit=1,
+    )
+
+    shot = outcome["shots"]["shot_001"]
+    assert shot["status"] in {"blocked", "failed"}
+    #: 第二轮：同一物理状态（x=0.25）再次出现 → cycle 才是硬性收尾，
+    #: 而非 no_gain（停滞只作为信号，循环继续到第二轮）。
+    assert shot["blocked_code"] == "candidate_cycle_detected"
+    assert shot["blocked_code"] != "max_revisions_reached"
+    assert shot["stagnation_reached"] is True
+    assert any(v.get("stagnation_reached") for v in shot["versions"])
+
+
 def test_cross_shot_candidate_is_rejected_and_neighbor_reference_is_unchanged():
     observations = iter([
         _observation(
@@ -440,7 +621,7 @@ def test_cross_shot_candidate_is_rejected_and_neighbor_reference_is_unchanged():
         rebuild=lambda current, shot_id: None,
         restore_best=lambda current, shot_id: None,
         proposal_provider=lambda *, request: {
-            "schema_version": "coarse-proposal/v1",
+            "schema_version": "coarse-proposal/v2",
             "provider_kind": "agent",
             "reason": "invalid global edit",
             "prescriptions": [{
@@ -596,7 +777,7 @@ def test_candidate_evidence_retains_the_exact_proposal_that_was_applied():
     )
 
     candidate = recorded[1][2]
-    assert candidate["proposal"]["schema_version"] == "coarse-proposal/v1"
+    assert candidate["proposal"]["schema_version"] == "coarse-proposal/v2"
     assert candidate["proposal"]["reason"] == "improve shot_001"
     assert candidate["proposal"]["prescriptions"][0]["shot_id"] == "shot_001"
 
@@ -797,6 +978,73 @@ def test_required_vlm_skip_blocks_instead_of_passing_the_shot():
     assert "missing_frame" in shot["blocked_reason"]
 
 
+def test_required_open_vlm_candidate_forces_agent_revision_even_when_program_passed():
+    before = _observation(
+        observation_id="obs-vlm-open-program-pass",
+        shot_id="shot_001",
+        score=82.0,
+    )
+    before["report"]["vlm_review_required"] = True
+    before["report"]["vlm_review"] = {
+        "status": "ok",
+        "outcome": "reviewed_open",
+        "score": 2,
+        "issues": [{
+            "kind": "occluded",
+            "subject": "米迦尔",
+            "frame": 12,
+            "suggested_tool": "move_camera",
+        }],
+    }
+    before["report"]["correction_candidates"] = [{
+        "candidate_id": "correction-occluded",
+        "kind": "occluded",
+        "subject": "米迦尔",
+        "source": "vlm",
+        "severity": "advisory",
+        "suggested_tool": "move_camera",
+    }]
+    after = _observation(
+        observation_id="obs-vlm-closed-program-pass",
+        shot_id="shot_001",
+        score=82.0,
+        world_x=0.25,
+    )
+    after["report"]["vlm_review_required"] = True
+    after["report"]["vlm_review"] = {
+        "status": "ok",
+        "outcome": "reviewed_pass",
+        "score": 4,
+        "issues": [],
+    }
+    observations = iter([before, after])
+    proposal = _proposal("shot_001", x=0.25)
+    proposal["prescriptions"][0]["candidate_ids"] = [
+        "correction-occluded"]
+    rebuilt = []
+
+    outcome = run_detail_revision_loop(
+        detail_shots=[_detail_shots()[0]],
+        reference=_reference(),
+        observe=lambda reference, shot_id: next(observations),
+        rebuild=lambda reference, shot_id: rebuilt.append(shot_id),
+        restore_best=lambda reference, shot_id: None,
+        proposal_provider=lambda *, request: proposal,
+        sequence_review=lambda reference: {"verdict": "pass"},
+    )
+
+    shot = outcome["shots"]["shot_001"]
+    assert rebuilt == ["shot_001"]
+    assert outcome["status"] == "approved"
+    assert shot["status"] == "passed"
+    assert shot["best_version"] == 1
+    assert shot["versions"][0]["passed"] is True
+    assert shot["versions"][0]["semantic_review"]["outcome"] == (
+        "reviewed_open")
+    assert shot["versions"][1]["semantic_review"]["outcome"] == (
+        "reviewed_pass")
+
+
 def test_three_round_vlm_escalation_blocks_without_repeating_the_shot():
     observation = _observation(
         observation_id="obs-vlm-escalated",
@@ -871,3 +1119,71 @@ def test_provider_contract_accepts_the_keyword_only_agent_seam():
     assert outcome["shots"]["shot_001"]["best_score"] == 82.0
     assert len(seen) == 1
     assert seen[0].round_no == 1
+
+
+def test_agent_history_carries_per_shot_quality_delta_and_prescriptions():
+    """Detail loop feeds the reconciliation ledger (P5/P6/P7) back to the
+    shared Agent provider: every later round sees the earlier version with
+    a per-shot ``quality_delta`` (best_before vs candidate_after), the
+    applied ``prescriptions`` and ``round_no``.  Only the current shot is
+    kept so attribution can never leak another shot's gain or loss."""
+
+    observations = iter([
+        _observation(
+            observation_id="obs-delta-0",
+            shot_id="shot_001",
+            score=70.0,
+            world_x=0.0,
+        ),
+        _observation(
+            observation_id="obs-delta-1",
+            shot_id="shot_001",
+            score=68.0,
+            world_x=0.25,
+        ),
+        _observation(
+            observation_id="obs-delta-2",
+            shot_id="shot_001",
+            score=82.0,
+            world_x=0.4,
+        ),
+    ])
+
+    seen_requests = []
+
+    def proposal_provider(*, request):
+        seen_requests.append(request)
+        round_no = int(request.round_no or 0)
+        if round_no == 1:
+            return _proposal("shot_001", x=0.25)
+        return _proposal("shot_001", x=0.4)
+
+    result = run_detail_revision_loop(
+        detail_shots=[_detail_shots()[0]],
+        reference=_reference(),
+        observe=lambda reference, shot_id: next(observations),
+        rebuild=lambda candidate, shot_id: None,
+        restore_best=lambda reference, shot_id: None,
+        proposal_provider=proposal_provider,
+        max_revisions=0,
+        no_gain_limit=3,
+    )
+
+    assert len(seen_requests) >= 2
+    assert result["shots"]["shot_001"]["status"] == "passed"
+
+    second = seen_requests[1]
+    assert len(second.history) >= 1
+    first_round = next(
+        item for item in second.history if "quality_delta" in item)
+    assert first_round["round_no"] == 1
+    assert first_round["disposition"] == "revert"
+    assert first_round["prescriptions"]
+
+    delta = first_round["quality_delta"]
+    assert set(delta["shots"].keys()) == {"shot_001"}
+    per_shot = delta["shots"]["shot_001"]
+    assert per_shot["best_before"]["composition"]["score"] == 70.0
+    assert per_shot["candidate_after"]["composition"]["score"] == 68.0
+    assert per_shot["delta"]["composition_score"] == -2.0
+    assert per_shot["delta"]["hard_error_count"] == 0

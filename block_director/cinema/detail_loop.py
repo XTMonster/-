@@ -11,6 +11,7 @@ import copy
 from typing import Any, Callable, Dict, Mapping, Sequence
 
 from block_director.cinema.coarse_revision import apply_coarse_prescriptions
+from block_director.cinema.coarse_loop import _quality_delta
 from block_director.contracts.audit import canonical_fingerprint
 from block_director.contracts.coarse_proposal import (
     CoarseProposalRequest,
@@ -23,8 +24,14 @@ from block_director.contracts.correction import (
     correction_candidate_dispositions,
     correction_candidate_lifecycle,
 )
-from block_director.contracts.quality import blockout_quality_report
-from block_director.contracts.world_state import world_state_fingerprint
+from block_director.contracts.quality import (
+    blockout_quality_report,
+    blockout_shot_quality_decision,
+)
+from block_director.contracts.world_state import (
+    has_physical_world_state,
+    physical_world_state_fingerprint,
+)
 
 
 class DetailLoopBlocked(RuntimeError):
@@ -146,6 +153,19 @@ def _observation_semantic_review_errors(observation: Any) -> list[str]:
     ]
 
 
+def _observation_semantic_review_open(observation: Any) -> bool:
+    """Whether a complete required review still reports unresolved issues."""
+    report = _observation_report(observation)
+    if report.get("vlm_review_required") is not True:
+        return False
+    review = report.get("vlm_review")
+    return (
+        isinstance(review, Mapping)
+        and str(review.get("status") or "") == "ok"
+        and str(review.get("outcome") or "") == "reviewed_open"
+    )
+
+
 def _semantic_review_blocked_code(errors: Sequence[str]) -> str:
     if any("escalated after repeated rounds" in str(error)
            for error in errors):
@@ -248,14 +268,14 @@ def _physical_fingerprint(
     *,
     fallback_reference: Mapping[str, Any] | None = None,
 ) -> str:
+    world_state = _observation_world_state(observation)
+    if has_physical_world_state(world_state):
+        return physical_world_state_fingerprint(world_state)
     explicit = getattr(observation, "world_state_fingerprint", None)
     if explicit is None and isinstance(observation, Mapping):
         explicit = observation.get("world_state_fingerprint")
     if explicit:
         return str(explicit)
-    world_state = _observation_world_state(observation)
-    if world_state:
-        return world_state_fingerprint(world_state)
     observed_reference = _observation_mapping(observation, "reference")
     if observed_reference:
         return coarse_reference_content_fingerprint(observed_reference)
@@ -289,22 +309,49 @@ def _neighbor_state_fingerprint(
 def _shot_quality(
     report: Mapping[str, Any],
     shot_id: str,
-) -> tuple[Dict[str, Any], Dict[str, Any], bool, float | None]:
+) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], float | None]:
     quality = blockout_quality_report(report)
     shot = dict((quality.get("shots") or {}).get(shot_id) or {})
+    gate = blockout_shot_quality_decision(shot)
     composition = dict(shot.get("composition") or {})
-    hard_error_count = int(shot.get("hard_error_count") or 0)
-    passed = (
-        composition.get("status") in {"pass", "exempt"}
-        and hard_error_count == 0
-    )
     score = composition.get("score")
     return (
         quality,
         shot,
-        passed,
+        gate,
         float(score) if isinstance(score, (int, float)) else None,
     )
+
+
+def _shot_quality_delta(
+    before_quality: Mapping[str, Any] | None,
+    after_quality: Mapping[str, Any] | None,
+    shot_id: str,
+) -> Dict[str, Any]:
+    """Per-shot quality delta with the coarse loop's exact shape (P7 same
+    source).  Attribution is per-shot: a prescription family is failure
+    evidence only when *this shot* got worse, even if the whole round
+    rolled back.  The candidate's own shot is kept so the shared Agent
+    history parser (``_prescription_family_failed``) can read
+    ``quality_delta.shots[shot_id].delta`` without any detail-side drift.
+    """
+    delta = _quality_delta(before_quality, after_quality)
+    shots = delta.get("shots")
+    if isinstance(shots, Mapping) and str(shot_id) in shots:
+        delta = copy.deepcopy(dict(delta))
+        delta["shots"] = {
+            str(shot_id): copy.deepcopy(dict(shots[str(shot_id)]))}
+    return delta
+
+
+def _quality_block_code(gate: Mapping[str, Any]) -> str:
+    codes = [
+        str(code) for code in (gate.get("reason_codes") or [])
+        if str(code)
+    ]
+    if codes:
+        return codes[0]
+    return str(gate.get("reason") or "quality_evidence_unresolved")
 
 
 def _shot_ids(detail_shots: Sequence[Mapping[str, Any]]) -> list[str]:
@@ -338,11 +385,28 @@ def run_detail_revision_loop(
     remains available for diagnostic delivery and prevents sequence review.
     Incomplete evidence and user-owned animation conflicts are blocked;
     budget, proposal, scope and cycle failures are named shot failures.
+
+    ``max_revisions=0`` disables the round cap (user 2026-10-23 ruling:
+    "循环调整无上限、主要是过评分"): termination is score-driven—passing the
+    quality gate approves, and ``no_gain_limit`` consecutive rounds without a
+    new best are recorded as a ``stagnation_reached`` signal so the proposal
+    provider can switch strategy; the loop keeps adjusting until the gate
+    passes, the executable prescription space is exhausted, or a hard resource
+    budget (max_revisions / wall-clock / LLM budget / cancel) ends it.
+    Global wall-clock / call / cancel budgets remain the ultimate safety net.
     """
-    if max_revisions < 1:
-        raise ValueError("max_revisions must be >= 1")
+    if max_revisions is None:
+        max_revisions = 5
+    if isinstance(max_revisions, bool) or not isinstance(max_revisions, int):
+        raise ValueError(
+            f"max_revisions must be an int (0 = unlimited): {max_revisions!r}")
+    if max_revisions < 0:
+        raise ValueError(
+            f"max_revisions must be >= 0 (0 = unlimited): {max_revisions!r}")
     if no_gain_limit < 1:
         raise ValueError("no_gain_limit must be >= 1")
+    revision_cap = (
+        None if max_revisions == 0 else int(max_revisions))
     current = copy.deepcopy(dict(reference))
     shots: Dict[str, Dict[str, Any]] = {}
     all_passed = True
@@ -373,11 +437,15 @@ def run_detail_revision_loop(
     for shot_id in shot_ids:
         observation = observe(current, shot_id)
         report = _observation_report(observation)
-        quality, shot_quality, passed, score = _shot_quality(report, shot_id)
+        quality, shot_quality, quality_gate, score = _shot_quality(
+            report, shot_id)
+        passed = quality_gate.get("status") == "pass"
         review_errors = _observation_review_evidence_errors(
             observation, shot_id)
         semantic_errors = _observation_semantic_review_errors(observation)
         review_errors.extend(semantic_errors)
+        semantic_open = _observation_semantic_review_open(observation)
+        fully_passed = passed and not semantic_open
         complete = _observation_complete(observation) and not review_errors
         correction_candidates = _observation_correction_candidates(
             observation, shot_id)
@@ -390,11 +458,17 @@ def run_detail_revision_loop(
             "observation_id": _observation_id(observation),
             "score": score,
             "passed": passed,
+            "fully_passed": fully_passed,
+            "semantic_review_open": semantic_open,
             "quality": quality,
             "shot_quality": shot_quality,
             "physical_fingerprint": _physical_fingerprint(
                 observation, fallback_reference=current),
-            "disposition": "new_high",
+            "disposition": (
+                "quality_blocked"
+                if quality_gate.get("status") == "blocked"
+                else "new_high"
+            ),
             "knowledge_context": str(knowledge_context or ""),
             "proposal": {},
             "semantic_review": semantic_review,
@@ -432,7 +506,7 @@ def run_detail_revision_loop(
             }
             all_passed = False
             continue
-        if passed:
+        if fully_passed:
             shots[shot_id] = {
                 "status": "passed",
                 "versions": versions,
@@ -443,21 +517,49 @@ def run_detail_revision_loop(
                 "blocked_reason": "",
             }
             continue
+        if quality_gate.get("status") == "blocked":
+            blocked_code = _quality_block_code(quality_gate)
+            shots[shot_id] = {
+                "status": "blocked",
+                "versions": versions,
+                "best_version": None,
+                "adopted_version": None,
+                "best_score": None,
+                "blocked_code": blocked_code,
+                "blocked_reason": str(
+                    quality_gate.get("reason") or blocked_code),
+            }
+            all_passed = False
+            continue
         best_reference = copy.deepcopy(current)
         best_version = 0
         best_score = score
+        #: P7 same-source quality evidence: the retained best quality report
+        #: is the ``best_before`` side of every later per-shot delta.
+        best_quality = copy.deepcopy(dict(quality))
         best_rank = _quality_rank(
-            shot_quality, passed=passed, score=score)
+            shot_quality,
+            passed=passed,
+            score=score,
+            semantic_open=semantic_open,
+        )
         blocked_code = ""
         blocked_reason = ""
+        blocked_by_quality = False
         no_gain = 0
+        stagnation_reached = False
         shot_passed = False
         seen_physical_fingerprints: set[str] = set()
         initial_physical = _physical_fingerprint(
             observation, fallback_reference=current)
         if initial_physical:
             seen_physical_fingerprints.add(initial_physical)
-        for revision_no in range(1, max_revisions + 1):
+        revision_no = 1
+        #: ``max_revisions=0`` = 不限（评分驱动终止，用户 2026-10-23 裁决）。
+        #: 连续 ``no_gain_limit`` 轮无新高只记录停滞信号、换策略继续，不再
+        #: 直接收尾；收尾只剩门通过、处方空间耗尽、硬性资源上限
+        #: （max_revisions/墙钟/LLM 预算/取消）。
+        while revision_cap is None or revision_no <= revision_cap:
             if proposal_provider is None:
                 blocked_code = "agent_proposal_unavailable"
                 blocked_reason = (
@@ -472,6 +574,14 @@ def run_detail_revision_loop(
                 manifest=_observation_mapping(observation, "manifest"),
                 world_state=_observation_world_state(observation),
                 frames=_observation_frames(observation),
+                #: Feed the compact reconciliation ledger (disposition,
+                #: prescriptions, per-shot quality_delta) so the shared Agent
+                #: provider can attribute failure per shot and switch axes
+                #: (same mechanism as the coarse loop, P5/P6/P7).
+                history=tuple(
+                    copy.deepcopy(dict(item))
+                    for item in versions
+                    if isinstance(item, Mapping)),
                 knowledge_context=str(knowledge_context or ""),
             )
             try:
@@ -550,6 +660,8 @@ def run_detail_revision_loop(
                 observation, shot_id)
             semantic_errors = _observation_semantic_review_errors(observation)
             review_errors.extend(semantic_errors)
+            candidate_semantic_open = _observation_semantic_review_open(
+                observation)
             if not _observation_complete(observation) or review_errors:
                 remeasured_correction_candidates = (
                     _observation_correction_candidates(observation, shot_id))
@@ -558,6 +670,8 @@ def run_detail_revision_loop(
                     "observation_id": _observation_id(observation),
                     "score": None,
                     "passed": False,
+                    "fully_passed": False,
+                    "semantic_review_open": candidate_semantic_open,
                     "quality": {},
                     "shot_quality": {},
                     "physical_fingerprint": _physical_fingerprint(
@@ -608,16 +722,74 @@ def run_detail_revision_loop(
             (
                 quality,
                 shot_quality,
-                candidate_passed,
+                quality_gate,
                 candidate_score,
             ) = _shot_quality(report, shot_id)
-            candidate_rank = _quality_rank(
-                shot_quality, passed=candidate_passed, score=candidate_score)
-            higher = candidate_rank > best_rank
+            candidate_passed = quality_gate.get("status") == "pass"
+            candidate_fully_passed = (
+                candidate_passed and not candidate_semantic_open)
             remeasured_correction_candidates = (
                 _observation_correction_candidates(observation, shot_id))
             physical_fingerprint = _physical_fingerprint(
                 observation, fallback_reference=candidate)
+            if quality_gate.get("status") == "blocked":
+                version = {
+                    "version": len(versions),
+                    "observation_id": _observation_id(observation),
+                    "score": candidate_score,
+                    "passed": False,
+                    "fully_passed": False,
+                    "semantic_review_open": candidate_semantic_open,
+                    "quality": quality,
+                    "shot_quality": shot_quality,
+                    "physical_fingerprint": physical_fingerprint,
+                    "disposition": "quality_blocked",
+                    "candidate": copy.deepcopy(candidate),
+                    "operations": copy.deepcopy(records),
+                    "knowledge_context": str(knowledge_context or ""),
+                    "proposal": copy.deepcopy(proposal),
+                    "semantic_review": copy.deepcopy(dict(
+                        report.get("vlm_review") or {})),
+                    "measurements": copy.deepcopy(dict(
+                        report.get("measurements") or {})),
+                    "correction_candidates": correction_candidate_lifecycle(
+                        correction_candidates,
+                        remeasured_correction_candidates,
+                        records,
+                        shot_id=shot_id,
+                    ),
+                }
+                versions.append(version)
+                evidence_error = _record_evidence(
+                    shot_id, observation, version)
+                current = copy.deepcopy(best_reference)
+                if restore_best is None:
+                    blocked_code = "physical_restore_unavailable"
+                    blocked_reason = (
+                        "candidate quality evidence became unresolved and "
+                        "no physical restore callback is configured")
+                else:
+                    try:
+                        restore_best(current, shot_id)
+                    except DetailLoopBlocked as exc:
+                        blocked_code = exc.code
+                        blocked_reason = str(exc)
+                    else:
+                        blocked_code = _quality_block_code(quality_gate)
+                        blocked_reason = str(
+                            quality_gate.get("reason") or blocked_code)
+                        blocked_by_quality = True
+                if evidence_error:
+                    blocked_code = "evidence_record_failed"
+                    blocked_reason = evidence_error
+                break
+            candidate_rank = _quality_rank(
+                shot_quality,
+                passed=candidate_passed,
+                score=candidate_score,
+                semantic_open=candidate_semantic_open,
+            )
+            higher = candidate_rank > best_rank
             repeated_physical_state = bool(
                 physical_fingerprint
                 and physical_fingerprint in seen_physical_fingerprints
@@ -628,15 +800,21 @@ def run_detail_revision_loop(
                     "revert" if candidate_rank < best_rank else "tie"))
             version = {
                 "version": len(versions),
+                "round_no": revision_no,
                 "observation_id": _observation_id(observation),
                 "score": candidate_score,
                 "passed": candidate_passed,
+                "fully_passed": candidate_fully_passed,
+                "semantic_review_open": candidate_semantic_open,
                 "quality": quality,
                 "shot_quality": shot_quality,
+                "quality_delta": _shot_quality_delta(
+                    best_quality, quality, shot_id),
                 "physical_fingerprint": physical_fingerprint,
                 "disposition": disposition,
                 "candidate": copy.deepcopy(candidate),
                 "operations": copy.deepcopy(records),
+                "prescriptions": copy.deepcopy(records),
                 "knowledge_context": str(knowledge_context or ""),
                 "proposal": copy.deepcopy(proposal),
                 "semantic_review": copy.deepcopy(dict(
@@ -670,6 +848,7 @@ def run_detail_revision_loop(
                 best_version = len(versions) - 1
                 best_score = candidate_score
                 best_rank = candidate_rank
+                best_quality = copy.deepcopy(dict(quality))
                 current = candidate
                 correction_candidates = remeasured_correction_candidates
                 no_gain = 0
@@ -696,15 +875,16 @@ def run_detail_revision_loop(
                     f"{shot_id} returned to an already observed physical "
                     f"state ({physical_fingerprint}); best restored")
                 break
-            if candidate_passed:
+            if candidate_fully_passed:
                 shot_passed = True
                 break
             if no_gain >= no_gain_limit:
-                blocked_code = "no_improvement_limit"
-                blocked_reason = (
-                    f"{shot_id} made no new best in {no_gain} consecutive "
-                    "attempts")
-                break
+                #: 停滞只作为信号，不让 Agent 追着同一批评审意见无限优化，
+                #: 也不在此处终止循环；下一轮提案方读到 history 的
+                #: stagnation 后会换轴/换策略继续尝试。
+                stagnation_reached = True
+                versions[-1]["stagnation_reached"] = True
+            revision_no += 1
         else:
             blocked_code = "max_revisions_reached"
             blocked_reason = (
@@ -721,6 +901,7 @@ def run_detail_revision_loop(
                 "best_score": best_score,
                 "blocked_code": "",
                 "blocked_reason": "",
+                "stagnation_reached": stagnation_reached,
             }
             continue
         if not blocked_code:
@@ -729,7 +910,8 @@ def run_detail_revision_loop(
                 f"{shot_id} reached {max_revisions} revision attempts "
                 "without passing")
         blocked_status = (
-            blocked_code == "observation_evidence_incomplete"
+            blocked_by_quality
+            or blocked_code == "observation_evidence_incomplete"
             or blocked_code == "semantic_review_required"
             or blocked_code == "semantic_review_escalated"
             or blocked_code == "user_animation_conflict"
@@ -746,6 +928,7 @@ def run_detail_revision_loop(
             "blocked_code": blocked_code,
             "failure_code": "" if blocked_status else blocked_code,
             "blocked_reason": blocked_reason,
+            "stagnation_reached": stagnation_reached,
         }
 
     sequence: Dict[str, Any] = {
@@ -797,9 +980,12 @@ def _quality_rank(
     *,
     passed: bool,
     score: float | None,
-) -> tuple[int, float, int]:
+    semantic_open: bool = False,
+) -> tuple[int, int, float, int]:
+    """Rank physical evidence without letting VLM score replace hard facts."""
     return (
         1 if passed else 0,
+        0 if semantic_open else 1,
         float(score) if score is not None else float("-inf"),
         -int(shot_quality.get("hard_error_count") or 0),
     )
