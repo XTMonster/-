@@ -61,3 +61,8 @@ Thumbs.db
 # 未跟踪文件且**不被任何规则覆盖**，一次 `git add -A` 会把它们全提交进去——
 # 与 `/work/` 同一性质（中间产物、可由命令重建），因此同一处置。
 /.scratch/
+
+# 本机 agent 工具产物：codegraph 索引（可由 `codegraph init` 重建）与 WorkBuddy 会话数据
+/.codegraph/
+/.workbuddy/
+
